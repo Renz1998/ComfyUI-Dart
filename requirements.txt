@@ -1,0 +1,2 @@
+transformers>=4.46,<6
+# Use the PyTorch build supplied by ComfyUI; do not replace it.

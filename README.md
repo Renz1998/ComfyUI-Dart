@@ -1,4 +1,6 @@
 # ComfyUI-Dart
+
+Development fork: experimental DART v3, description-to-prompt assistance, and reliability fixes. See [QUICKSTART.md](QUICKSTART.md) for installation, sample workflows, and limitations. Existing node names are preserved.
 ![Dart Preview](workflows/dart_generate_with_config.png)  
 日本語版READMEは[こちら](README.jp.md)。
 

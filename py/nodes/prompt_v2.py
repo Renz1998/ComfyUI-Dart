@@ -94,7 +94,7 @@ class DanbooruTagsTransformerGetAspectRatio(BaseNode):
         if 2 / 1 > ratio > 9 / 8:
             aspect_ratio = "wide"
         elif 9 / 8 >= ratio >= 8 / 9:
-            aspect_ratio = "wide"
+            aspect_ratio = "square"
         elif 8 / 9 > ratio > 1 / 2:
             aspect_ratio = "tall"
         elif 1 / 2 >= ratio:

@@ -16,8 +16,12 @@ from .py.nodes.advanced.token_ids import (
     DanbooruTagsTransformerRemoveTagToken,
 )
 from .py.nodes.ban_tags import DanbooruTagsTransformerBanTagsFromRegex
+from .py.nodes.prompt_v3 import DanbooruTagsTransformerComposePromptV3
+from .py.nodes.assistant import DanbooruTagsTransformerDescribeImage
 
 NODE_CLASS_MAPPINGS = {
+    "DanbooruTagsTransformerComposePromptV3": DanbooruTagsTransformerComposePromptV3,
+    "DanbooruTagsTransformerDescribeImage": DanbooruTagsTransformerDescribeImage,
     "DanbooruTagsTransformerLoader": DanbooruTagsTransformerLoader,
     "DanbooruTagsTransformerGenerate": DanbooruTagsTransformerGenerate,
     "DanbooruTagsTransformerComposePrompt": DanbooruTagsTransformerComposePrompt,
@@ -34,6 +38,8 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "DanbooruTagsTransformerComposePromptV3": "Dart Compose Prompt V3 (Experimental)",
+    "DanbooruTagsTransformerDescribeImage": "Dart Describe Image",
     "DanbooruTagsTransformerLoader": "Dart Load",
     "DanbooruTagsTransformerGenerate": "Dart Generate",
     "DanbooruTagsTransformerComposePrompt": "Dart Compose Prompt",

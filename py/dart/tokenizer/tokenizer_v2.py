@@ -1,6 +1,6 @@
 import re
 
-from transformers import AutoTokenizer
+from .load import load_tag_tokenizer
 
 from ..defs.token_v2 import (
     RATING_SFW,
@@ -20,10 +20,8 @@ from ..defs.token import (
 
 
 class DartTokenizerV2:
-    def __init__(self, model_name, special_tags):
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            model_name, trust_remote_code=True
-        )
+    def __init__(self, model_name, special_tags, **load_options):
+        self.tokenizer = load_tag_tokenizer(model_name, special_tags, **load_options)
         self.special_tags = special_tags
         self.token_id_table = {
             tag: self.tokenizer.convert_tokens_to_ids(tag) for tag in self.special_tags
@@ -94,6 +92,9 @@ class DartTokenizerV2:
                 section = []
             elif token_id not in special_tokens:
                 section.append(token_id)
+        if section:
+            sections.append(section)
+        sections.extend([[] for _ in range(max(0, 3 - len(sections)))])
         copyright_part = sections[0]
         character_part = sections[1]
         rating_part = [
@@ -113,7 +114,6 @@ class DartTokenizerV2:
             ]
         ]
         general_part = sections[2]
-        print(sections)
 
         # separete people tags (1girl, 1boy, no humans...)
         people_part, other_general_part = self.split_people_tokens_part(general_part)
