@@ -54,10 +54,11 @@ assert.equal(connections[2].args[2], 0);
 assert.equal(canvas.showConnectionMenu({ nodeFrom: { ...source, type: "OtherPlugin" }, slotFrom: 0, e: {} }), "original");
 class Describe {
     constructor() {
+        this.size = [380, 500];
         this.widgets = ["backend", "local_model", "endpoint", "model", "timeout", "api_key_env", "keep_tags", "avoid"]
             .map((name) => ({ name, value: name === "backend" ? "Local model" : "" }));
     }
-    setSize() {}
+    setSize(size) { this.size = size; }
     computeSize() { return [400, 500]; }
     setDirtyCanvas() {}
 }
@@ -72,4 +73,5 @@ backend.callback("Chat server");
 assert.equal(describeNode.widgets.find((w) => w.name === "endpoint").hidden, false);
 assert.equal(describeNode.widgets.find((w) => w.name === "local_model").hidden, true);
 assert.equal(backend.label, "Assistant");
+assert.equal(describeNode.size[0], 420);
 console.log("Drag menus create and connect the intended node sockets; other plugins retain their menu.");

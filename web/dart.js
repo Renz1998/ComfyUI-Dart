@@ -11,7 +11,8 @@ function updateDescribeControls(node) {
         if (["endpoint", "model", "timeout", "api_key_env"].includes(widget.name)) widget.hidden = !server;
         if (widget.name === "local_model") widget.hidden = server;
     }
-    node.setSize(node.computeSize());
+    const size = node.computeSize();
+    node.setSize([Math.max(420, node.size[0], size[0]), size[1]]);
     node.setDirtyCanvas(true, true);
 }
 
@@ -24,6 +25,8 @@ app.registerExtension({
         nodeType.prototype.onNodeCreated = function () {
             created?.apply(this, arguments);
             addTextPreviewWidgets(this);
+            const preview = this.widgets?.find((widget) => widget.name === "preview_text");
+            if (preview) preview.options.getMinHeight = () => 120;
             const names = { backend: "Assistant", local_model: "Local model", endpoint: "Server URL",
                 model: "Chat model", keep_tags: "Keep exact tags", avoid: "Avoid" };
             for (const widget of this.widgets || []) {
