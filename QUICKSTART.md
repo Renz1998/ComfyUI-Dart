@@ -8,7 +8,7 @@ Development source: [Renz1998/ComfyUI-Dart](https://github.com/Renz1998/ComfyUI-
 
 DART predicts more image tags from tags you supply. For example, `1girl, solo, red hair` can become a longer list describing a plausible scene. It can invent details. It is not a conversational assistant.
 
-The separate **Dart Describe Image** node asks a configured chat model to interpret ordinary descriptions. You can use its prompt directly, or send its tag outputs through DART for further expansion.
+The separate **Dart Describe Image** node uses a local Qwen model to interpret ordinary descriptions. You can use its prompt directly, or send its tag outputs through DART for further expansion. A chat server is an optional alternative.
 
 ## Installation
 
@@ -30,27 +30,34 @@ Preview E uses a WordLevel tokenizer: known tags are separate tokens. It may not
 
 ## Use ordinary descriptions
 
-Load **describe_image.json**. Start a compatible chat server, then fill in:
+Load **describe_image.json**, leave **backend** at **Local model** and **local_model** at **Automatic**, write your description, and click Run. The node shows its result directly. No server, API key, or download is needed when a supported Qwen model is already installed in `text_encoders`.
 
-- **endpoint**: LM Studio commonly uses `http://localhost:1234/v1`; local Ollama uses `http://localhost:11434/v1`.
-- **model**: the exact model identifier displayed by that server. Use an instruction/chat model; Qwen3-4B-Instruct-2507 is one baseline to compare, not a tested default here.
+Automatic prefers an installed Qwen3-VL 4B general model over larger models or specialized upsamplers. This version was tested with `qwen3vl_4b_int8_convrot.safetensors` using ComfyUI's native loading, text generation, and memory management. An optional generation-capable **CLIP** input overrides the filename selection. Use the native loader's general `stable_diffusion` type for this assistant; an image-specific loader can disable text generation. ComfyUI must include the native Generate Text node (`comfy_extras.nodes_textgen`). Server fields stay hidden in local mode; switching Assistant to Chat server reveals them.
+
+Other controls:
+
+- **backend**: Local model by default. Select Chat server only when you have a server configured.
+- **local_model**: Automatic, or an installed model filename.
+- **endpoint** and **model**: advanced controls used only by Chat server. LM Studio commonly uses `http://localhost:1234/v1`; local Ollama uses `http://localhost:11434/v1`. Enter its exact model identifier.
 - **description**: write what you want normally.
 - **target**: DART tags, Anima hybrid, or MOSS prose.
 - **mode**: Preserve requests faithful conversion; Expand allows modest additions.
 - **keep_tags**: optional literal tags/weights to retain.
 - **avoid**: optional exclusions, also returned as a negative prompt.
 
-No chat server or assistant model is bundled or started automatically. This node supports a chat-completions endpoint; it does not turn an image model's CLIP encoder into a chatbot. Text is sent only when the node runs, to the configured server. Keep a localhost endpoint for local processing. For a server requiring a key, enter an environment-variable name in `api_key_env`; do not put a secret in the workflow.
+No weights are bundled or downloaded automatically. The local backend uses existing model files and makes no network requests. If no suitable model is installed, the error explains what to add or connect. For the optional Chat server backend, text is sent only when the node runs, to the configured server. Keep a localhost endpoint for local processing. For a server requiring a key, enter an environment-variable name in `api_key_env`; do not put a secret in the workflow.
 
-The output is editable before you use it. **scene_json** retains the original description and the model's reported additions. Preserve/Expand and prose exclusions are model instructions, not hard semantic guarantees. Exact matching excluded tags are removed from the tag list. Tags are not checked against a complete Danbooru vocabulary. This version accepts text only; reference images and persistent conversation history are future work.
+The output is editable before you use it. **scene_json** retains the original description and the model's reported additions. Preserve/Expand and prose exclusions are model instructions, not hard semantic guarantees. Exact matching excluded tags are removed from the tag list. Common aliases are normalized (woman/man to count tags when a count is missing, rainy to rain); existing counts such as 2girls take precedence. Tags are not checked against a complete Danbooru vocabulary. This version accepts text only; reference images and persistent conversation history are future work.
 
 To add DART expansion, connect **general_tags**, **copyright**, and **character** to the matching inputs of a DART composer. Connect the composer to Dart Generate. Copy any weighted/literal requirements into Generate's **keep_tags** as well. The assistant's `prompt` is already suitable for direct text encoding; it is not a serialized DART control prompt.
+
+Dragging a Dart socket onto empty canvas now shows relevant nodes. For example, **prompt** offers CLIP Text Encode and Preview as Text, **general_tags** offers the three DART composers, and model/tokenizer sockets offer the corresponding loader/generator nodes. Selecting a suggestion connects the named input automatically. Other plugins' drag menus are unchanged; More compatible nodes opens the normal menu.
 
 Anima and MOSS outputs are text-formatting modes. Image quality has not been benchmarked. Variant-specific Anima quality prefixes and MOSS layout JSON are future additions.
 
 ## Validation
 
-Run `python tests/test_regressions.py` in an environment with Torch and Transformers. Tests cover settings isolation, RNG restoration, zero-temperature mode, control-token protection, sequence removal, retained weights, aspect boundaries, truncated decoding, old workflow node names, response validation, and an HTTP request to a temporary loopback server. The loopback server returns a fixture, so it checks the connection protocol rather than LLM quality.
+Run `python tests/test_regressions.py` in an environment with Torch and Transformers. The 23 tests include local/backend routing, tag aliases, settings isolation, RNG restoration, zero-temperature mode, control-token protection, sequence removal, retained weights, aspect boundaries, truncated decoding, response validation, and a temporary loopback HTTP server. Run `node tests/test_connections.mjs` and `node tests/test_menu.mjs` to check drag suggestions, exact connection targets, and backend control visibility. A separate real local-model run verified description conversion with Qwen3-VL 4B; semantic output quality is still model-dependent.
 
 A separate real-model smoke run used v3 revision `80b8bb0f763f14394551b1c542ac368c7e960275`, seed 7, CPU, and repeated generation. See the accompanying validation report. CI is configured for Transformers 4.46.3 and 5.17.0; local validation does not imply that the remote CI jobs have run.
 

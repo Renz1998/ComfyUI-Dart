@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import { connectionsFor, resolveSlot } from "../web/connections.mjs";
+
+const describe = "DanbooruTagsTransformerDescribeImage";
+assert.deepEqual(connectionsFor(describe, "prompt", "STRING", true).map((x) => x.type), ["CLIPTextEncode", "PreviewAny"]);
+assert.deepEqual(connectionsFor(describe, "general_tags", "STRING", true).slice(0, 3).map((x) => x.slot), ["general", "general", "general"]);
+assert.deepEqual(connectionsFor(describe, "character", "STRING", true)[0], { type: "DanbooruTagsTransformerComposePromptV3", slot: "character" });
+assert.deepEqual(connectionsFor("DanbooruTagsTransformerLoader", "DART_MODEL", "DART_MODEL", true)[0], { type: "DanbooruTagsTransformerGenerate", slot: "model" });
+assert.deepEqual(connectionsFor("DanbooruTagsTransformerGenerate", "tokenizer", "DART_TOKENIZER", false)[0], { type: "DanbooruTagsTransformerLoader", slot: 1 });
+assert.deepEqual(connectionsFor("DanbooruTagsTransformerGenerate", "prompt", "STRING", false)[0], { type: "DanbooruTagsTransformerComposePromptV3", slot: 0 });
+assert.deepEqual(connectionsFor("AnotherPlugin", "prompt", "STRING", true), []);
+const slots = [{ name: "model" }, { name: "tokenizer" }];
+assert.equal(resolveSlot(slots, 0).index, 0);
+assert.equal(resolveSlot(slots, slots[1]).index, 1);
+assert.equal(resolveSlot(slots, "tokenizer").index, 1);
+console.log("Connection suggestions passed (including first socket and named inputs).");

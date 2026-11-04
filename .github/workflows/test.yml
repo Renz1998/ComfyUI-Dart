@@ -16,3 +16,8 @@ jobs:
       - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: pip install transformers==${{ matrix.transformers }}
       - run: python tests/test_regressions.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node tests/test_connections.mjs
+      - run: node tests/test_menu.mjs

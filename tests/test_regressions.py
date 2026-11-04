@@ -20,7 +20,8 @@ spec.loader.exec_module(plugin)
 
 from dart_plugin.py.dart.model import DartModel
 from dart_plugin.py.dart.tags import encode_tags, remove_tags, keep_tags, split_tags
-from dart_plugin.py.dart.assistant import request_scene, format_scene
+from dart_plugin.py.dart.assistant import request_scene, format_scene, parse_scene
+from dart_plugin.py.dart.local_assistant import select_model
 from dart_plugin.py.dart.tokenizer.tokenizer_v2 import DartTokenizerV2
 from dart_plugin.py.dart.defs.token_v2 import SPECIAL_TAGS_V2
 from dart_plugin.py.dart.tokenizer.load import load_tag_tokenizer
@@ -163,6 +164,42 @@ SCENE = {'tags': ['1girl', 'red hair', 'extra people', 'red hair'],
 
 
 class AssistantTests(unittest.TestCase):
+    def test_common_tag_aliases_and_subject_counts(self):
+        scene = {**SCENE, 'tags': ['woman', 'rainy', 'looking out the window']}
+        prompt, general = format_scene(scene, 'DART tags')
+        self.assertEqual(general, '1girl, rain, looking out window')
+        self.assertNotIn('rain', format_scene(scene, 'DART tags', avoid='rainy')[1].split(', '))
+        scene['tags'] = ['2girls', 'woman', 'man']
+        self.assertEqual(format_scene(scene, 'DART tags')[1], '2girls, 1boy')
+
+    def test_default_node_runs_local_and_returns_visible_preview(self):
+        node = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
+        with patch('dart_plugin.py.nodes.assistant.describe_local', return_value=SCENE) as local, \
+                patch('dart_plugin.py.nodes.assistant.request_scene') as remote:
+            result = node.describe('rainy cafe', 'Anima hybrid', 'Preserve', 'http://localhost:1234/v1', '', 7)
+        local.assert_called_once()
+        remote.assert_not_called()
+        self.assertTrue(node.OUTPUT_NODE)
+        self.assertEqual(result['ui']['text'][0], result['result'][0])
+
+    def test_existing_explicit_server_workflows_still_use_server(self):
+        node = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
+        with patch('dart_plugin.py.nodes.assistant.request_scene', return_value=SCENE) as remote:
+            result = node.describe('rainy cafe', 'DART tags', 'Preserve', 'http://localhost:1234/v1', 'existing-model', 7)
+        remote.assert_called_once()
+        self.assertEqual(len(result['result']), 6)
+
+    def test_automatic_model_prefers_small_general_model(self):
+        names = ['qwen3.5_9b_flux3_prompt_upsampler_int8.safetensors', 'qwen3-vl-4b-heretic_int8.safetensors',
+                 'qwen3vl_8b_int8_convrot.safetensors', 'qwen3vl_4b_int8_convrot.safetensors']
+        self.assertEqual(select_model(names), 'qwen3vl_4b_int8_convrot.safetensors')
+        with self.assertRaisesRegex(ValueError, 'No local assistant model'):
+            select_model([])
+
+    def test_reasoning_fence_and_empty_copyright_are_normalized(self):
+        scene = parse_scene('<think>reasoning</think>\n```json\n' + json.dumps({**SCENE, 'copyright': ''}) + '\n```')
+        self.assertEqual(scene['copyright'], 'original')
+
     def test_targets_preserve_literal_weights_and_exclude_exact_tags(self):
         for target in ('DART tags', 'Anima hybrid', 'MOSS prose'):
             prompt, general = format_scene(SCENE, target, '(red coat:1.3)', 'extra people')
