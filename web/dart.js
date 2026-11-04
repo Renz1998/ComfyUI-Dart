@@ -1,7 +1,9 @@
 import { app } from "../../scripts/app.js";
+import { api } from "../../scripts/api.js";
 import { convertToInput } from "../../extensions/core/widgetInputs.js";
 import { addTextPreviewWidgets, updateTextPreviewWidgets } from "../../extensions/core/textPreviewWidgets.js";
 import { connectionsFor, resolveSlot } from "./connections.mjs";
+import { installDesign, configureDesign, toggleDesign, setDesignState, updateDesignBackend } from "./design.mjs";
 
 const labels = new Map();
 
@@ -11,6 +13,7 @@ function updateDescribeControls(node) {
         if (["endpoint", "model", "timeout", "api_key_env"].includes(widget.name)) widget.hidden = !server;
         if (widget.name === "local_model") widget.hidden = server;
     }
+    updateDesignBackend(node, server);
     const size = node.computeSize();
     node.setSize([Math.max(420, node.size[0], size[0]), size[1]]);
     node.setDirtyCanvas(true, true);
@@ -20,6 +23,33 @@ app.registerExtension({
     name: "Dart.ConnectionsAndPreview",
     beforeRegisterNodeDef(nodeType, nodeData) {
         labels.set(nodeData.name, nodeData.display_name || nodeData.name);
+        if (!nodeData.name.startsWith("DanbooruTagsTransformer")) return;
+        const baseCreated = nodeType.prototype.onNodeCreated;
+        nodeType.prototype.onNodeCreated = function () {
+            baseCreated?.apply(this, arguments);
+            installDesign(this, nodeData);
+            for (const widget of this.widgets || []) {
+                const spec = nodeData.input?.required?.[widget.name] || nodeData.input?.optional?.[widget.name];
+                const tip = spec?.[1]?.tooltip;
+                if (tip) widget.tooltip = tip;
+                if (widget.name === "control_after_generate") widget.tooltip = "fixed keeps the seed; increment/decrement changes it by one; randomize picks a new seed for the next run. Deterministic modes may still produce the same text.";
+            }
+        };
+        const baseConfigured = nodeType.prototype.onConfigure;
+        nodeType.prototype.onConfigure = function () {
+            baseConfigured?.apply(this, arguments);
+            configureDesign(this);
+        };
+        const baseExecuted = nodeType.prototype.onExecuted;
+        nodeType.prototype.onExecuted = function () {
+            baseExecuted?.apply(this, arguments);
+            setDesignState(this, "done");
+        };
+        const baseMenu = nodeType.prototype.getExtraMenuOptions;
+        nodeType.prototype.getExtraMenuOptions = function (_, options) {
+            baseMenu?.apply(this, arguments);
+            options.push({ content: this.properties.dart_design === false ? "Enable DART design" : "Disable DART design", callback: () => toggleDesign(this) });
+        };
         if (nodeData.name !== "DanbooruTagsTransformerDescribeImage") return;
         const created = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {
@@ -54,6 +84,19 @@ app.registerExtension({
         };
     },
     setup() {
+        let activeNode;
+        api.addEventListener("executing", ({ detail }) => {
+            if (activeNode) setDesignState(activeNode, "done");
+            const id = detail && typeof detail === "object" ? detail.node : detail;
+            activeNode = id != null ? app.graph.getNodeById(id) : null;
+            if (activeNode) setDesignState(activeNode, "running");
+        });
+        for (const event of ["execution_error", "execution_interrupted"]) {
+            api.addEventListener(event, () => {
+                if (activeNode) setDesignState(activeNode, "error");
+                activeNode = null;
+            });
+        }
         const canvas = app.canvas;
         const original = canvas.showConnectionMenu;
         canvas.showConnectionMenu = function (options) {

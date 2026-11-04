@@ -4,6 +4,10 @@ This is a local development fork of [nkchocoai/ComfyUI-Dart](https://github.com/
 
 Development source: [Renz1998/ComfyUI-Dart](https://github.com/Renz1998/ComfyUI-Dart/tree/feature/modern-dart-assistant), branch `feature/modern-dart-assistant`.
 
+## Help and appearance
+
+Hover a control or socket for its purpose, option meanings, examples, and wiring advice. Node descriptions explain the complete step. Each DART node has a color-coded guide card: teal for the assistant, blue for loaders, amber for composers, violet for generation, and slate for utilities. Click its **?** button for a short guide. The card shows Working during execution and Done or Check Input afterward. Motion is limited to execution/completion and respects the browser's reduced-motion preference. Right-click a node and choose **Disable DART design** to return to its previous appearance.
+
 ## What DART does
 
 DART predicts more image tags from tags you supply. For example, `1girl, solo, red hair` can become a longer list describing a plausible scene. It can invent details. It is not a conversational assistant.

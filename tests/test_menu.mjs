@@ -13,6 +13,8 @@ class Canvas {
 }
 const context = {
     app: { canvas: new Canvas(), registerExtension(value) { extension = value; } },
+    api: { addEventListener() {} },
+    installDesign() {}, configureDesign() {}, toggleDesign() {}, setDesignState() {}, updateDesignBackend() {},
     connectionsFor, resolveSlot, LGraphCanvas: Canvas,
     addTextPreviewWidgets() {}, updateTextPreviewWidgets() {}, convertToInput() {},
     LiteGraph: {

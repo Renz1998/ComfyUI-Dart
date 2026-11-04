@@ -18,6 +18,7 @@ from .py.nodes.advanced.token_ids import (
 from .py.nodes.ban_tags import DanbooruTagsTransformerBanTagsFromRegex
 from .py.nodes.prompt_v3 import DanbooruTagsTransformerComposePromptV3
 from .py.nodes.assistant import DanbooruTagsTransformerDescribeImage
+from .py.nodes.help import attach_help
 
 NODE_CLASS_MAPPINGS = {
     "DanbooruTagsTransformerComposePromptV3": DanbooruTagsTransformerComposePromptV3,
@@ -54,6 +55,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "DanbooruTagsTransformerRearrangedByAnimagine": "Dart Rearranged By Animagine",
     "DanbooruTagsTransformerRemoveTagToken": "Dart Remove Tag Token",
 }
+
+attach_help(NODE_CLASS_MAPPINGS)
 
 WEB_DIRECTORY = "./web"
 
