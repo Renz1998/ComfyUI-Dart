@@ -18,9 +18,13 @@ An expanded fork of [nkchocoai/ComfyUI-Dart](https://github.com/nkchocoai/ComfyU
 | A photo or description | Native MOSS layout JSON with text/object placement | Image to Text → Text Assistant |
 | A description | DART v1/v2/v3 expansion with retained tags and sampling controls | Text Assistant → matching DART Composer → Generate |
 
-All 15 nodes include hover help and role-colored guides. Assistants show their result directly. Execution animations respect reduced motion; node designs can be toggled from the context menu.
+All 16 nodes include hover help and role-colored guides. Assistants show their result directly. Execution animations respect reduced motion; node designs can be toggled from the context menu.
 
 ## Control prompt detail and wording
+
+**Appearance Overrides:** drag from either assistant's **appearance** input and choose **Prompt Atelier · Appearance Overrides**. Connect one recipe to either or both assistants. Dropdowns cover hair color/style/length, eyes, breast size, body type, skin tone, clothing and expression. Keep unchanged leaves a trait alone; Custom reveals a free-text value. Set an optional exact character trigger, choose who receives changes, and add extra replacement directions. The on/off switch bypasses the recipe. Selected traits replace conflicting source traits in prose, tags and JSON; interpretation is model-guided. Keep exact tags still appends literal text. Manual MOSS layout overrides bypass generation, so clear them before applying a recipe. These controls edit generated descriptions, not image pixels.
+
+**Unload assistant model after generation:** enable when the assistant encoder differs from your image encoder. ComfyUI offloads this encoder and its clones/related models after generation (including errors), while preserving unrelated loaded models. Weights are not deleted. A shared encoder may reload later, so leave this off when reuse is more valuable than freeing VRAM. Chat-server inference is external and unaffected; cached nodes do not run cleanup again.
 
 **Image to Text → Output format** offers Plain text, Structured JSON, and MOSS JSON layout. Structured JSON contains description, subjects, environment, lighting, composition and visible_text; use the MOSS choice for its native summary/items format. Instructions and character triggers work in every format. JSON is validated, indented and previewed as Markdown; the description output always carries raw text/JSON.
 

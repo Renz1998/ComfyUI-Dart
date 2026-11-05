@@ -2,6 +2,7 @@ from .base import BaseNode
 from ..dart.local_assistant import local_models
 from ..dart.vision import caption_image, prepare_caption_image, VISION_FORMATS, RESIZE_METHODS
 from ..dart.assistant import LANGUAGE_STYLES
+from ..dart.appearance import override_instructions
 
 
 class DanbooruTagsTransformerImageToText(BaseNode):
@@ -26,6 +27,8 @@ class DanbooruTagsTransformerImageToText(BaseNode):
             "resize_mode": (["Downscale only", "Resize to budget"], {"default": "Downscale only", "tooltip": "Downscale only leaves small images at their current size. Resize to budget also enlarges small images toward the megapixel target. MOSS auto mode additionally aligns dimensions to multiples of 16."}),
             "resize_method": (RESIZE_METHODS, {"default": "lanczos", "tooltip": "Lanczos: sharp photographic resize. Bicubic: smoother interpolation. Bilinear: fast and smooth. Area: useful for reducing size. Nearest-exact: hard pixel edges. These are standard interpolation methods, not learned AI upscalers; no model downloads."}),
             "dimension_source": (["From processed image", "Manual canvas"], {"default": "From processed image", "tooltip": "MOSS JSON: automatically use the resized image width/height for layout coordinates, or enter a separate manual generation canvas. Width/height outputs match the layout canvas; other formats output processed image dimensions."}),
+            "appearance": ("ATELIER_APPEARANCE", {"tooltip": "Optional Appearance Overrides recipe. Drag from this input to create its matching node. Selected replacements override source traits; its nonempty trigger overrides Character trigger."}),
+            "unload_after_generation": ("BOOLEAN", {"default": False, "tooltip": "Offload this assistant's local text/vision model and its clones after generation, including errors, using ComfyUI's model manager. Does not unload unrelated diffusion models. Enable for a separate assistant encoder; a shared encoder may need reloading later. Ignored on cached executions."}),
         }}
 
     RETURN_TYPES = ("STRING", "INT", "INT", "IMAGE")
@@ -36,7 +39,12 @@ class DanbooruTagsTransformerImageToText(BaseNode):
     def describe(self, image, instructions="", detail="Detailed", local_model="Automatic",
                  character_trigger="", image_index=0, max_tokens=4096, clip=None, language_style="Default",
                  output_format="Plain text", canvas_width=1024, canvas_height=1024, image_megapixels=1.0,
-                 resize_mode="Downscale only", resize_method="lanczos", dimension_source="From processed image"):
+                 resize_mode="Downscale only", resize_method="lanczos", dimension_source="From processed image",
+                 appearance=None, unload_after_generation=False):
+        replacements, trigger = override_instructions(appearance)
+        instructions += replacements
+        if trigger:
+            character_trigger = trigger
         if dimension_source not in ("From processed image", "Manual canvas"):
             raise ValueError("Choose From processed image or Manual canvas dimensions.")
         auto_layout = output_format == "MOSS JSON layout" and dimension_source == "From processed image"
@@ -45,7 +53,8 @@ class DanbooruTagsTransformerImageToText(BaseNode):
             canvas_width, canvas_height = width, height
         text = caption_image(prepared, instructions, character_trigger, detail, 0,
                              max_tokens, model_name=local_model, clip=clip, language_style=language_style,
-                             output_format=output_format, canvas_width=canvas_width, canvas_height=canvas_height)
+                             output_format=output_format, canvas_width=canvas_width, canvas_height=canvas_height,
+                             unload_after_generation=unload_after_generation)
         if output_format == "MOSS JSON layout":
             width, height = canvas_width, canvas_height
         return {"ui": {"text": [text], "json_preview": [output_format != "Plain text"]}, "result": (text, width, height, prepared)}

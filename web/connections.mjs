@@ -8,6 +8,7 @@ const generators = (slot) => [node("Generate", slot), node("GenerateAdvanced", s
 export function connectionsFor(type, name, slotType, isOutput) {
     if (!type?.startsWith(prefix)) return [];
     if (!isOutput) {
+        if (name === "appearance" && [prefix + "ImageToText", prefix + "DescribeImage"].includes(type)) return [node("AppearanceOverrides", 0)];
         if (name === "image") return [{ type: "LoadImage", slot: 0 }];
         if (type === prefix + "DescribeImage" && name === "description") return [node("ImageToText", 0)];
         if (name === "model") return [node("Loader", 0)];
@@ -21,6 +22,8 @@ export function connectionsFor(type, name, slotType, isOutput) {
         if (name in describeSlots) return [node("DescribeImage", describeSlots[name])];
         return [];
     }
+    if (slotType === "ATELIER_APPEARANCE") return [node("ImageToText", "appearance"), node("DescribeImage", "appearance")];
+    if (type === prefix + "AppearanceOverrides") return [preview];
     if (slotType === "DART_MODEL") return generators("model");
     if (slotType === "DART_TOKENIZER") return [
         ...generators("tokenizer"), node("Decode", "tokenizer"),

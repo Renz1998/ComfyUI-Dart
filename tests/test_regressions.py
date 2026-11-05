@@ -414,7 +414,82 @@ class AssistantTests(unittest.TestCase):
             request_scene('scene', 'http://localhost:1234/v1', '', 'Preserve', '', '', 0)
 
 
+class AppearanceTests(unittest.TestCase):
+    def recipe(self, **kwargs):
+        return plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerAppearanceOverrides']().build(**kwargs)['result'][0]
+
+    def test_defaults_disabled_and_custom_traits(self):
+        from dart_plugin.py.dart.appearance import override_instructions
+        self.assertEqual(override_instructions(self.recipe()), ('', ''))
+        self.assertEqual(override_instructions(self.recipe(enabled=False, hair_color='Silver', trigger='token')), ('', ''))
+        value = self.recipe(subject='Custom subject', subject_custom='person on the left', hair_color='Custom', hair_color_custom='silver with blue tips', breast_size='Large breasts')
+        self.assertEqual(value['traits']['hair_color'], 'silver with blue tips')
+        self.assertEqual(value['subject'], 'person on the left')
+        self.assertNotIn('eye_color', value['traits'])
+        with self.assertRaisesRegex(ValueError, 'custom hair color'):
+            self.recipe(hair_color='Custom')
+        with self.assertRaisesRegex(ValueError, 'trigger'):
+            self.recipe(identity_mode='Trigger replaces identity details')
+
+    def test_recipe_reaches_both_assistants_and_preserves_user_instructions(self):
+        recipe = self.recipe(hair_color='Silver', eye_color='Green', trigger='vzx_character')
+        vision = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerImageToText']()
+        with patch('dart_plugin.py.nodes.vision.caption_image', return_value='caption') as caption:
+            vision.describe(torch.zeros(1,16,16,3), instructions='Keep the background.', appearance=recipe, unload_after_generation=True)
+        self.assertIn('Keep the background.', caption.call_args.args[1])
+        self.assertIn('Silver', caption.call_args.args[1])
+        self.assertEqual(caption.call_args.args[2], 'vzx_character')
+        self.assertTrue(caption.call_args.kwargs['unload_after_generation'])
+        assistant = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
+        for backend, path in [('Local model','describe_local'),('Chat server','request_scene')]:
+            with patch('dart_plugin.py.nodes.assistant.' + path, return_value=SCENE) as query:
+                result = assistant.describe('cafe', 'Natural language', 'Preserve', 'http://localhost/v1', 'qwen', 0, backend=backend, appearance=recipe, custom_instructions='Use cinematic light.')
+            self.assertIn('Use cinematic light.', query.call_args.kwargs['custom_instructions'])
+            self.assertIn('Silver', query.call_args.kwargs['custom_instructions'])
+            self.assertIn('vzx_character', result['result'][0])
+        with self.assertRaisesRegex(ValueError, 'Clear the manual'):
+            assistant.describe('cafe','MOSS JSON layout','Preserve','','',0,layout_json='{}',appearance=recipe)
+
+
+class MemoryTests(unittest.TestCase):
+    def test_targeted_offload_runs_on_success_and_error_and_can_be_disabled(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from dart_plugin.py.dart.memory import offload_after
+        patcher = object()
+        clip = SimpleNamespace(patcher=patcher)
+        management = SimpleNamespace(unload_model_and_clones=Mock(), soft_empty_cache=Mock(), unload_all_models=Mock())
+        with patch.dict(sys.modules, {'comfy': SimpleNamespace(model_management=management), 'comfy.model_management': management}):
+            with offload_after(clip, True): pass
+            management.unload_model_and_clones.assert_called_once_with(patcher, unload_additional_models=True, all_devices=True)
+            with self.assertRaisesRegex(RuntimeError, 'generation failure'), offload_after(clip, True):
+                raise RuntimeError('generation failure')
+            self.assertEqual(management.unload_model_and_clones.call_count, 2)
+            with offload_after(clip, False): pass
+            self.assertEqual(management.unload_model_and_clones.call_count, 2)
+            management.unload_all_models.assert_not_called()
+
+
 class VisionTests(unittest.TestCase):
+    def test_direct_and_wrapped_native_moss_json_do_not_require_layout_draft(self):
+        native = compile_layout({'summary': {'meta': [], 'caption': 'A coat.'}, 'items': [
+            {'label': 'object', 'caption': 'A coat.', 'bbox': [0,0,1536,1024]}]}, 1536,1024,draft=True)
+        for value in (native, {'moss_layout': native}, {'layout': native}):
+            text, execute, _ = self.run_caption(torch.zeros(1,16,16,3), caption=json.dumps(value), output_format='MOSS JSON layout', canvas_width=1536,canvas_height=1024)
+            self.assertEqual(json.loads(text), native)
+            self.assertEqual(execute.call_count,1)
+        with self.assertRaisesRegex(ValueError, 'Returned keys: description'):
+            self.run_caption(torch.zeros(1,16,16,3), caption='{"description":"not a layout"}', output_format='MOSS JSON layout')
+
+    def test_vision_releases_encoder_after_generation_failure(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from dart_plugin.py.dart.vision import caption_image
+        execute = Mock(side_effect=RuntimeError('model failed'))
+        with patch.dict(sys.modules, {'comfy_extras.nodes_textgen': SimpleNamespace(TextGenerate=SimpleNamespace(execute=execute))}), patch('dart_plugin.py.dart.memory.release_assistant_model') as release:
+            with self.assertRaisesRegex(RuntimeError, 'model failed'):
+                caption_image(torch.zeros(1,16,16,3),clip='assistant',unload_after_generation=True)
+        release.assert_called_once_with('assistant')
     def test_pixel_budget_resize_uses_selected_batch_method_and_auto_canvas(self):
         from types import SimpleNamespace
         from unittest.mock import Mock

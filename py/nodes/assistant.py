@@ -4,6 +4,7 @@ from .base import BaseNode
 from ..dart.assistant import TARGETS, PROMPT_LENGTHS, LANGUAGE_STYLES, request_scene, format_scene
 from ..dart.local_assistant import local_models, describe_local
 from ..dart.moss import compile_layout, read_layout
+from ..dart.appearance import override_instructions, apply_trigger
 
 
 class DanbooruTagsTransformerDescribeImage(BaseNode):
@@ -33,6 +34,8 @@ class DanbooruTagsTransformerDescribeImage(BaseNode):
             "prompt_length": (PROMPT_LENGTHS, {"default": "Balanced", "tooltip": "Brief: 40–80 words; Balanced: 100–180; Detailed: 200–350; Extensive: 400–650. Approximate targets, not guarantees. Preserve mode never invents details just to fill space. JSON length covers all captions together."}),
             "max_tokens": ("INT", {"default": 4096, "min": 512, "max": 16384, "step": 256, "tooltip": "Maximum generated tokens for the whole response, including internal JSON and tags. This is a ceiling, not a desired length. Try 8192 for Extensive layouts; larger limits can take longer."}),
             "language_style": (LANGUAGE_STYLES, {"default": "Default", "tooltip": "Direct / explicit asks for precise visual and anatomical terms, preserves supplied explicit wording and avoids euphemisms. It does not add sexual details or change the model's own policies."}),
+            "appearance": ("ATELIER_APPEARANCE", {"tooltip": "Optional Appearance Overrides recipe. Drag from this input to create its matching node. Selected replacements override source traits, including in Preserve. Keep exact tags still appends literal tags. Clear manual layout_json when using appearance edits."}),
+            "unload_after_generation": ("BOOLEAN", {"default": False, "tooltip": "Offload this local assistant model and its clones after generation, including errors, using ComfyUI's model manager. Keeps unrelated diffusion models loaded. A shared encoder may need reloading later. Chat server and cached executions are unaffected."}),
         }}
 
     RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING", "STRING")
@@ -45,18 +48,23 @@ class DanbooruTagsTransformerDescribeImage(BaseNode):
                  keep_tags="", avoid="", timeout=120, api_key_env="", backend=None,
                  local_model="Automatic", clip=None, source_tags="", custom_instructions="",
                  canvas_width=1024, canvas_height=1024, layout_json="", prompt_length="Balanced",
-                 max_tokens=4096, language_style="Default"):
+                 max_tokens=4096, language_style="Default", appearance=None, unload_after_generation=False):
+        replacements, trigger = override_instructions(appearance)
+        custom_instructions += replacements
+        if replacements and target == "MOSS JSON layout" and layout_json.strip():
+            raise ValueError("Clear the manual MOSS JSON override to generate a layout with appearance replacements. Manual JSON bypasses the assistant.")
         def query(instructions):
             if backend == "Chat server" or (backend is None and model.strip()):
-                return request_scene(description, endpoint, model, mode, keep_tags, avoid,
+                return apply_trigger(request_scene(description, endpoint, model, mode, keep_tags, avoid,
                                      seed, timeout, api_key_env, source_tags=source_tags,
                                      custom_instructions=instructions, target=target,
                                      canvas_width=canvas_width, canvas_height=canvas_height,
-                                     prompt_length=prompt_length, language_style=language_style, max_tokens=max_tokens)
-            return describe_local(description, mode, keep_tags, avoid, seed, local_model, clip,
+                                     prompt_length=prompt_length, language_style=language_style, max_tokens=max_tokens), trigger)
+            return apply_trigger(describe_local(description, mode, keep_tags, avoid, seed, local_model, clip,
                                   source_tags=source_tags, custom_instructions=instructions, target=target,
                                   canvas_width=canvas_width, canvas_height=canvas_height,
-                                  prompt_length=prompt_length, language_style=language_style, max_tokens=max_tokens)
+                                  prompt_length=prompt_length, language_style=language_style, max_tokens=max_tokens,
+                                  unload_after_generation=unload_after_generation), trigger)
 
         layout = None
         if target == "MOSS JSON layout" and layout_json.strip():

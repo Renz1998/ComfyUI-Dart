@@ -3,6 +3,7 @@
 import json
 
 from .assistant import scene_request, parse_scene
+from .memory import offload_after
 
 
 def local_models():
@@ -35,22 +36,23 @@ def load_local_clip(model_name="Automatic", clip=None):
 
 def describe_local(description, mode, required, avoid, seed, model_name="Automatic", clip=None,
                    source_tags="", custom_instructions="", target="DART tags", canvas_width=1024, canvas_height=1024,
-                   prompt_length="Balanced", language_style="Default", max_tokens=4096):
+                   prompt_length="Balanced", language_style="Default", max_tokens=4096, unload_after_generation=False):
     system, scene_input = scene_request(description, mode, required, avoid, source_tags, custom_instructions, target,
                                        canvas_width, canvas_height, prompt_length, language_style, max_tokens)
     from comfy_extras.nodes_textgen import TextGenerate
 
     clip = load_local_clip(model_name, clip)
-    payload = json.dumps(scene_input, ensure_ascii=False)
-    sampling = {"sampling_mode": "off"} if mode == "Preserve" else {
-        "sampling_mode": "on", "temperature": 0.7, "top_k": 40,
-        "top_p": 0.9, "min_p": 0.05, "repetition_penalty": 1.05, "seed": seed,
-    }
-    output = TextGenerate.execute(
-        clip=clip, prompt=payload, max_length=max_tokens, sampling_mode=sampling,
-        thinking=False, system_prompt=system, mtp="off",
-    )
-    scene = parse_scene(output.args[0])
-    scene["source_description"] = description
-    scene["source_tags"] = source_tags
-    return scene
+    with offload_after(clip, unload_after_generation):
+        payload = json.dumps(scene_input, ensure_ascii=False)
+        sampling = {"sampling_mode": "off"} if mode == "Preserve" else {
+            "sampling_mode": "on", "temperature": 0.7, "top_k": 40,
+            "top_p": 0.9, "min_p": 0.05, "repetition_penalty": 1.05, "seed": seed,
+        }
+        output = TextGenerate.execute(
+            clip=clip, prompt=payload, max_length=max_tokens, sampling_mode=sampling,
+            thinking=False, system_prompt=system, mtp="off",
+        )
+        scene = parse_scene(output.args[0])
+        scene["source_description"] = description
+        scene["source_tags"] = source_tags
+        return scene

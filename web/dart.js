@@ -29,6 +29,15 @@ function updateLayoutSockets(node, layout) {
 }
 
 function updateDescribeControls(node) {
+    const recipe = node.widgets?.some((widget) => widget.name === "custom_overrides");
+    if (recipe) {
+        for (const widget of node.widgets || []) {
+            if (widget.name.endsWith("_custom")) {
+                const selector = node.widgets.find((item) => item.name === widget.name.slice(0, -7));
+                widget.hidden = selector?.value !== (widget.name === "subject_custom" ? "Custom subject" : "Custom");
+            }
+        }
+    }
     const server = node.widgets?.find((widget) => widget.name === "backend")?.value === "Chat server";
     const layout = node.widgets?.find((widget) => ["target", "output_format"].includes(widget.name))?.value === "MOSS JSON layout";
     const manual = node.widgets?.find((widget) => widget.name === "dimension_source")?.value;
@@ -78,7 +87,7 @@ app.registerExtension({
             baseMenu?.apply(this, arguments);
             options.push({ content: this.properties.dart_design === false ? "Enable Atelier design" : "Disable Atelier design", callback: () => toggleDesign(this) });
         };
-        if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText"].includes(nodeData.name)) return;
+        if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerAppearanceOverrides"].includes(nodeData.name)) return;
         const created = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {
             created?.apply(this, arguments);
@@ -90,11 +99,13 @@ app.registerExtension({
                 description: "Scene / keywords (optional with source tags)", custom_instructions: "Custom instructions",
                 canvas_width: "MOSS canvas width", canvas_height: "MOSS canvas height", layout_json: "Edit MOSS JSON (optional override)",
                 instructions: "Caption instructions / replacements", character_trigger: "Character trigger", image_index: "Image in batch",
-                prompt_length: "Prompt length", output_format: "Output format", image_megapixels: "Image megapixel budget", dimension_source: "Layout dimensions", resize_mode: "Resize mode", resize_method: "Resize method", language_style: "Language style", max_tokens: "Generation token limit" };
+                prompt_length: "Prompt length", output_format: "Output format", image_megapixels: "Image megapixel budget", dimension_source: "Layout dimensions", resize_mode: "Resize mode", resize_method: "Resize method", language_style: "Language style", max_tokens: "Generation token limit", unload_after_generation: "Unload assistant model after generation", trigger: "Character trigger", identity_mode: "Identity wording", custom_overrides: "Extra appearance replacements" };
             for (const widget of this.widgets || []) {
                 if (names[widget.name]) widget.label = names[widget.name];
+                else if (nodeData.name.endsWith("AppearanceOverrides")) widget.label = widget.name.replaceAll("_", " ");
             }
-            for (const name of ["backend", "target", "output_format", "dimension_source", "image_megapixels"]) {
+            const appearanceSelectors = nodeData.name.endsWith("AppearanceOverrides") ? (this.widgets || []).filter((widget) => widget.type === "combo").map((widget) => widget.name) : [];
+            for (const name of ["backend", "target", "output_format", "dimension_source", "image_megapixels", ...appearanceSelectors]) {
                 const control = this.widgets?.find((widget) => widget.name === name);
                 if (!control) continue;
                 const callback = control.callback;

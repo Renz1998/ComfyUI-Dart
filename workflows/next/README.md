@@ -11,6 +11,8 @@ These are complete **text-processing graphs** you can drag into ComfyUI. They cr
 | [image_to_text.json](image_to_text.json) | Load Image → Image to Text caption | Full vision Qwen; one pass |
 | [image_to_structured_json.json](image_to_structured_json.json) | Load Image → structured scene JSON with pixel-budget resize | Full vision Qwen; one pass |
 | [image_to_moss_json_auto.json](image_to_moss_json_auto.json) | Load Image → native MOSS JSON, automatic canvas size + dimension outputs | Full vision Qwen; one pass |
+| [appearance_text_assistant.json](appearance_text_assistant.json) | Appearance Overrides → Text Assistant, silver hair/green eyes and exact trigger | Full instruction Qwen |
+| [appearance_image_to_moss.json](appearance_image_to_moss.json) | Optional appearance recipe + image → MOSS JSON, automatic size and model offload | Full vision model; choose your desired traits |
 | [moss_json_layout.json](moss_json_layout.json) | Scene description → native MOSS layout JSON | Full instruction Qwen; layout planning |
 | [dart_v3_tags.json](dart_v3_tags.json) | V3 Composer → DART Generate → tag preview | DART v3 Preview E; no Qwen required |
 | [tags_to_concept.json](tags_to_concept.json) | DART v3 expansion → Text Assistant → prose | DART v3 + instruction Qwen |

@@ -23,6 +23,7 @@ const context = {
             DanbooruTagsTransformerComposePromptV3: { title: "Dart Compose Prompt V3" },
             DanbooruTagsTransformerLoader: { title: "Dart Load" },
             DanbooruTagsTransformerDescribeImage: { title: "Dart Describe Image" },
+            DanbooruTagsTransformerAppearanceOverrides: { title: "Prompt Atelier · Appearance Overrides" },
         },
         ContextMenu: class { constructor(entries) { menu = entries; } },
         createNode(type) {
@@ -141,4 +142,25 @@ assert.deepEqual(oldVision.outputs.map((slot) => slot.name), ["description", "wi
 assert.deepEqual(oldVision.outputs[0].links, [99]);
 oldVision.onConfigure({});
 assert.equal(oldVision.outputs.length, 4);
+canvas.showConnectionMenu({nodeTo: {type:'DanbooruTagsTransformerImageToText',graph,inputs:[{name:'appearance',type:'ATELIER_APPEARANCE'}]},slotTo:0,e:{}});
+assert.equal(menu[0].content, 'Prompt Atelier · Appearance Overrides');
+menu[0].callback();
+assert.equal(connections.at(-1).from, 'DanbooruTagsTransformerAppearanceOverrides');
+assert.equal(connections.at(-1).args[0], 0);
+assert.equal(connections.at(-1).args[2], 0);
+class Recipe {
+    constructor() {
+        this.size=[420,500]; this.properties={};
+        this.widgets=[{name:'hair_color',type:'combo',value:'Keep unchanged'},{name:'hair_color_custom',value:''},
+            {name:'subject',type:'combo',value:'Main subject'},{name:'subject_custom',value:''},{name:'custom_overrides',value:''}];
+    }
+    computeSize(){return this.size;} setSize(size){this.size=size;} setDirtyCanvas(){}
+}
+extension.beforeRegisterNodeDef(Recipe, {name:'DanbooruTagsTransformerAppearanceOverrides'});
+const recipe=new Recipe(); recipe.onNodeCreated();
+assert.equal(recipe.widgets[1].hidden,true);
+recipe.widgets[0].value='Custom'; recipe.widgets[0].callback();
+assert.equal(recipe.widgets[1].hidden,false);
+recipe.widgets[2].value='Custom subject'; recipe.widgets[2].callback();
+assert.equal(recipe.widgets[3].hidden,false);
 console.log("Drag menus create and connect the intended node sockets; other plugins retain their menu.");

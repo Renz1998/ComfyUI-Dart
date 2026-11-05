@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.2 — Appearance recipes, targeted offloading and MOSS parsing
+
+- Added optional Appearance Overrides with trait dropdowns, custom values, subject selection, literal character trigger and identity wording controls, shared by both assistants.
+- Dragging from either appearance input suggests and connects the recipe node; the recipe output suggests either assistant.
+- Added opt-in targeted assistant model offloading after successful generation or errors; unrelated diffusion models stay loaded. Shared encoders can reload when needed.
+- Vision MOSS parsing accepts direct native summary/items layouts and supported wrappers instead of requiring layout_draft. Missing layout errors now identify returned keys; native coordinates are validated without double conversion.
+
 ## 1.5.1 — Vision JSON and searchable node names
 
 - Image to Text now supports Plain text, Structured JSON and native MOSS JSON layout, with character instructions and formatted previews.

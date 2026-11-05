@@ -7,6 +7,7 @@ import math
 from .local_assistant import load_local_clip
 from .assistant import language_guidance
 from .moss import compile_layout, layout_instruction, canvas_size
+from .memory import offload_after
 
 VISION_FORMATS = ["Plain text", "Structured JSON", "MOSS JSON layout"]
 RESIZE_METHODS = ["lanczos", "bicubic", "bilinear", "area", "nearest-exact"]
@@ -97,9 +98,24 @@ def compile_vision_layout(draft, width, height):
     return compile_layout(layout, width, height)
 
 
+def extract_vision_layout(value, width, height):
+    candidates = [value.get(key) for key in ("layout_draft", "moss_layout", "layout")] + [value]
+    for candidate in candidates:
+        if not isinstance(candidate, dict) or not all(key in candidate for key in ("summary", "items")):
+            continue
+        if candidate.get("bbox_coord_space") == "abs_centralized" and candidate.get("bbox_format") == "yxyx":
+            return compile_layout(candidate, width, height)
+        if "bbox_coord_space" in candidate or "bbox_format" in candidate:
+            raise ValueError("Use a normalized 1024x1024 xyxy layout_draft without coordinate flags, or native abs_centralized/yxyx MOSS JSON for the selected canvas.")
+        return compile_vision_layout(candidate, width, height)
+    raise ValueError("The vision model returned JSON without a MOSS layout. Expected layout_draft with summary/items, "
+                     "or a direct native MOSS summary/items object. Returned keys: " + ", ".join(sorted(value)) +
+                     ". Use a full instruction-capable vision model, or try Plain text if this encoder uses another schema.")
+
+
 def caption_image(image, instructions="", character_trigger="", detail="Detailed", image_index=0,
                   max_tokens=1024, model_name="Automatic", clip=None, language_style="Default",
-                  output_format="Plain text", canvas_width=1024, canvas_height=1024):
+                  output_format="Plain text", canvas_width=1024, canvas_height=1024, unload_after_generation=False):
     import torch
     if not isinstance(image, torch.Tensor) or image.ndim != 4 or image.shape[-1] not in (3, 4) or min(image.shape[:3]) < 1:
         raise ValueError("Connect an IMAGE from Load Image: expected a nonempty batch of RGB/RGBA images.")
@@ -127,39 +143,44 @@ def caption_image(image, instructions="", character_trigger="", detail="Detailed
                    "unless instructions remove or replace it. Never invent text. Use detailed summary and object captions. "
                    "Express boxes in a normalized 1024x1024 coordinate space regardless of the image's actual dimensions. "
                    "Both x and y range from 0 to 1024. The application scales these boxes to the final canvas.\n")
+        system += (f"Alternatively, if you output native MOSS JSON directly with summary/items, use bbox_coord_space "
+                   f"abs_centralized and bbox_format yxyx for the actual {canvas_width}x{canvas_height} canvas. "
+                   f"Native y coordinates must be within {-canvas_height / 2} to {canvas_height / 2}; "
+                   f"native x coordinates within {-canvas_width / 2} to {canvas_width / 2}. Do not mix the two formats.\n")
     else:
         system += "Return only the finished caption, without a heading, explanation, JSON or quotation marks.\n"
     from comfy_extras.nodes_textgen import TextGenerate
     model = load_local_clip(model_name, clip)
-    prompt = json.dumps({
-        "task": "Describe this image in rich visual detail." if detail == "Detailed" else "Describe this image in one concise paragraph.",
-        "instructions": instructions, "character_trigger": character_trigger.strip(),
-        "output_format": output_format,
-    }, ensure_ascii=False)
-    trigger = character_trigger.strip()
-    original_prompt = prompt
-    for attempt in range(2 if output_format != "Plain text" else 1):
-        output = TextGenerate.execute(
-            clip=model, prompt=prompt, image=image[image_index:image_index + 1, :, :, :3],
-            max_length=max_tokens, sampling_mode={"sampling_mode": "off"},
-            thinking=False, system_prompt=system, mtp="off",
-        )
-        caption = re.sub(r"<think>.*?</think>", "", output.args[0], flags=re.S).strip()
-        try:
-            if not caption:
-                raise ValueError("The vision model returned an empty caption. Use a full vision-capable Qwen model and increase max_tokens if needed.")
-            if output_format == "Structured JSON":
-                return format_caption_json(parse_caption_json(caption), trigger)
-            if output_format == "MOSS JSON layout":
-                value = parse_caption_json(caption)
-                layout = compile_vision_layout(value.get("layout_draft"), canvas_width, canvas_height)
-                if trigger and trigger not in layout["summary"]["caption"]:
-                    layout["summary"]["caption"] = trigger + ", " + layout["summary"]["caption"]
-                return json.dumps(layout, ensure_ascii=False, indent=2)
-            if trigger and trigger not in caption:
-                caption = trigger + ", " + caption
-            return caption
-        except ValueError as error:
-            if output_format == "Plain text" or attempt:
-                raise
-            prompt = original_prompt + "\nRepair the previous response to match the required JSON schema. Validation error: " + str(error) + "\nReturn the complete corrected JSON only. Previous response:\n" + caption
+    with offload_after(model, unload_after_generation):
+        prompt = json.dumps({
+            "task": "Describe this image in rich visual detail." if detail == "Detailed" else "Describe this image in one concise paragraph.",
+            "instructions": instructions, "character_trigger": character_trigger.strip(),
+            "output_format": output_format,
+        }, ensure_ascii=False)
+        trigger = character_trigger.strip()
+        original_prompt = prompt
+        for attempt in range(2 if output_format != "Plain text" else 1):
+            output = TextGenerate.execute(
+                clip=model, prompt=prompt, image=image[image_index:image_index + 1, :, :, :3],
+                max_length=max_tokens, sampling_mode={"sampling_mode": "off"},
+                thinking=False, system_prompt=system, mtp="off",
+            )
+            caption = re.sub(r"<think>.*?</think>", "", output.args[0], flags=re.S).strip()
+            try:
+                if not caption:
+                    raise ValueError("The vision model returned an empty caption. Use a full vision-capable Qwen model and increase max_tokens if needed.")
+                if output_format == "Structured JSON":
+                    return format_caption_json(parse_caption_json(caption), trigger)
+                if output_format == "MOSS JSON layout":
+                    value = parse_caption_json(caption)
+                    layout = extract_vision_layout(value, canvas_width, canvas_height)
+                    if trigger and trigger not in layout["summary"]["caption"]:
+                        layout["summary"]["caption"] = trigger + ", " + layout["summary"]["caption"]
+                    return json.dumps(layout, ensure_ascii=False, indent=2)
+                if trigger and trigger not in caption:
+                    caption = trigger + ", " + caption
+                return caption
+            except ValueError as error:
+                if output_format == "Plain text" or attempt:
+                    raise
+                prompt = original_prompt + "\nRepair the previous response to match the required JSON schema. Validation error: " + str(error) + "\nReturn the complete corrected JSON only. Previous response:\n" + caption
