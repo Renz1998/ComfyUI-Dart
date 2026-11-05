@@ -61,7 +61,7 @@ python -m pip install -r prompt-atelier/requirements.txt
 
 Restart ComfyUI. Search **Prompt Mage** to find all nodes, including **Prompt Mage · DART Generate**, **DART Load**, and the composers. Categories are **Prompt Mage / Assistants**, **Vision**, and **DART**. Existing workflow class IDs and socket positions are unchanged. An existing installed folder can stay named ComfyUI-Dart; folder names are not used for imports.
 
-**Registry:** [Prompt Mage](https://registry.comfy.org/nodes/prompt-atelier) is published under @renz1998. Version 1.5.5 upload and its CDN archive are verified. Latest-version detail-page and Manager indexing remain unverified. Git installation receives the latest source. See [PUBLISHING.md](PUBLISHING.md).
+**Registry:** [Prompt Mage](https://registry.comfy.org/nodes/prompt-atelier) is published under @renz1998. Version 1.6.0 upload and its CDN archive are verified. Latest-version detail-page and Manager indexing remain unverified. Git installation receives the latest source. See [PUBLISHING.md](PUBLISHING.md).
 
 ## Try a workflow
 
