@@ -9,9 +9,11 @@ const labels = new Map();
 
 function updateDescribeControls(node) {
     const server = node.widgets?.find((widget) => widget.name === "backend")?.value === "Chat server";
+    const layout = node.widgets?.find((widget) => widget.name === "target")?.value === "MOSS JSON layout";
     for (const widget of node.widgets || []) {
         if (["endpoint", "model", "timeout", "api_key_env"].includes(widget.name)) widget.hidden = !server;
         if (widget.name === "local_model") widget.hidden = server;
+        if (["canvas_width", "canvas_height", "layout_json"].includes(widget.name)) widget.hidden = !layout;
     }
     updateDesignBackend(node, server);
     const size = node.computeSize();
@@ -58,24 +60,40 @@ app.registerExtension({
             const preview = this.widgets?.find((widget) => widget.name === "preview_text");
             if (preview) preview.options.getMinHeight = () => 120;
             const names = { backend: "Assistant", local_model: "Local model", endpoint: "Server URL",
-                model: "Chat model", keep_tags: "Keep exact tags", avoid: "Avoid" };
+                model: "Chat model", keep_tags: "Keep exact tags", avoid: "Avoid",
+                description: "Scene / keywords (optional with source tags)", custom_instructions: "Custom instructions",
+                canvas_width: "MOSS canvas width", canvas_height: "MOSS canvas height", layout_json: "Edit MOSS JSON (optional override)" };
             for (const widget of this.widgets || []) {
                 if (names[widget.name]) widget.label = names[widget.name];
             }
-            const backend = this.widgets?.find((widget) => widget.name === "backend");
-            if (backend) {
-                const callback = backend.callback;
-                backend.callback = (...args) => {
-                    callback?.apply(backend, args);
+            for (const name of ["backend", "target"]) {
+                const control = this.widgets?.find((widget) => widget.name === name);
+                if (!control) continue;
+                const callback = control.callback;
+                control.callback = (...args) => {
+                    callback?.apply(control, args);
                     updateDescribeControls(this);
                 };
             }
             updateDescribeControls(this);
         };
         const configured = nodeType.prototype.onConfigure;
-        nodeType.prototype.onConfigure = function () {
+        nodeType.prototype.onConfigure = function (data) {
             configured?.apply(this, arguments);
+            // Persist by name so converted inputs and UI-only widgets cannot shift settings.
+            const named = data?.dart_widget_values || data?.widgets_values_named;
+            if (named) {
+                for (const widget of this.widgets || []) {
+                    if (widget.serialize !== false && Object.hasOwn(named, widget.name)) widget.value = named[widget.name];
+                }
+            }
             updateDescribeControls(this);
+        };
+        const serialized = nodeType.prototype.onSerialize;
+        nodeType.prototype.onSerialize = function (data) {
+            serialized?.apply(this, arguments);
+            data.dart_widget_values = Object.fromEntries((this.widgets || [])
+                .filter((widget) => widget.serialize !== false).map((widget) => [widget.name, widget.value]));
         };
         const executed = nodeType.prototype.onExecuted;
         nodeType.prototype.onExecuted = function (message) {

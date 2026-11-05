@@ -13,6 +13,7 @@ export function connectionsFor(type, name, slotType, isOutput) {
         if (name === "setting") return [node("GenerationConfig", 0)];
         if (name === "token_ids") return [node("GenerateAdvanced", 0)];
         if (name === "clip") return [{ type: "CLIPLoader", slot: 0 }];
+        if (type === prefix + "DescribeImage" && name === "source_tags") return [node("Generate", 0), node("Decode", 0), node("DecodeBySplitedParts", 4)];
         if (name === "prompt" && /Generate/.test(type)) return composers(0);
         const describeSlots = { general: 1, copyright: 2, character: 3 };
         if (name in describeSlots) return [node("DescribeImage", describeSlots[name])];
@@ -36,7 +37,7 @@ export function connectionsFor(type, name, slotType, isOutput) {
     }
     if (/ComposePrompt/.test(type)) return [...generators("prompt"), preview];
     if (/BanTagsFromRegex/.test(type)) return [...generators("ban_tags"), preview];
-    if (slotType === "STRING") return [encode, preview];
+    if (slotType === "STRING") return [node("DescribeImage", "source_tags"), encode, preview];
     return [];
 }
 

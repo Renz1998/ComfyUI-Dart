@@ -2,7 +2,7 @@
 
 import json
 
-from .assistant import SYSTEM_PROMPT, parse_scene
+from .assistant import scene_request, parse_scene
 
 
 def local_models():
@@ -24,9 +24,10 @@ def select_model(names):
     ))
 
 
-def describe_local(description, mode, required, avoid, seed, model_name="Automatic", clip=None):
-    if not description.strip():
-        raise ValueError("Describe the image you want first.")
+def describe_local(description, mode, required, avoid, seed, model_name="Automatic", clip=None,
+                   source_tags="", custom_instructions="", target="DART tags", canvas_width=1024, canvas_height=1024):
+    system, scene_input = scene_request(description, mode, required, avoid, source_tags, custom_instructions, target,
+                                       canvas_width, canvas_height)
     from nodes import CLIPLoader
     from comfy_extras.nodes_textgen import TextGenerate
 
@@ -35,16 +36,16 @@ def describe_local(description, mode, required, avoid, seed, model_name="Automat
             model_name = select_model(local_models())
         # Native loader resolves the filename inside configured model directories.
         clip = CLIPLoader().load_clip(model_name, type="stable_diffusion")[0]
-    payload = json.dumps({"description": description, "mode": mode,
-                          "required_literal_tags": required, "avoid": avoid}, ensure_ascii=False)
+    payload = json.dumps(scene_input, ensure_ascii=False)
     sampling = {"sampling_mode": "off"} if mode == "Preserve" else {
         "sampling_mode": "on", "temperature": 0.7, "top_k": 40,
         "top_p": 0.9, "min_p": 0.05, "repetition_penalty": 1.05, "seed": seed,
     }
     output = TextGenerate.execute(
-        clip=clip, prompt=payload, max_length=1536, sampling_mode=sampling,
-        thinking=False, system_prompt=SYSTEM_PROMPT, mtp="off",
+        clip=clip, prompt=payload, max_length=3072 if target == "MOSS JSON layout" else 1536, sampling_mode=sampling,
+        thinking=False, system_prompt=system, mtp="off",
     )
     scene = parse_scene(output.args[0])
     scene["source_description"] = description
+    scene["source_tags"] = source_tags
     return scene

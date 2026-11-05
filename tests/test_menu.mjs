@@ -22,10 +22,11 @@ const context = {
             CLIPTextEncode: { title: "CLIP Text Encode" }, PreviewAny: { title: "Preview as Text" },
             DanbooruTagsTransformerComposePromptV3: { title: "Dart Compose Prompt V3" },
             DanbooruTagsTransformerLoader: { title: "Dart Load" },
+            DanbooruTagsTransformerDescribeImage: { title: "Dart Describe Image" },
         },
         ContextMenu: class { constructor(entries) { menu = entries; } },
         createNode(type) {
-            return { type, inputs: [{ name: "text" }, { name: "general" }],
+            return { type, inputs: [{ name: "text" }, { name: "general" }, { name: "source_tags" }],
                 findInputSlot(name) { return this.inputs.findIndex((slot) => slot.name === name); },
                 connect(...args) { connections.push({ from: type, args }); } };
         },
@@ -54,10 +55,15 @@ assert.equal(connections[2].from, "DanbooruTagsTransformerLoader");
 assert.equal(connections[2].args[0], 1); // Loader's tokenizer output, not its model output.
 assert.equal(connections[2].args[2], 0);
 assert.equal(canvas.showConnectionMenu({ nodeFrom: { ...source, type: "OtherPlugin" }, slotFrom: 0, e: {} }), "original");
+canvas.showConnectionMenu({ nodeFrom: { ...source, type: "DanbooruTagsTransformerGenerate" }, slotFrom: 0, e: {} });
+assert.equal(menu[0].content, "Dart Describe Image");
+menu[0].callback();
+assert.equal(connections[3].args[1].type, "DanbooruTagsTransformerDescribeImage");
+assert.equal(connections[3].args[2], 2); // source_tags, not description or another STRING.
 class Describe {
     constructor() {
         this.size = [380, 500];
-        this.widgets = ["backend", "local_model", "endpoint", "model", "timeout", "api_key_env", "keep_tags", "avoid"]
+        this.widgets = ["backend", "local_model", "endpoint", "model", "timeout", "api_key_env", "keep_tags", "avoid", "target", "canvas_width", "canvas_height", "layout_json"]
             .map((name) => ({ name, value: name === "backend" ? "Local model" : "" }));
     }
     setSize(size) { this.size = size; }
@@ -76,4 +82,19 @@ assert.equal(describeNode.widgets.find((w) => w.name === "endpoint").hidden, fal
 assert.equal(describeNode.widgets.find((w) => w.name === "local_model").hidden, true);
 assert.equal(backend.label, "Assistant");
 assert.equal(describeNode.size[0], 420);
+assert.equal(describeNode.widgets.find((w) => w.name === "canvas_width").hidden, true);
+const targetControl = describeNode.widgets.find((w) => w.name === "target");
+targetControl.value = "MOSS JSON layout";
+targetControl.callback("MOSS JSON layout");
+assert.equal(describeNode.widgets.find((w) => w.name === "canvas_width").hidden, false);
+assert.equal(describeNode.widgets.find((w) => w.name === "layout_json").hidden, false);
+targetControl.value = "Natural language";
+targetControl.callback("Natural language");
+assert.equal(describeNode.widgets.find((w) => w.name === "layout_json").hidden, true);
+describeNode.widgets.find((w) => w.name === "local_model").value = "Automatic";
+const saved = {};
+describeNode.onSerialize(saved);
+describeNode.widgets.find((w) => w.name === "local_model").value = "shifted value";
+describeNode.onConfigure(saved);
+assert.equal(describeNode.widgets.find((w) => w.name === "local_model").value, "Automatic");
 console.log("Drag menus create and connect the intended node sockets; other plugins retain their menu.");

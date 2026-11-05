@@ -44,8 +44,8 @@ Other controls:
 - **local_model**: Automatic, or an installed model filename.
 - **endpoint** and **model**: advanced controls used only by Chat server. LM Studio commonly uses `http://localhost:1234/v1`; local Ollama uses `http://localhost:11434/v1`. Enter its exact model identifier.
 - **description**: write what you want normally.
-- **target**: DART tags, Anima hybrid, or MOSS prose.
-- **mode**: Preserve requests faithful conversion; Expand allows modest additions.
+- **target**: DART tags, Anima hybrid, MOSS prose, or Natural language.
+- **mode**: Preserve requests faithful conversion; Expand allows modest additions; Concept invents a coherent scene around keywords.
 - **keep_tags**: optional literal tags/weights to retain.
 - **avoid**: optional exclusions, also returned as a negative prompt.
 
@@ -57,11 +57,37 @@ To add DART expansion, connect **general_tags**, **copyright**, and **character*
 
 Dragging a Dart socket onto empty canvas now shows relevant nodes. For example, **prompt** offers CLIP Text Encode and Preview as Text, **general_tags** offers the three DART composers, and model/tokenizer sockets offer the corresponding loader/generator nodes. Selecting a suggestion connects the named input automatically. Other plugins' drag menus are unchanged; More compatible nodes opens the normal menu.
 
-Anima and MOSS outputs are text-formatting modes. Image quality has not been benchmarked. Variant-specific Anima quality prefixes and MOSS layout JSON are future additions.
+Anima and MOSS outputs are text-formatting modes. Image quality has not been benchmarked. Variant-specific Anima quality prefixes remain future work. MOSS JSON layouts are available through the dedicated target below.
+
+## Turn generated tags into a concept
+
+Connect **Dart Generate → Describe Image source_tags**. Dragging Generate's text output offers Describe Image and wires this input automatically. Advanced workflows can use Dart Decode or Decode By Parts → general instead. Avoid connecting Describe back into the same Generate node: that creates a workflow cycle.
+
+1. Set **target** to **Natural language** and **mode** to **Concept**.
+2. Leave **description** empty, or add context such as `a candid street photograph`.
+3. Write your directions in **Custom instructions**, for example:
+
+   > Turn the supplied tags into an interesting real photograph. Develop a coherent setting and action. Describe concrete light, camera framing, materials and texture. Do not use the words realistic or photorealistic. Output only the image prompt, without a heading or commentary.
+
+4. Run. Use **prompt** for text encoding; **scene_json** contains the source tags and reported additions for inspection.
+
+The model follows custom instructions in both local and chat-server modes. The app still requests structured JSON internally so all six outputs keep working; Natural language extracts only the scene description. Custom instructions can request creative reinterpretation even in Preserve mode. Keep exact tags appends literal text and takes priority, so leave it empty when you want prose only. Word exclusions in custom instructions are model-guided; inspect the result.
+
+## Native MOSS JSON layouts
+
+MOSS accepts structured layout JSON as its positive prompt. The [official layout guide](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md#layout-prompts-experimental) documents `summary`, `items`, centered pixel coordinates and `yxyx` box order. This is different from the assistant debug `scene_json` output.
+
+Select **MOSS JSON layout** as the target. Set **MOSS canvas width/height** to the exact dimensions used by your image latent. Describe subjects, positions and exact visible text, or connect generated tags. Custom instructions can specify media, composition and typography. Run and connect **prompt** to your MOSS positive text encoder. No JSON-writing is needed.
+
+The assistant plans boxes using ordinary top-left pixel coordinates. The node validates and converts them to native `abs_centralized` `[y_min,x_min,y_max,x_max]` boxes. It rejects empty/inverted/out-of-bounds boxes and malformed text items. For an invalid generated draft it requests one correction; a manual override is never rewritten. Matching dimensions matter: on a 1024-square canvas, each axis ranges from -512 to +512. Positions guide the model; OpenMOSS documents layout prompting as experimental.
+
+For manual changes, copy the resulting **prompt** into **Edit MOSS JSON** and edit captions, exact text or boxes. A nonempty override bypasses the assistant entirely and outputs validated JSON; writing instructions, Keep tags and automatic generation are ignored until you clear it. This makes rerunning an edited layout inexpensive. Keep dimensions consistent when editing. `scene_json` includes the compiled layout and dimensions for inspection. The six existing socket positions stay unchanged.
+
+Example: `A minimalist travel poster with a blue mountain below and the exact title EXPLORE at the top.` Set 1024×1024 and ask for cream paper, dark blue type and space between the title and mountain. Keep exact tags, when generating automatically, are stored inside the summary caption so they cannot break JSON syntax.
 
 ## Validation
 
-Run `python tests/test_regressions.py` in an environment with Torch and Transformers. The 23 tests include local/backend routing, tag aliases, settings isolation, RNG restoration, zero-temperature mode, control-token protection, sequence removal, retained weights, aspect boundaries, truncated decoding, response validation, and a temporary loopback HTTP server. Run `node tests/test_connections.mjs` and `node tests/test_menu.mjs` to check drag suggestions, exact connection targets, and backend control visibility. A separate real local-model run verified description conversion with Qwen3-VL 4B; semantic output quality is still model-dependent.
+Run `python tests/test_regressions.py` in an environment with Torch and Transformers. The 31 tests include local/backend routing, tag aliases, settings isolation, RNG restoration, zero-temperature mode, control-token protection, sequence removal, retained weights, aspect boundaries, truncated decoding, response validation, and a temporary loopback HTTP server. Run `node tests/test_connections.mjs` and `node tests/test_menu.mjs` to check drag suggestions, exact connection targets, and backend control visibility. A separate real local-model run verified description conversion with Qwen3-VL 4B; semantic output quality is still model-dependent.
 
 A separate real-model smoke run used v3 revision `80b8bb0f763f14394551b1c542ac368c7e960275`, seed 7, CPU, and repeated generation. See the accompanying validation report. CI is configured for Transformers 4.46.3 and 5.17.0; local validation does not imply that the remote CI jobs have run.
 

@@ -5,7 +5,7 @@ document.head.append(stylesheet);
 
 const designs = new WeakMap();
 const profiles = {
-    assistant: { title: "SCENE ASSISTANT", subtitle: "WORDS → TAGS / PROSE", color: "#173d36", accent: "#79e5bd", text: "Describe your scene, choose a target, then Run. Local model + Automatic uses an installed Qwen model. Connect prompt to image text encoding, or general_tags to a DART composer." },
+    assistant: { title: "SCENE ASSISTANT", subtitle: "WORDS → TAGS / PROSE", color: "#173d36", accent: "#79e5bd", text: "Write a scene or connect Dart Generate to source_tags. Concept turns keywords into a new scene; Natural language outputs prose. Custom instructions control style and wording. Local model + Automatic uses installed Qwen. Connect prompt to image text encoding." },
     loader: { title: "MODEL LIBRARY", subtitle: "MODEL + MATCHING TOKENIZER", color: "#1e3453", accent: "#8ebcff" },
     composer: { title: "PROMPT BUILDER", subtitle: "VISUAL TAGS → DART FORMAT", color: "#44351f", accent: "#f0c780" },
     generate: { title: "TAG GENERATOR", subtitle: "SEED TAGS → IMAGE PROMPT", color: "#352747", accent: "#c7a4ff" },
