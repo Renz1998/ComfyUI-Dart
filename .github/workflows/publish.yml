@@ -21,6 +21,7 @@ jobs:
           node-version: '22'
       - run: node tests/test_connections.mjs
       - run: node tests/test_menu.mjs
+      - run: node tests/test_status.mjs
   publish:
     needs: validate
     runs-on: ubuntu-latest

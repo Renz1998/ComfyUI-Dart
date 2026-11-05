@@ -51,6 +51,15 @@
 .dart-panel[data-state="running"] .dart-state i { animation: dart-pulse 1.1s ease-in-out infinite; }
 .dart-panel[data-state="done"] { animation: dart-complete 650ms ease-out; }
 .dart-panel[data-state="done"] .dart-state { color: var(--dart-accent); }
+.dart-panel[data-state="warning"] .dart-state { color: #ffd38b; }
+.dart-panel[data-state="blocked"] .dart-state { color: #ff9eaa; }
+.atelier-status { box-sizing: border-box; padding: 10px 12px; border: 1px solid #58716b; border-radius: 8px; background: #182b27; color: #d6f0e6; font: 12px/1.5 Inter, "Segoe UI", sans-serif; overflow: auto; }
+.atelier-status[hidden] { display: none !important; }
+.atelier-status summary { cursor: pointer; font-weight: 600; overflow-wrap: anywhere; }
+.atelier-status-details { margin-top: 10px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 180px; overflow: auto; }
+.atelier-status[data-status="warning"] { background: #352b18; border-color: #aa8243; color: #ffe1a7; }
+.atelier-status[data-status="blocked"], .atelier-status[data-status="error"] { background: #371e24; border-color: #b96576; color: #ffd3dc; }
+.atelier-status[data-status="unchecked"], .atelier-status[data-status="running"] { background: #1c2932; border-color: #526674; color: #c6dce9; }
 .dart-panel[data-state="error"] { border-color: #ed9c7e; }
 .dart-panel[data-state="error"] .dart-state { color: #ed9c7e; }
 .dart-panel[data-state="error"] .dart-state i { background: #ed9c7e; }

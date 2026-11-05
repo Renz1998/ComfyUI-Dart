@@ -55,6 +55,7 @@ ASSISTANT_HELP = {
 }
 
 NODE_HELP = {
+    "ImageBatchSelector": ("Select a folder of images. One image per queued run advances Index using the native increment control. List mode lets ComfyUI map Image to Text sequentially over separate images without stacking their resolutions. Use Image to Text's Image in batch = 0.", ["Connect to Image to Text image. A native list of separate single-image tensors, processed sequentially.", "Matching relative filenames, in the same order as the image list. Can label downstream results.", "Number of images selected in this run, not the total folder count.", "Human-readable selected-file list and selected/available counts."], {}),
     "AppearanceOverrides": ("Optional dropdown/custom appearance recipe. Connect appearance to Image to Text or Text Assistant. Keep unchanged leaves a trait alone; Custom reveals your own value. This changes generated text, not image pixels.", ["Connect to either assistant's appearance input. One recipe can be shared by both assistants.", "Compiled plain writing instructions for inspection or use with another text tool."], {}),
     "ImageToText": ("Caption an image as prose, structured JSON or native MOSS layout. Connect Load Image and choose a megapixel budget and resize method. Auto dimensions use the processed image for MOSS; width/height can feed a latent node. Instructions edit the caption, not image content.", ["Caption, structured scene JSON or native MOSS JSON according to Output format. The description socket keeps its original position.", "Layout canvas width for MOSS JSON; processed image width for other formats. Connect to a latent width input.", "Layout canvas height for MOSS JSON; processed image height for other formats. Connect to a latent height input.", "Selected RGB image after pixel-budget resizing. Resizing does not apply the caption's requested character or appearance changes."], {
         "image": "Connect Load Image or any IMAGE output. This node sees the selected image and produces text; it does not alter image pixels.",
@@ -87,6 +88,9 @@ def attach_help(node_classes):
     for name, node_class in node_classes.items():
         description, outputs, overrides = NODE_HELP[name.removeprefix("DanbooruTagsTransformer")]
         original = node_class.INPUT_TYPES
+        if name.endswith(("DescribeImage", "ImageToText")):
+            outputs = list(outputs) + ["Appearance feedback status: ok, corrected, edited, warning, blocked or unchecked. Edited means Atelier applied a selected size phrase, not model compliance. Connect to Preview as Text or conditional logic.",
+                                       "JSON diagnostics with missing/conflicting phrases, output locations, attempt count and the actual generated prompt. Available even when data outputs are blocked."]
 
         def input_types(cls, original=original, overrides=overrides):
             schema = original()

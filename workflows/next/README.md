@@ -9,6 +9,8 @@ These are complete **text-processing graphs** you can drag into ComfyUI. They cr
 | [keywords_to_concept.json](keywords_to_concept.json) | Keywords → Text Assistant → photographic concept | Full instruction Qwen; one assistant pass |
 | [describe_image.json](describe_image.json) | Description → tags + prose + debug preview | Full instruction Qwen; one pass |
 | [image_to_text.json](image_to_text.json) | Load Image → Image to Text caption | Full vision Qwen; one pass |
+| [folder_one_per_queue.json](folder_one_per_queue.json) | Folder → one caption per queued run; index advances | Full vision model; one image per run |
+| [folder_caption_list.json](folder_caption_list.json) | Folder → native image list → sequential captions | Full vision model; up to Max images per run |
 | [image_to_structured_json.json](image_to_structured_json.json) | Load Image → structured scene JSON with pixel-budget resize | Full vision Qwen; one pass |
 | [image_to_moss_json_auto.json](image_to_moss_json_auto.json) | Load Image → native MOSS JSON, automatic canvas size + dimension outputs | Full vision Qwen; one pass |
 | [appearance_text_assistant.json](appearance_text_assistant.json) | Appearance Overrides → Text Assistant, silver hair/green eyes and exact trigger | Full instruction Qwen |
@@ -25,6 +27,8 @@ These are complete **text-processing graphs** you can drag into ComfyUI. They cr
 The five combined graphs include a START HERE note on the canvas. A small [neutral demo image](../../assets/demo.png) is included; upload it in Load Image or choose your own photo. Image examples reference dart-vision-example.png for the local demo; on another installation, select/upload an image first.
 
 ## Before running
+
+- Folder examples use Image Batch Selector. Choose a server folder, connect image to Image to Text and filename to source_name (already wired in these examples), and keep Image in batch at 0. One image per queued run uses the native increment control: queue several runs to advance through files. All selected images as list processes up to Max images sequentially in one run; it holds decoded images in CPU memory, so use one-per-queue for large folders. Different image sizes are supported. Custom folder is a path on the ComfyUI server, including on RunPod. The filename labels reports; it is not included in the caption prompt.
 
 - For the direct vision JSON examples, connect/upload an image and choose a megapixel budget. MOSS defaults to From processed image, so no Get Image Size node is required. Connect width/height to your latent and description to MOSS positive text encoding. The image output is resized RGB, without caption-requested appearance edits. Structured JSON is a general scene record; choose MOSS JSON layout for native MOSS conditioning.
 - Install this pack once. Disable the original ComfyUI-Dart installation; both packs share legacy class IDs.

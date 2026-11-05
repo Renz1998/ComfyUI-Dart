@@ -227,7 +227,7 @@ class MossTests(unittest.TestCase):
         self.assertIn('\n  "summary":', result['result'][0])
         self.assertFalse(result['result'][0].startswith('```'))
         self.assertEqual(result['ui']['moss_json'], [True])
-        self.assertEqual(len(result['result']), 6)
+        self.assertEqual(len(result['result']), 8)
 
     def test_generated_layout_is_compiled_and_custom_instructions_reach_request(self):
         system, _ = scene_request('A poster', 'Concept', '', '', target='MOSS JSON layout',
@@ -348,7 +348,7 @@ class AssistantTests(unittest.TestCase):
         with patch('dart_plugin.py.nodes.assistant.request_scene', return_value=SCENE) as remote:
             result = node.describe('rainy cafe', 'DART tags', 'Preserve', 'http://localhost:1234/v1', 'existing-model', 7)
         remote.assert_called_once()
-        self.assertEqual(len(result['result']), 6)
+        self.assertEqual(len(result['result']), 8)
 
     def test_automatic_model_prefers_small_general_model(self):
         names = ['qwen3.5_9b_flux3_prompt_upsampler_int8.safetensors', 'qwen3-vl-4b-heretic_int8.safetensors',
@@ -475,7 +475,7 @@ class AppearanceTests(unittest.TestCase):
 
     def test_text_assistant_corrects_weakened_trait_once_then_rejects_if_still_wrong(self):
         node=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
-        settings=self.recipe(breast_size='Gigantic breasts')
+        settings=self.recipe(breast_size='Gigantic breasts',apply_size_wording=False)
         weak={**SCENE,'description':'An adult woman with a large bust.'}
         exact={**SCENE,'description':'An adult woman with gigantic breasts.'}
         with patch('dart_plugin.py.nodes.assistant.describe_local',side_effect=[weak,exact]) as model:
@@ -483,15 +483,17 @@ class AppearanceTests(unittest.TestCase):
         self.assertIn('gigantic breasts',output['result'][0])
         self.assertEqual(model.call_count,2)
         with patch('dart_plugin.py.nodes.assistant.describe_local',return_value=weak) as model:
-            with self.assertRaisesRegex(ValueError,'Appearance override not followed'):
-                node.describe('adult woman','Natural language','Preserve','','',0,appearance=settings)
+            output=node.describe('adult woman','Natural language','Preserve','','',0,appearance=settings)
+            self.assertEqual(output['result'][0],weak['description'])
+            self.assertEqual(output['result'][6],'warning')
+            self.assertIn('Gigantic breasts',json.dumps(output['ui']['atelier_report']))
         self.assertEqual(model.call_count,2)
 
     def test_vision_moss_correction_checks_captions_before_returning_json(self):
         from types import SimpleNamespace
         from unittest.mock import Mock
         from dart_plugin.py.dart.vision import caption_image
-        settings=self.recipe(breast_size='Gigantic breasts')
+        settings=self.recipe(breast_size='Gigantic breasts',apply_size_wording=False)
         weak={'summary':{'caption':'A clothed adult woman with a large bust.'},'items':[
              {'label':'object','caption':'An adult woman with a large bust.','bbox':[0,0,1024,1024]}]}
         exact=deepcopy(weak)
@@ -505,6 +507,151 @@ class AppearanceTests(unittest.TestCase):
         self.assertIn('gigantic breasts',output['items'][0]['caption'])
         self.assertEqual(execute.call_count,2)
         self.assertIn('Gigantic breasts',execute.call_args.kwargs['prompt'])
+
+
+class OverrideFeedbackTests(unittest.TestCase):
+    def settings(self):
+        return plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerAppearanceOverrides']().build(breast_size='Gigantic breasts',apply_size_wording=False)['result'][0]
+
+    def run_vision(self, policy='Warn and continue', malformed=False):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        node=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerImageToText']()
+        draft={'summary':{'caption':'A clothed adult woman with a large bust.'},'items':[
+            {'label':'object','caption':'An adult woman with a large bust.','bbox':[0,0,1024,1024]},
+            {'label':'object','caption':'A blue golf club.','bbox':[800,0,1000,1024]}]}
+        response='not JSON' if malformed else json.dumps({'layout_draft':draft})
+        execute=Mock(return_value=SimpleNamespace(args=(response,)))
+        with patch.dict(sys.modules,{'comfy_extras.nodes_textgen':SimpleNamespace(TextGenerate=SimpleNamespace(execute=execute))}), patch('dart_plugin.py.dart.vision.load_local_clip',return_value='model'):
+            result=node.describe(torch.zeros(1,16,16,3),appearance=self.settings(),output_format='MOSS JSON layout',on_override_mismatch=policy)
+        return result,execute
+
+    def test_vision_warning_preserves_valid_json_and_reports_all_locations(self):
+        result,execute=self.run_vision()
+        prompt=json.loads(result['result'][0]);report=json.loads(result['result'][5])
+        self.assertEqual(result['result'][4],'warning')
+        self.assertEqual(report['attempts'],2)
+        self.assertEqual(len(report['issues']),2)
+        self.assertEqual(report['issues'][0]['missing'],['Gigantic breasts'])
+        self.assertEqual(report['issues'][0]['conflicts'],['large bust'])
+        self.assertEqual(report['output'],result['result'][0])
+        self.assertEqual(result['ui']['text'],[result['result'][0]])
+        self.assertEqual(prompt['items'][1]['caption'],'A blue golf club.')
+        self.assertEqual(execute.call_count,2)
+
+    def test_block_mode_exposes_preview_and_report_without_data_propagation(self):
+        from types import SimpleNamespace
+        class Blocker:
+            def __init__(self,message):self.message=message
+        with patch.dict(sys.modules,{'comfy_execution.graph':SimpleNamespace(ExecutionBlocker=Blocker)}):
+            result,_=self.run_vision('Block downstream')
+        self.assertTrue(all(isinstance(value,Blocker) for value in result['result'][:4]))
+        self.assertEqual(result['result'][4],'blocked')
+        self.assertIn('large bust',result['ui']['text'][0])
+        self.assertEqual(json.loads(result['result'][5])['status'],'blocked')
+
+    def test_invalid_json_remains_an_error_in_warning_mode(self):
+        with self.assertRaisesRegex(ValueError,'valid JSON'):
+            self.run_vision(malformed=True)
+
+    def test_corrected_text_result_reports_recovery_and_keeps_output_indices(self):
+        node=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
+        weak={**SCENE,'description':'A woman with a large bust.'}
+        corrected={**SCENE,'description':'A woman with gigantic breasts.'}
+        with patch('dart_plugin.py.nodes.assistant.describe_local',side_effect=[weak,corrected]):
+            result=node.describe('woman','Natural language','Preserve','','',0,appearance=self.settings())
+        report=json.loads(result['result'][7])
+        self.assertEqual(result['result'][0],corrected['description'])
+        self.assertEqual(result['result'][6],'corrected')
+        self.assertEqual(report['attempts'],2)
+        self.assertEqual(report['issues'],[])
+
+    def test_text_moss_persistent_mismatch_warns_and_keeps_generated_layout(self):
+        node=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
+        scene={**SCENE,'description':'A woman with a large bust.','layout_draft':{
+            'summary':{'caption':'A woman with a large bust.'},'items':[
+                {'label':'object','caption':'A woman with a large bust.','bbox':[0,0,1024,1024]}]}}
+        with patch('dart_plugin.py.nodes.assistant.describe_local',return_value=scene) as model:
+            result=node.describe('woman','MOSS JSON layout','Preserve','','',0,appearance=self.settings())
+        self.assertEqual(result['result'][6],'warning')
+        self.assertEqual(json.loads(result['result'][0])['bbox_format'],'yxyx')
+        report=json.loads(result['result'][7])
+        self.assertEqual(len(report['issues']),2)
+        self.assertEqual(report['attempts'],model.call_count)
+        self.assertLessEqual(model.call_count,4)
+
+
+class ExactSizeEditTests(unittest.TestCase):
+    def settings(self,**kwargs):
+        return plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerAppearanceOverrides']().build(breast_size='Gigantic breasts',**kwargs)['result'][0]
+
+    def test_size_edit_replaces_wording_and_preserves_unrelated_items(self):
+        from dart_plugin.py.dart.size_edit import edit_layout
+        original={'summary':{'caption':'An adult woman with a large bust holds a golf club.'},'items':[
+            {'label':'object','caption':'An adult woman with a large bust.','bbox':[0,0,1,1]},
+            {'label':'object','caption':'A blue golf club.','bbox':[0,0,1,1]},
+            {'label':'text','caption':'White lettering.','text':'large bust','bbox':[0,0,1,1]}]}
+        result,edits=edit_layout(original,self.settings())
+        self.assertIn('gigantic breasts',result['summary']['caption'])
+        self.assertIn('gigantic breasts',result['items'][0]['caption'])
+        self.assertEqual(result['items'][1:],original['items'][1:])
+        self.assertIn('large bust',original['summary']['caption'])
+        self.assertEqual(len(edits),2)
+
+    def test_ambiguous_targets_and_refusals_are_not_rewritten(self):
+        from dart_plugin.py.dart.size_edit import edit_text
+        from dart_plugin.py.dart.appearance import check_appearance_wording
+        settings=self.settings()
+        for text in ('Two women have large busts.','A blue circle on white paper.','I cannot describe gigantic breasts.'):
+            result,edits=edit_text(text,settings)
+            self.assertEqual(result,text)
+            self.assertEqual(edits,[])
+        with self.assertRaisesRegex(ValueError,'refusal'):
+            check_appearance_wording('I cannot describe gigantic breasts.',settings)
+
+    def test_report_distinguishes_post_edit_from_model_compliance(self):
+        node=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
+        weak={**SCENE,'description':'An adult woman with a large bust.'}
+        with patch('dart_plugin.py.nodes.assistant.describe_local',return_value=weak) as model:
+            output=node.describe('adult woman','Natural language','Preserve','','',0,appearance=self.settings())
+        report=json.loads(output['result'][7])
+        self.assertEqual(model.call_count,1)
+        self.assertEqual(report['status'],'edited')
+        self.assertIn('gigantic breasts',report['output'])
+        self.assertIn('large bust',report['model_output'])
+        self.assertEqual(report['post_edits'][0]['trait'],'breast_size')
+
+
+class ImageBatchTests(unittest.TestCase):
+    def test_natural_order_and_independent_resolutions(self):
+        from PIL import Image
+        cls=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerImageBatchSelector']
+        with tempfile.TemporaryDirectory() as folder:
+            for name,size in [('image10.png',(30,20)),('image2.png',(20,10)),('image1.png',(10,30))]:
+                Image.new('RGB',size,'red').save(Path(folder)/name)
+            result=cls().load(folder='Custom folder',custom_folder=folder,batch_mode='All selected images as list',max_images=3)
+            images,names,count,_=result['result']
+            self.assertEqual(names,['image1.png','image2.png','image10.png'])
+            self.assertEqual([tuple(image.shape) for image in images],[(1,30,10,3),(1,10,20,3),(1,20,30,3)])
+            self.assertEqual(count,3)
+            one=cls().load(folder='Custom folder',custom_folder=folder,index=4,wrap_index=True)
+            self.assertEqual(one['result'][1],['image2.png'])
+            with self.assertRaisesRegex(ValueError,'past this folder'):
+                cls().load(folder='Custom folder',custom_folder=folder,index=4,wrap_index=False)
+            capped=cls().load(folder='Custom folder',custom_folder=folder,batch_mode='All selected images as list',max_images=2)
+            self.assertEqual(capped['result'][2],2)
+            self.assertIn('2 of 3',capped['ui']['text'][0])
+
+    def test_empty_folder_and_filters_are_actionable(self):
+        from PIL import Image
+        cls=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerImageBatchSelector']
+        with tempfile.TemporaryDirectory() as folder:
+            with self.assertRaisesRegex(ValueError,'No supported image'):
+                cls().load(folder='Custom folder',custom_folder=folder)
+            Image.new('RGB',(8,8)).save(Path(folder)/'test.jpg')
+            with self.assertRaisesRegex(ValueError,'No supported image'):
+                cls().load(folder='Custom folder',custom_folder=folder,pattern='*.png')
+            self.assertEqual(cls.OUTPUT_IS_LIST,(True,True,False,False))
 
 
 class MemoryTests(unittest.TestCase):

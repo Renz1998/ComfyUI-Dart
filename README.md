@@ -18,11 +18,17 @@ An expanded fork of [nkchocoai/ComfyUI-Dart](https://github.com/nkchocoai/ComfyU
 | A photo or description | Native MOSS layout JSON with text/object placement | Image to Text → Text Assistant |
 | A description | DART v1/v2/v3 expansion with retained tags and sampling controls | Text Assistant → matching DART Composer → Generate |
 
-All 16 nodes include hover help and role-colored guides. Assistants show their result directly. Execution animations respect reduced motion; node designs can be toggled from the context menu.
+All 17 nodes include hover help and role-colored guides. Assistants show their result directly. Execution animations respect reduced motion; node designs can be toggled from the context menu.
 
 ## Control prompt detail and wording
 
-**Strict trait wording** on Appearance Overrides is enabled by default. Selected size phrases retain their literal wording and intensity: for example, gigantic breasts cannot silently become large bust. Missing phrases or conflicting size descriptions request one correction per validation stage; persistent failures produce a clear error. Checks cover descriptions, tags and relevant MOSS/structured subject captions, without adding traits to unrelated objects. Disable strict wording to allow paraphrasing. These are wording checks, not proof of image accuracy or correct identity assignment in multi-person scenes; extra free-form instructions remain model-guided.
+**Image Batch Selector:** choose an input subfolder or a custom folder on the computer running ComfyUI. One image per queued run uses Index and the native increment control; queue multiple runs to advance through files. All selected images as list sends separate images through Image to Text sequentially in one run, preserving their different resolutions. Set its Image in batch to 0. Max images defaults to 16 to bound CPU memory; use queue mode for large folders. Connect filename to source_name to label reports (the drag-create shortcut wires both). Batch feedback summarizes per-file results and flags only blocked items.
+
+**Apply exact breast-size wording** on Appearance Overrides is an explicit post-edit option, enabled by default for newly built recipes when a breast size is selected. It replaces a weaker phrase or adds the selected size in an identifiable subject's caption. For example, large bust can become gigantic breasts. Unrelated objects and visible text items are left alone; ambiguous multi-person targets may still require a unique trigger or model correction. Feedback says size-edited, with original model text in report.model_output and the applied changes in post_edits. This edits captions only: it does not unlock model policies, change pixels, or guarantee a diffusion model will render the requested anatomy. Turn it off to evaluate the model's own wording.
+
+**Strict trait wording** on Appearance Overrides is enabled by default. Missing or conflicting selected phrases request a correction. If the model still does not comply, the assistant now defaults to **On override mismatch → Warn and continue**: an expanded amber panel names the missing phrases, conflicting wording and affected captions, and the generated output continues downstream unchanged. This is an unconfirmed result, not a successful replacement. Choose **Block downstream** on that assistant when matching is required: dependent data outputs are blocked, while the actual model output stays available in the preview/report. Appearance mismatches no longer need to throw a confusing traceback. Invalid JSON, model failures and invalid inputs remain execution errors.
+
+Both assistants append **status** and **report** outputs; earlier socket positions are preserved. Status is ok, corrected, edited, warning, blocked or unchecked. Report is JSON containing issues, attempts, policy, original model wording and the actual output. The feedback panel works even when Atelier branding is disabled; prompt wires contain clean prose/JSON without warning text. Disable strict wording on Appearance Overrides to allow paraphrasing. These checks do not prove image accuracy, multi-person identity assignment or free-form instruction compliance.
 
 **Appearance Overrides:** drag from either assistant's **appearance** input and choose **Prompt Atelier · Appearance Overrides**. Connect one recipe to either or both assistants. Dropdowns cover hair color/style/length, eyes, breast size, body type, skin tone, clothing and expression. Keep unchanged leaves a trait alone; Custom reveals a free-text value. Set an optional exact character trigger, choose who receives changes, and add extra replacement directions. The on/off switch bypasses the recipe. Selected traits replace conflicting source traits in prose, tags and JSON; interpretation is model-guided. Keep exact tags still appends literal text. Manual MOSS layout overrides bypass generation, so clear them before applying a recipe. These controls edit generated descriptions, not image pixels.
 
@@ -62,6 +68,8 @@ Restart ComfyUI. Search **Prompt Atelier** to find all nodes, including **Prompt
 [Browse every example and its model requirements →](workflows/next/README.md)
 
 The examples produce text and conditioning inputs for your existing image workflow. They do not bundle diffusion checkpoints or automatically generate/save pictures. Local assistance needs recent ComfyUI native Generate Text support and a full generation-capable Qwen checkpoint in text_encoders; photo captioning also needs its vision weights. No assistant weights are downloaded automatically. The optional Chat server backend sends text to the endpoint you configure.
+
+[Caption model choices and the limits of uncensored labels →](docs/MODEL_CHOICES.md)
 
 ## Model support and limits
 

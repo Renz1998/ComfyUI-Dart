@@ -8,7 +8,8 @@ from .local_assistant import load_local_clip
 from .assistant import language_guidance
 from .moss import compile_layout, layout_instruction, canvas_size
 from .memory import offload_after
-from .appearance import check_appearance_wording, check_layout_appearance
+from .appearance import AppearanceMismatch, check_appearance_wording, check_layout_appearance
+from .size_edit import edit_text, edit_layout, edit_structured
 
 VISION_FORMATS = ["Plain text", "Structured JSON", "MOSS JSON layout"]
 RESIZE_METHODS = ["lanczos", "bicubic", "bilinear", "area", "nearest-exact"]
@@ -117,7 +118,7 @@ def extract_vision_layout(value, width, height):
 def caption_image(image, instructions="", character_trigger="", detail="Detailed", image_index=0,
                   max_tokens=1024, model_name="Automatic", clip=None, language_style="Default",
                   output_format="Plain text", canvas_width=1024, canvas_height=1024, unload_after_generation=False,
-                  appearance=None):
+                  appearance=None, diagnostics=None):
     import torch
     if not isinstance(image, torch.Tensor) or image.ndim != 4 or image.shape[-1] not in (3, 4) or min(image.shape[:3]) < 1:
         raise ValueError("Connect an IMAGE from Load Image: expected a nonempty batch of RGB/RGBA images.")
@@ -163,35 +164,57 @@ def caption_image(image, instructions="", character_trigger="", detail="Detailed
         original_prompt = prompt
         attempts = 2 if output_format != "Plain text" or (appearance and appearance.get("enabled")) else 1
         for attempt in range(attempts):
+            if diagnostics is not None: diagnostics["attempts"] = attempt + 1
             output = TextGenerate.execute(
                 clip=model, prompt=prompt, image=image[image_index:image_index + 1, :, :, :3],
                 max_length=max_tokens, sampling_mode={"sampling_mode": "off"},
                 thinking=False, system_prompt=system, mtp="off",
             )
             caption = re.sub(r"<think>.*?</think>", "", output.args[0], flags=re.S).strip()
+            candidate = None
             try:
                 if not caption:
                     raise ValueError("The vision model returned an empty caption. Use a full vision-capable Qwen model and increase max_tokens if needed.")
                 if output_format == "Structured JSON":
                     value = parse_caption_json(caption)
                     formatted = format_caption_json(value, trigger)
-                    check_appearance_wording(value["description"], appearance)
+                    value, edits = edit_structured(value, appearance)
+                    candidate = json.dumps(value, ensure_ascii=False, indent=2)
+                    if diagnostics is not None: diagnostics.update(edits=edits, model_output=formatted)
+                    issues = []
+                    try: check_appearance_wording(value["description"], appearance)
+                    except AppearanceMismatch as error: issues.extend(error.issues)
                     for subject in value["subjects"]:
                         if len(value["subjects"]) == 1 or (trigger and trigger in subject) or (appearance and appearance.get("subject") == "All people"):
-                            check_appearance_wording(subject, appearance, "structured subject")
-                    return formatted
+                            try: check_appearance_wording(subject, appearance, "structured subject")
+                            except AppearanceMismatch as error: issues.extend(error.issues)
+                    if issues: raise AppearanceMismatch(issues)
+                    return candidate
                 if output_format == "MOSS JSON layout":
                     value = parse_caption_json(caption)
                     layout = extract_vision_layout(value, canvas_width, canvas_height)
                     if trigger and trigger not in layout["summary"]["caption"]:
                         layout["summary"]["caption"] = trigger + ", " + layout["summary"]["caption"]
+                    model_output = json.dumps(layout, ensure_ascii=False, indent=2)
+                    layout, edits = edit_layout(layout, appearance)
+                    candidate = json.dumps(layout, ensure_ascii=False, indent=2)
+                    if diagnostics is not None: diagnostics.update(edits=edits, model_output=model_output)
                     check_layout_appearance(layout, appearance)
-                    return json.dumps(layout, ensure_ascii=False, indent=2)
+                    return candidate
                 if trigger and trigger not in caption:
                     caption = trigger + ", " + caption
+                model_output = caption
+                caption, edits = edit_text(caption, appearance)
+                if diagnostics is not None: diagnostics.update(edits=edits, model_output=model_output)
+                candidate = caption
                 check_appearance_wording(caption, appearance)
                 return caption
             except ValueError as error:
+                if isinstance(error, AppearanceMismatch) and diagnostics is not None:
+                    diagnostics["correction_attempted"] = True
+                    if attempt + 1 >= attempts and candidate is not None:
+                        diagnostics["issues"] = error.issues
+                        return candidate
                 if attempt + 1 >= attempts:
                     raise
                 prompt = original_prompt + "\nCorrect the previous response, retaining the requested format and all selected trait wording. Validation error: " + str(error) + "\nReturn the complete corrected response only. Previous response:\n" + caption

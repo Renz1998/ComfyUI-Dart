@@ -18,7 +18,8 @@ class DanbooruTagsTransformerAppearanceOverrides(BaseNode):
             fields[name] = ([KEEP] + choices + ["Custom"], {"default": KEEP, "tooltip": f"Replace {name.replace('_', ' ')} for the selected subject. Keep unchanged makes no request. Custom reveals a free-text value."})
             fields[name + "_custom"] = ("STRING", {"default": "", "tooltip": f"Your own {name.replace('_', ' ')} value. Used only when its dropdown is Custom."})
         fields["custom_overrides"] = ("STRING", {"default": "", "multiline": True, "tooltip": "Extra appearance replacements, accessories, makeup, clothing or other directions. Selected dropdown traits win if they conflict. Existing assistant writing instructions remain available."})
-        fields["strict_wording"] = ("BOOLEAN", {"default": True, "tooltip": "Require selected trait phrases in generated descriptions and target-person captions. Reject missing or weakened size wording, request one correction, then report an error if still wrong. Disable to allow paraphrasing. Checks wording, not visual/semantic accuracy or free-form extra instructions."})
+        fields["strict_wording"] = ("BOOLEAN", {"default": True, "tooltip": "Check selected trait phrases and request a correction when missing or weakened. The assistant's On override mismatch setting controls whether a persistent mismatch warns or blocks downstream. Disable to allow paraphrasing. Wording checks do not verify visual/semantic accuracy or free-form extra instructions."})
+        fields["apply_size_wording"] = ("BOOLEAN", {"default": True, "tooltip": "Explicit caption edit: apply your selected breast-size phrase after generation for an identifiable target, replacing weaker size phrases or adding the selected attribute. Reported as an Atelier text edit, not model compliance. Does not alter source images, model policies or unrelated object captions. Ambiguous subjects remain unconfirmed."})
         return {"required": fields}
 
     RETURN_TYPES = ("ATELIER_APPEARANCE", "STRING")
@@ -27,7 +28,7 @@ class DanbooruTagsTransformerAppearanceOverrides(BaseNode):
     OUTPUT_NODE = True
 
     def build(self, enabled=True, subject="Main subject", subject_custom="", trigger="",
-              identity_mode="Keep other appearance details", custom_overrides="", strict_wording=True, **values):
+              identity_mode="Keep other appearance details", custom_overrides="", strict_wording=True, apply_size_wording=True, **values):
         if subject not in ("Main subject", "All people", "Custom subject"):
             raise ValueError("Choose a supported subject selector.")
         if identity_mode not in ("Keep other appearance details", "Trigger replaces identity details"):
@@ -47,6 +48,6 @@ class DanbooruTagsTransformerAppearanceOverrides(BaseNode):
             if choice != KEEP and value:
                 traits[name] = value
         settings = {"version": 1, "enabled": enabled, "subject": subject_custom.strip() if subject == "Custom subject" else subject,
-                    "trigger": trigger.strip(), "identity_mode": identity_mode, "traits": traits, "custom": custom_overrides.strip(), "strict_wording": strict_wording}
+                    "trigger": trigger.strip(), "identity_mode": identity_mode, "traits": traits, "custom": custom_overrides.strip(), "strict_wording": strict_wording, "apply_size_wording": apply_size_wording}
         instructions, _ = override_instructions(settings)
         return {"ui": {"text": [instructions or "No appearance replacements requested."]}, "result": (settings, instructions)}

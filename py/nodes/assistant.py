@@ -4,7 +4,9 @@ from .base import BaseNode
 from ..dart.assistant import TARGETS, PROMPT_LENGTHS, LANGUAGE_STYLES, request_scene, format_scene
 from ..dart.local_assistant import local_models, describe_local
 from ..dart.moss import compile_layout, read_layout
-from ..dart.appearance import override_instructions, apply_trigger, check_scene_appearance, check_layout_appearance
+from ..dart.size_edit import edit_scene, edit_layout
+from ..dart.appearance import (override_instructions, apply_trigger, check_scene_appearance, check_layout_appearance,
+                               AppearanceMismatch, MISMATCH_POLICIES, appearance_report, reported_result)
 
 
 class DanbooruTagsTransformerDescribeImage(BaseNode):
@@ -36,10 +38,11 @@ class DanbooruTagsTransformerDescribeImage(BaseNode):
             "language_style": (LANGUAGE_STYLES, {"default": "Default", "tooltip": "Direct / explicit asks for precise visual and anatomical terms, preserves supplied explicit wording and avoids euphemisms. It does not add sexual details or change the model's own policies."}),
             "appearance": ("ATELIER_APPEARANCE", {"tooltip": "Optional Appearance Overrides recipe. Drag from this input to create its matching node. Selected replacements override source traits, including in Preserve. Keep exact tags still appends literal tags. Clear manual layout_json when using appearance edits."}),
             "unload_after_generation": ("BOOLEAN", {"default": False, "tooltip": "Offload this local assistant model and its clones after generation, including errors, using ComfyUI's model manager. Keeps unrelated diffusion models loaded. A shared encoder may need reloading later. Chat server and cached executions are unaffected."}),
+            "on_override_mismatch": (MISMATCH_POLICIES, {"default": "Warn and continue", "tooltip": "Warn and continue returns the model output with a visible explanation if appearance wording remains unconfirmed after correction. Block downstream keeps the preview/report but blocks dependent nodes. Schema/model errors still stop normally."}),
         }}
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING", "STRING")
-    RETURN_NAMES = ("prompt", "general_tags", "copyright", "character", "negative_prompt", "scene_json")
+    RETURN_TYPES = ("STRING",) * 8
+    RETURN_NAMES = ("prompt", "general_tags", "copyright", "character", "negative_prompt", "scene_json", "status", "report")
     FUNCTION = "describe"
     OUTPUT_NODE = True
     DESCRIPTION = "Turn a description into tags or prose with an existing local Qwen model. Shows the result directly. Chat servers are optional."
@@ -48,12 +51,17 @@ class DanbooruTagsTransformerDescribeImage(BaseNode):
                  keep_tags="", avoid="", timeout=120, api_key_env="", backend=None,
                  local_model="Automatic", clip=None, source_tags="", custom_instructions="",
                  canvas_width=1024, canvas_height=1024, layout_json="", prompt_length="Balanced",
-                 max_tokens=4096, language_style="Default", appearance=None, unload_after_generation=False):
+                 max_tokens=4096, language_style="Default", appearance=None, unload_after_generation=False,
+                 on_override_mismatch="Warn and continue"):
+        if on_override_mismatch not in MISMATCH_POLICIES:
+            raise ValueError("Choose Warn and continue or Block downstream.")
+        diagnostics = {"attempts": 0, "correction_attempted": False, "candidates": {}}
         replacements, trigger = override_instructions(appearance)
         custom_instructions += replacements
         if replacements and target == "MOSS JSON layout" and layout_json.strip():
             raise ValueError("Clear the manual MOSS JSON override to generate a layout with appearance replacements. Manual JSON bypasses the assistant.")
         def invoke(instructions):
+            diagnostics["attempts"] += 1
             if backend == "Chat server" or (backend is None and model.strip()):
                 return apply_trigger(request_scene(description, endpoint, model, mode, keep_tags, avoid,
                                      seed, timeout, api_key_env, source_tags=source_tags,
@@ -70,11 +78,15 @@ class DanbooruTagsTransformerDescribeImage(BaseNode):
             original = instructions
             for attempt in range(2):
                 scene = invoke(instructions)
+                original_scene = scene
+                scene, edits = edit_scene(scene, appearance, target) if target != "MOSS JSON layout" else (scene, [])
+                diagnostics["candidates"][id(scene)] = (scene, original_scene, edits)
                 try:
-                    check_scene_appearance(scene, appearance, target)
+                    if target != "MOSS JSON layout": check_scene_appearance(scene, appearance, target)
                     return scene
-                except ValueError as error:
-                    if attempt: raise
+                except AppearanceMismatch as error:
+                    diagnostics["correction_attempted"] = True
+                    if attempt: return scene
                     instructions = original + "\nCorrect the appearance wording in the complete scene JSON. " + str(error) + "\nPrevious scene: " + json.dumps(scene, ensure_ascii=False)
 
         layout = None
@@ -113,25 +125,41 @@ class DanbooruTagsTransformerDescribeImage(BaseNode):
             if layout is None:
                 try:
                     layout = compile_layout(scene.get("layout_draft"), canvas_width, canvas_height, draft=True)
+                    model_output = json.dumps(layout, ensure_ascii=False, indent=2)
+                    layout, size_edits = edit_layout(layout, appearance)
                     check_layout_appearance(layout, appearance)
                 except ValueError as error:
+                    if isinstance(error, AppearanceMismatch): diagnostics["correction_attempted"] = True
                     # One bounded repair for small instruction models; never alter a manual override.
                     repair = (custom_instructions + "\nRepair the previous layout draft. Validation error: " + str(error)
                               + "\nReturn the complete scene JSON again with a corrected layout_draft. Previous draft: "
                               + json.dumps(scene.get("layout_draft"), ensure_ascii=False))
                     scene = query(repair)
                     layout = compile_layout(scene.get("layout_draft"), canvas_width, canvas_height, draft=True)
-                    check_layout_appearance(layout, appearance)
+                    model_output = json.dumps(layout, ensure_ascii=False, indent=2)
+                    layout, size_edits = edit_layout(layout, appearance)
+                    try: check_layout_appearance(layout, appearance)
+                    except AppearanceMismatch: pass
                     scene["layout_repaired"] = True
                 if keep_tags.strip():
                     layout["summary"]["caption"] += "\n" + keep_tags.strip()
             scene["moss_layout"] = layout
             scene["canvas_width"], scene["canvas_height"] = canvas_width, canvas_height
             prompt = json.dumps(layout, ensure_ascii=False, indent=2)
+            if layout_json.strip(): model_output, size_edits = prompt, []
             general = "" if layout_json.strip() else format_scene(scene, "DART tags", keep_tags, avoid)[1]
         else:
             prompt, general = format_scene(scene, target, keep_tags, avoid)
-        return {"ui": {"text": [prompt], "moss_json": [target == "MOSS JSON layout"]}, "result": (
+            _, original_scene, size_edits = diagnostics["candidates"].get(id(scene), (scene, scene, []))
+            model_output = format_scene(original_scene, target, keep_tags, avoid)[0]
+        issues = []
+        for check in ([] if target == "MOSS JSON layout" else [lambda: check_scene_appearance(scene, appearance, target)]) + (
+                [lambda: check_layout_appearance(layout, appearance)] if layout is not None else []):
+            try: check()
+            except AppearanceMismatch as error: issues.extend(error.issues)
+        report = appearance_report(appearance, issues, on_override_mismatch, diagnostics["attempts"],
+                                   diagnostics["correction_attempted"], prompt, size_edits, model_output)
+        return {"ui": {"text": [prompt], "moss_json": [target == "MOSS JSON layout"], "atelier_report": [report]}, "result": reported_result((
             prompt, general, scene["copyright"], scene["character"], avoid,
             json.dumps(scene, ensure_ascii=False, indent=2),
-        )}
+        ), report)}

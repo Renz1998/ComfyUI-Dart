@@ -8,6 +8,7 @@ const generators = (slot) => [node("Generate", slot), node("GenerateAdvanced", s
 export function connectionsFor(type, name, slotType, isOutput) {
     if (!type?.startsWith(prefix)) return [];
     if (!isOutput) {
+        if (type === prefix + "ImageToText" && name === "image") return [{type:"LoadImage",slot:0},node("ImageBatchSelector",0)];
         if (name === "appearance" && [prefix + "ImageToText", prefix + "DescribeImage"].includes(type)) return [node("AppearanceOverrides", 0)];
         if (name === "image") return [{ type: "LoadImage", slot: 0 }];
         if (type === prefix + "DescribeImage" && name === "description") return [node("ImageToText", 0)];
@@ -22,6 +23,11 @@ export function connectionsFor(type, name, slotType, isOutput) {
         if (name in describeSlots) return [node("DescribeImage", describeSlots[name])];
         return [];
     }
+    if (type === prefix + "ImageBatchSelector") {
+        if (name === "image") return [node("ImageToText","image"), {type:"PreviewImage",slot:"images"}];
+        if (name === "filename") return [node("ImageToText","source_name"),preview];
+        return [preview];
+    }
     if (slotType === "ATELIER_APPEARANCE") return [node("ImageToText", "appearance"), node("DescribeImage", "appearance")];
     if (type === prefix + "AppearanceOverrides") return [preview];
     if (slotType === "DART_MODEL") return generators("model");
@@ -35,12 +41,14 @@ export function connectionsFor(type, name, slotType, isOutput) {
         node("RearrangedByAnimagine", "token_ids"), node("RemoveTagToken", "token_ids"),
     ];
     if (type === prefix + "DescribeImage") {
+        if (name === "status" || name === "report") return [preview];
         if (name === "general_tags") return [...composers("general"), preview];
         if (name === "copyright" || name === "character") return [...composers(name), preview];
         if (name === "scene_json") return [preview];
         return [encode, preview];
     }
     if (type === prefix + "ImageToText") {
+        if (name === "status" || name === "report") return [preview];
         if (name === "width" || name === "height") return [
             { type: "EmptySD3LatentImage", slot: name }, { type: "EmptyLatentImage", slot: name }, preview,
         ];

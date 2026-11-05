@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.4 — Visible override feedback and graceful handling
+
+- Added Image Batch Selector: folder choice, natural filename order, one image per queued run or a native list mapped sequentially through Image to Text. Images retain independent dimensions and filenames label reports.
+- Added explicit Apply exact breast-size wording. Identifiable target captions can be post-edited to use the selected phrase, with original output and edit details retained. This is labeled as an Atelier caption edit, not a model unlock/compliance guarantee; ambiguous targets are not blindly rewritten.
+- Both assistants now default to Warn and continue when valid model output still misses selected wording after correction. A visible amber report names missing/conflicting phrases and their output locations.
+- Added On override mismatch directly to each assistant. Block downstream preserves the raw preview/report while blocking dependent data outputs, without an appearance-validation traceback.
+- Appended status/report outputs; existing output positions remain unchanged. Reports include attempts, issues, policy and the actual generated text. Prompt wires remain clean prose/JSON.
+- Feedback remains visible when node branding is disabled. Invalid JSON, model failures and invalid inputs still stop normally.
+
 ## 1.5.3 — Preserve selected appearance wording
 
 - Appearance Overrides now defaults to Strict trait wording: missing selected phrases or weakened/conflicting size wording trigger a bounded correction instead of being returned silently.

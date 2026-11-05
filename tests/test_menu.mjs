@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { connectionsFor, resolveSlot } from "../web/connections.mjs";
+import { combineReports } from "../web/status.mjs";
 
 let extension, menu, previewMessage;
 const connections = [];
@@ -15,6 +16,8 @@ const context = {
     app: { canvas: new Canvas(), registerExtension(value) { extension = value; } },
     api: { addEventListener() {} },
     installDesign() {}, configureDesign() {}, toggleDesign() {}, setDesignState() {}, updateDesignBackend() {},
+    installStatusWidget() {}, updateStatusWidget(node, report) {node.atelierLastReport=report;}, finishedState(node) {return node.atelierLastReport?.status || 'done';},
+    combineReports,
     connectionsFor, resolveSlot, LGraphCanvas: Canvas,
     addTextPreviewWidgets() {}, updateTextPreviewWidgets(node, message) { previewMessage = message; }, convertToInput() {},
     LiteGraph: {
@@ -24,10 +27,12 @@ const context = {
             DanbooruTagsTransformerLoader: { title: "Dart Load" },
             DanbooruTagsTransformerDescribeImage: { title: "Dart Describe Image" },
             DanbooruTagsTransformerAppearanceOverrides: { title: "Prompt Atelier · Appearance Overrides" },
+            DanbooruTagsTransformerImageToText: {title:"Prompt Atelier · Image to Text"},
+            DanbooruTagsTransformerImageBatchSelector: {title:"Prompt Atelier · Image Batch Selector"},
         },
         ContextMenu: class { constructor(entries) { menu = entries; } },
         createNode(type) {
-            return { type, inputs: [{ name: "text" }, { name: "general" }, { name: "source_tags" }],
+            return { type, inputs: type === 'DanbooruTagsTransformerImageToText' ? [{name:'image'},{name:'source_name'}] : [{ name: "text" }, { name: "general" }, { name: "source_tags" }],
                 findInputSlot(name) { return this.inputs.findIndex((slot) => slot.name === name); },
                 connect(...args) { connections.push({ from: type, args }); } };
         },
@@ -138,10 +143,10 @@ class OldVision {
 extension.beforeRegisterNodeDef(OldVision, {name: "DanbooruTagsTransformerImageToText"});
 const oldVision = new OldVision();
 oldVision.onConfigure({});
-assert.deepEqual(oldVision.outputs.map((slot) => slot.name), ["description", "width", "height", "image"]);
+assert.deepEqual(oldVision.outputs.map((slot) => slot.name), ["description", "width", "height", "image", "status", "report"]);
 assert.deepEqual(oldVision.outputs[0].links, [99]);
 oldVision.onConfigure({});
-assert.equal(oldVision.outputs.length, 4);
+assert.equal(oldVision.outputs.length, 6);
 canvas.showConnectionMenu({nodeTo: {type:'DanbooruTagsTransformerImageToText',graph,inputs:[{name:'appearance',type:'ATELIER_APPEARANCE'}]},slotTo:0,e:{}});
 assert.equal(menu[0].content, 'Prompt Atelier · Appearance Overrides');
 menu[0].callback();
@@ -164,3 +169,10 @@ assert.equal(recipe.widgets[1].hidden,false);
 recipe.widgets[2].value='Custom subject'; recipe.widgets[2].callback();
 assert.equal(recipe.widgets[3].hidden,false);
 console.log("Drag menus create and connect the intended node sockets; other plugins retain their menu.");
+const batchSource={type:'DanbooruTagsTransformerImageBatchSelector',graph,outputs:[{name:'image',type:'IMAGE'},{name:'filename',type:'STRING'}],connect(...args){connections.push({from:'batch',args});}};
+canvas.showConnectionMenu({nodeFrom:batchSource,slotFrom:0,e:{}});
+menu[0].callback();
+assert.equal(connections.at(-2).args[0],0);
+assert.equal(connections.at(-2).args[2],0);
+assert.equal(connections.at(-1).args[0],1);
+assert.equal(connections.at(-1).args[2],1);

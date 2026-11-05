@@ -4,6 +4,7 @@ import { convertToInput } from "../../extensions/core/widgetInputs.js";
 import { addTextPreviewWidgets, updateTextPreviewWidgets } from "../../extensions/core/textPreviewWidgets.js";
 import { connectionsFor, resolveSlot } from "./connections.mjs";
 import { installDesign, configureDesign, toggleDesign, setDesignState, updateDesignBackend } from "./design.mjs";
+import { installStatusWidget, updateStatusWidget, finishedState, combineReports } from "./status.mjs";
 
 const labels = new Map();
 const layoutFields = ["canvas_width", "canvas_height", "layout_json"];
@@ -29,6 +30,23 @@ function updateLayoutSockets(node, layout) {
 }
 
 function updateDescribeControls(node) {
+    const batch = node.widgets?.find((widget) => widget.name === "batch_mode");
+    if (batch) {
+        const control = node.widgets.find(widget => widget.name === "control_after_generate");
+        node.properties ||= {};
+        if (control && batch.value === "All selected images as list" && control.value !== "fixed") {
+            node.properties.atelier_queue_index_control = control.value;
+            control.value = "fixed";
+        } else if (control && batch.value === "One image per queued run" && node.properties.atelier_queue_index_control) {
+            control.value = node.properties.atelier_queue_index_control;
+            delete node.properties.atelier_queue_index_control;
+        }
+        for (const widget of node.widgets || []) {
+            if (widget.name === "custom_folder") widget.hidden = node.widgets.find(item => item.name === "folder")?.value !== "Custom folder";
+            if (["index", "wrap_index", "control_after_generate"].includes(widget.name)) widget.hidden = batch.value !== "One image per queued run";
+            if (widget.name === "max_images") widget.hidden = batch.value === "One image per queued run";
+        }
+    }
     const recipe = node.widgets?.some((widget) => widget.name === "custom_overrides");
     if (recipe) {
         for (const widget of node.widgets || []) {
@@ -69,7 +87,9 @@ app.registerExtension({
                 const spec = nodeData.input?.required?.[widget.name] || nodeData.input?.optional?.[widget.name];
                 const tip = spec?.[1]?.tooltip;
                 if (tip) widget.tooltip = tip;
-                if (widget.name === "control_after_generate") widget.tooltip = "fixed keeps the seed; increment/decrement changes it by one; randomize picks a new seed for the next run. Deterministic modes may still produce the same text.";
+                if (widget.name === "control_after_generate") widget.tooltip = nodeData.name.endsWith("ImageBatchSelector")
+                    ? "increment selects the next image for the next queued run; fixed repeats the index. Wrap index controls what happens at the end of the folder."
+                    : "fixed keeps the seed; increment/decrement changes it by one; randomize picks a new seed for the next run. Deterministic modes may still produce the same text.";
             }
         };
         const baseConfigured = nodeType.prototype.onConfigure;
@@ -87,10 +107,11 @@ app.registerExtension({
             baseMenu?.apply(this, arguments);
             options.push({ content: this.properties.dart_design === false ? "Enable Atelier design" : "Disable Atelier design", callback: () => toggleDesign(this) });
         };
-        if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerAppearanceOverrides"].includes(nodeData.name)) return;
+        if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerAppearanceOverrides", "DanbooruTagsTransformerImageBatchSelector"].includes(nodeData.name)) return;
         const created = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {
             created?.apply(this, arguments);
+            if (["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText"].includes(nodeData.name)) installStatusWidget(this);
             addTextPreviewWidgets(this);
             const preview = this.widgets?.find((widget) => widget.name === "preview_text");
             if (preview) preview.options.getMinHeight = () => 120;
@@ -101,12 +122,14 @@ app.registerExtension({
                 instructions: "Caption instructions / replacements", character_trigger: "Character trigger", image_index: "Image in batch",
                 prompt_length: "Prompt length", output_format: "Output format", image_megapixels: "Image megapixel budget", dimension_source: "Layout dimensions", resize_mode: "Resize mode", resize_method: "Resize method", language_style: "Language style", max_tokens: "Generation token limit", unload_after_generation: "Unload assistant model after generation", trigger: "Character trigger", identity_mode: "Identity wording", custom_overrides: "Extra appearance replacements" };
             for (const widget of this.widgets || []) {
-                if (widget.name === "strict_wording") widget.label = "Strict trait wording";
+                if (widget.name === "apply_size_wording") widget.label = "Apply exact breast-size wording";
+                else if (widget.name === "on_override_mismatch") widget.label = "On override mismatch";
+                else if (widget.name === "strict_wording") widget.label = "Strict trait wording";
                 else if (names[widget.name]) widget.label = names[widget.name];
                 else if (nodeData.name.endsWith("AppearanceOverrides")) widget.label = widget.name.replaceAll("_", " ");
             }
             const appearanceSelectors = nodeData.name.endsWith("AppearanceOverrides") ? (this.widgets || []).filter((widget) => widget.type === "combo").map((widget) => widget.name) : [];
-            for (const name of ["backend", "target", "output_format", "dimension_source", "image_megapixels", ...appearanceSelectors]) {
+            for (const name of ["backend", "target", "output_format", "dimension_source", "image_megapixels", "folder", "batch_mode", ...appearanceSelectors]) {
                 const control = this.widgets?.find((widget) => widget.name === name);
                 if (!control) continue;
                 const callback = control.callback;
@@ -126,8 +149,13 @@ app.registerExtension({
         nodeType.prototype.onConfigure = function (data) {
             configured?.apply(this, arguments);
             if (nodeData.name === "DanbooruTagsTransformerImageToText" && this.addOutput) {
-                for (const [name, type] of [["width", "INT"], ["height", "INT"], ["image", "IMAGE"]]) {
+                for (const [name, type] of [["width", "INT"], ["height", "INT"], ["image", "IMAGE"], ["status", "STRING"], ["report", "STRING"]]) {
                     if (!this.outputs?.some((slot) => slot.name === name)) this.addOutput(name, type);
+                }
+            }
+            if (nodeData.name === "DanbooruTagsTransformerDescribeImage" && this.addOutput) {
+                for (const name of ["status", "report"]) {
+                    if (!this.outputs?.some((slot) => slot.name === name)) this.addOutput(name, "STRING");
                 }
             }
             // Persist by name so converted inputs and UI-only widgets cannot shift settings.
@@ -148,6 +176,10 @@ app.registerExtension({
         const executed = nodeType.prototype.onExecuted;
         nodeType.prototype.onExecuted = function (message) {
             executed?.apply(this, arguments);
+            if (message?.atelier_report?.[0]) {
+                updateStatusWidget(this, combineReports(message.atelier_report));
+                setDesignState(this, finishedState(this));
+            }
             const json = message?.moss_json?.[0] === true || message?.json_preview?.[0] === true;
             const mode = this.widgets?.find((widget) => widget.name === "preview_mode");
             // Markdown is a preview choice only: output wires always contain raw JSON.
@@ -174,14 +206,23 @@ app.registerExtension({
     setup() {
         let activeNode;
         api.addEventListener("executing", ({ detail }) => {
-            if (activeNode) setDesignState(activeNode, "done");
+            if (activeNode) setDesignState(activeNode, finishedState(activeNode));
             const id = detail && typeof detail === "object" ? detail.node : detail;
             activeNode = id != null ? app.graph.getNodeById(id) : null;
-            if (activeNode) setDesignState(activeNode, "running");
+            if (activeNode) {
+                setDesignState(activeNode, "running");
+                if (activeNode.atelierLastReport?.has_appearance) updateStatusWidget(activeNode, {
+                    status: "running", has_appearance: true, message: "Generating text and checking the selected appearance wording.", issues: [],
+                });
+            }
         });
         for (const event of ["execution_error", "execution_interrupted"]) {
-            api.addEventListener(event, () => {
-                if (activeNode) setDesignState(activeNode, "error");
+            api.addEventListener(event, ({detail} = {}) => {
+                if (activeNode) {
+                    setDesignState(activeNode, "error");
+                    updateStatusWidget(activeNode, {status: "error", has_appearance: true,
+                        message: detail?.exception_message || "Generation was interrupted or failed. Open ComfyUI's execution details for the cause.", issues: []});
+                }
                 activeNode = null;
             });
         }
@@ -213,7 +254,13 @@ app.registerExtension({
                             if (widget) convertToInput(next, widget);
                             targetIndex = next.findInputSlot(targetSlot);
                         }
-                        if (isOutput) source.connect(index, next, targetIndex);
+                        if (isOutput) {
+                            source.connect(index, next, targetIndex);
+                            if ((source.comfyClass || source.type) === "DanbooruTagsTransformerImageBatchSelector" && slot.name === "image" && type === "DanbooruTagsTransformerImageToText") {
+                                const nameSlot = next.findInputSlot("source_name");
+                                if (nameSlot >= 0) source.connect(1, next, nameSlot);
+                            }
+                        }
                         else next.connect(targetIndex, source, index);
                     } finally {
                         graph.afterChange();

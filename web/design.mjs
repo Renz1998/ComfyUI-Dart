@@ -5,6 +5,7 @@ document.head.append(stylesheet);
 
 const designs = new WeakMap();
 const profiles = {
+    batch: { title: "IMAGE BATCH SELECTOR", subtitle: "FOLDER → QUEUED IMAGE / SEQUENTIAL LIST", color: "#233c49", accent: "#a2d6f4", text: "Choose a folder on the computer running ComfyUI. One image per queued run uses Index plus the native increment control. List mode maps Image to Text sequentially over separate images. Keep its Image in batch at 0. Max images limits CPU memory in list mode; use queue mode for large folders." },
     appearance: { title: "APPEARANCE OVERRIDES", subtitle: "ONE RECIPE → BOTH ASSISTANTS", color: "#423044", accent: "#efb4df", text: "Connect appearance to Image to Text or Text Assistant. Keep unchanged leaves a trait alone. Custom reveals a free-text value. Choose the subject, optional character trigger and replacements. Changes apply to generated text in every format; source image pixels stay unchanged." },
     vision: { title: "VISION CAPTIONER", subtitle: "IMAGE → DETAILED TEXT", color: "#183d49", accent: "#79d9ee", text: "Connect an image, then Run for a detailed caption. Instructions can replace appearance while keeping pose, clothing and scene details. Character trigger inserts your exact training token. This creates text; it does not edit image pixels." },
     assistant: { title: "SCENE ASSISTANT", subtitle: "WORDS → TAGS / PROSE", color: "#173d36", accent: "#79e5bd", text: "Write a scene or connect Dart Generate to source_tags. Concept turns keywords into a new scene; Natural language outputs prose. Custom instructions control style and wording. Local model + Automatic uses installed Qwen. Connect prompt to image text encoding." },
@@ -15,6 +16,7 @@ const profiles = {
 };
 
 function profileFor(name) {
+    if (name.endsWith("ImageBatchSelector")) return profiles.batch;
     if (name.endsWith("AppearanceOverrides")) return profiles.appearance;
     if (name.endsWith("ImageToText")) return profiles.vision;
     if (name.endsWith("DescribeImage")) return profiles.assistant;
@@ -94,7 +96,7 @@ export function setDesignState(node, state) {
     if (!design) return;
     design.root.dataset.state = state;
     design.root.querySelector(".dart-state span").textContent = {
-        ready: "READY", running: "WORKING", done: "DONE", error: "CHECK INPUT",
+        ready: "READY", running: "WORKING", done: "DONE", error: "CHECK INPUT", warning: "REVIEW OVERRIDES", blocked: "DOWNSTREAM BLOCKED",
     }[state] || "READY";
 }
 

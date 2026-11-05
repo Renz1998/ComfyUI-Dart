@@ -4,6 +4,46 @@ import re
 from copy import deepcopy
 
 KEEP = "Keep unchanged"
+MISMATCH_POLICIES = ["Warn and continue", "Block downstream"]
+
+
+class AppearanceMismatch(ValueError):
+    """Valid generated content whose requested appearance wording is unconfirmed."""
+    def __init__(self, issues):
+        self.issues = issues
+        super().__init__("\n".join(issue["message"] for issue in issues))
+
+
+def appearance_report(settings, issues, policy, attempts=0, corrected=False, output="", edits=None, model_output=None):
+    if policy not in MISMATCH_POLICIES:
+        raise ValueError("Choose Warn and continue or Block downstream for override mismatches.")
+    unique = {json.dumps(issue, sort_keys=True): issue for issue in issues}
+    issues = list(unique.values())
+    checked = bool(required_trait_phrases(settings))
+    status = ("blocked" if policy == "Block downstream" else "warning") if issues else (
+        "edited" if edits else "corrected" if checked and corrected else "ok" if checked else "unchecked")
+    message = {
+        "blocked": "Overrides not confirmed. Downstream processing is blocked; model output is available below.",
+        "warning": "Overrides not confirmed. Continuing with the model output; selected traits may be missing or changed.",
+        "corrected": "Appearance wording confirmed after an automatic correction.",
+        "edited": "Atelier applied the selected size phrase to the caption. This is a text edit, not model compliance or an image change.",
+        "ok": "Selected appearance wording confirmed.",
+        "unchecked": "Appearance wording checks are off or no traits were selected.",
+    }[status]
+    return {"status": status, "message": message, "issues": issues, "policy": policy,
+            "attempts": attempts, "checked": checked, "has_appearance": bool(settings and settings.get("enabled")),
+            "output": output,
+            "post_edits": edits or [], "model_output": output if model_output is None else model_output,
+            "next_step": ("Review the output below. Adjust the selected wording or try another instruction-capable model. "
+                          "On override mismatch is on this assistant; Strict trait wording is on Appearance Overrides.") if issues else ""}
+
+
+def reported_result(values, report):
+    """Keep existing output indices, append status/report, optionally block only data outputs."""
+    if report["status"] == "blocked":
+        from comfy_execution.graph import ExecutionBlocker
+        values = tuple(ExecutionBlocker(None) for _ in values)
+    return tuple(values) + (report["status"], json.dumps(report, ensure_ascii=False, indent=2))
 TRAITS = {
     "hair_color": ["Black", "Brown", "Blonde", "Red", "Auburn", "White", "Silver", "Grey", "Blue", "Pink", "Purple", "Green"],
     "hair_style": ["Straight", "Wavy", "Curly", "Bob", "Pixie cut", "Ponytail", "Twin tails", "Braid", "Bun", "Loose hair"],
@@ -55,36 +95,60 @@ def check_appearance_wording(text, settings, location="description"):
         if not re.search(r"\b" + pattern + r"\b", comparable): missing.append(value)
     size = phrases.get("breast_size")
     conflicts = []
+    if re.match(r"\s*(?:I (?:cannot|can't|won't)|I'm sorry|I am sorry)", text, re.I):
+        conflicts.append("model refusal instead of a caption")
     if size:
         size_words = _words(size)
         pattern = r"\b(?:(?:very|extremely|exceptionally|moderately)\s+)?(?:small|medium|large|huge|massive|gigantic|enormous|ample|full|flat)\s+(?:breasts?|bust|chest)\b"
-        conflicts = [m.group() for m in re.finditer(pattern, normalized) if _words(m.group()) != size_words]
+        conflicts.extend(m.group() for m in re.finditer(pattern, normalized) if _words(m.group()) != size_words)
         if re.search(r"\b(?:no|not|without)\s+(?:\w+\s+){0,2}" + re.escape(size_words) + r"\b", normalized):
             conflicts.append("negated " + size)
     if missing or conflicts:
         details = []
         if missing: details.append("missing exact selected wording: " + ", ".join(missing))
         if conflicts: details.append("conflicting/weakened size wording: " + ", ".join(conflicts))
-        raise ValueError("Appearance override not followed in " + location + ": " + "; ".join(details) +
-                         ". Keep the exact selected phrases; do not soften, negate or replace them with synonyms.")
+        message = ("Appearance override not followed in " + location + ": " + "; ".join(details) +
+                   ". Keep the exact selected phrases; do not soften, negate or replace them with synonyms.")
+        raise AppearanceMismatch([{"location": location, "missing": missing, "conflicts": conflicts, "message": message}])
+
+
+def person_items(layout, settings):
+    trigger = (settings or {}).get("trigger", "")
+    return [(index, item) for index, item in enumerate(layout["items"]) if item.get("label") == "object" and (
+        (trigger and trigger in item["caption"]) or re.search(
+        r"\b(?:woman|man|person|girl|boy|character|traveler|female|male|individual)\b", " ".join(item["caption"].split()[:8]), re.I))]
+
+
+def target_person_items(layout, settings):
+    people = person_items(layout, settings)
+    trigger = (settings or {}).get("trigger", "")
+    return [(index, item) for index, item in people if (settings or {}).get("subject") == "All people" or
+            len(people) == 1 or (trigger and trigger in item["caption"])]
 
 
 def check_layout_appearance(layout, settings):
-    check_appearance_wording(layout["summary"]["caption"], settings, "MOSS summary.caption")
+    issues = []
+    try:
+        check_appearance_wording(layout["summary"]["caption"], settings, "MOSS summary.caption")
+    except AppearanceMismatch as error:
+        issues.extend(error.issues)
     if not required_trait_phrases(settings): return
-    trigger = settings.get("trigger", "")
-    people = [item for item in layout["items"] if item.get("label") == "object" and (
-        (trigger and trigger in item["caption"]) or re.search(
-        r"\b(?:woman|man|person|girl|boy|character|traveler|female|male|individual)\b", " ".join(item["caption"].split()[:8]), re.I))]
-    for item in people:
-        if settings.get("subject") == "All people" or len(people) == 1 or (trigger and trigger in item["caption"]):
-            check_appearance_wording(item["caption"], settings, "MOSS subject caption")
+    for index, item in target_person_items(layout, settings):
+        try:
+            check_appearance_wording(item["caption"], settings, f"MOSS subject caption (items[{index}].caption)")
+        except AppearanceMismatch as error:
+            issues.extend(error.issues)
+    if issues: raise AppearanceMismatch(issues)
 
 
 def check_scene_appearance(scene, settings, target):
-    check_appearance_wording(scene["description"], settings)
-    if target in ("DART tags", "Anima hybrid"):
-        check_appearance_wording(", ".join(scene["tags"]), settings, "tags")
+    issues = []
+    fields = [(scene["description"], "description")]
+    if target in ("DART tags", "Anima hybrid"): fields.append((", ".join(scene["tags"]), "tags"))
+    for text, location in fields:
+        try: check_appearance_wording(text, settings, location)
+        except AppearanceMismatch as error: issues.extend(error.issues)
+    if issues: raise AppearanceMismatch(issues)
 
 
 def apply_trigger(scene, trigger):
