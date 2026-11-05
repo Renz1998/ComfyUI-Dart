@@ -21,9 +21,10 @@ from .py.nodes.assistant import DanbooruTagsTransformerDescribeImage
 from .py.nodes.vision import DanbooruTagsTransformerImageToText
 from .py.nodes.help import attach_help
 from .py.nodes.appearance import DanbooruTagsTransformerAppearanceOverrides
-from .py.nodes.image_batch import DanbooruTagsTransformerImageBatchSelector
+from .py.nodes.image_batch import DanbooruTagsTransformerImageBatchSelector, DanbooruTagsTransformerImageBatchUpload
 
 NODE_CLASS_MAPPINGS = {
+    "DanbooruTagsTransformerImageBatchUpload": DanbooruTagsTransformerImageBatchUpload,
     "DanbooruTagsTransformerImageBatchSelector": DanbooruTagsTransformerImageBatchSelector,
     "DanbooruTagsTransformerAppearanceOverrides": DanbooruTagsTransformerAppearanceOverrides,
     "DanbooruTagsTransformerImageToText": DanbooruTagsTransformerImageToText,
@@ -45,6 +46,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "DanbooruTagsTransformerImageBatchUpload": "Prompt Atelier · Image Batch Upload",
     "DanbooruTagsTransformerImageBatchSelector": "Prompt Atelier · Image Batch Selector",
     "DanbooruTagsTransformerAppearanceOverrides": "Prompt Atelier · Appearance Overrides",
     "DanbooruTagsTransformerImageToText": "Prompt Atelier · Image to Text",

@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { connectionsFor, resolveSlot } from "../web/connections.mjs";
 
 const describe = "DanbooruTagsTransformerDescribeImage";
-assert.equal(connectionsFor('DanbooruTagsTransformerImageToText','image','IMAGE',false)[1].type,'DanbooruTagsTransformerImageBatchSelector');
+assert.equal(connectionsFor('DanbooruTagsTransformerImageToText','image','IMAGE',false)[1].type,'DanbooruTagsTransformerImageBatchUpload');
+assert.equal(connectionsFor('DanbooruTagsTransformerImageToText','image','IMAGE',false)[2].type,'DanbooruTagsTransformerImageBatchSelector');
+assert.equal(connectionsFor('DanbooruTagsTransformerImageBatchUpload','image','IMAGE',true)[0].type,'DanbooruTagsTransformerImageToText');
 assert.deepEqual(connectionsFor('DanbooruTagsTransformerImageBatchSelector','filename','STRING',true)[0],{type:'DanbooruTagsTransformerImageToText',slot:'source_name'});
 assert.deepEqual(connectionsFor(describe,'report','STRING',true),[{type:'PreviewAny',slot:'source'}]);
 assert.deepEqual(connectionsFor('DanbooruTagsTransformerImageToText','status','STRING',true),[{type:'PreviewAny',slot:'source'}]);

@@ -3,8 +3,9 @@ import { api } from "../../scripts/api.js";
 import { convertToInput } from "../../extensions/core/widgetInputs.js";
 import { addTextPreviewWidgets, updateTextPreviewWidgets } from "../../extensions/core/textPreviewWidgets.js";
 import { connectionsFor, resolveSlot } from "./connections.mjs";
-import { installDesign, configureDesign, toggleDesign, setDesignState, updateDesignBackend } from "./design.mjs";
+import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs";
 import { installStatusWidget, updateStatusWidget, finishedState, combineReports } from "./status.mjs";
+import { installUploadWidget, refreshUploadWidget } from "./upload.mjs";
 
 const labels = new Map();
 const layoutFields = ["canvas_width", "canvas_height", "layout_json"];
@@ -87,7 +88,7 @@ app.registerExtension({
                 const spec = nodeData.input?.required?.[widget.name] || nodeData.input?.optional?.[widget.name];
                 const tip = spec?.[1]?.tooltip;
                 if (tip) widget.tooltip = tip;
-                if (widget.name === "control_after_generate") widget.tooltip = nodeData.name.endsWith("ImageBatchSelector")
+                if (widget.name === "control_after_generate") widget.tooltip = /ImageBatch(Selector|Upload)$/.test(nodeData.name)
                     ? "increment selects the next image for the next queued run; fixed repeats the index. Wrap index controls what happens at the end of the folder."
                     : "fixed keeps the seed; increment/decrement changes it by one; randomize picks a new seed for the next run. Deterministic modes may still produce the same text.";
             }
@@ -106,11 +107,13 @@ app.registerExtension({
         nodeType.prototype.getExtraMenuOptions = function (_, options) {
             baseMenu?.apply(this, arguments);
             options.push({ content: this.properties.dart_design === false ? "Enable Atelier design" : "Disable Atelier design", callback: () => toggleDesign(this) });
+            options.push({ content: this.properties.atelier_theme === "studio" ? "Use Ember theme (fire while running)" : "Use Studio theme", callback: () => { toggleTheme(this); refreshUploadWidget(this); } });
         };
-        if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerAppearanceOverrides", "DanbooruTagsTransformerImageBatchSelector"].includes(nodeData.name)) return;
+        if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerAppearanceOverrides", "DanbooruTagsTransformerImageBatchSelector", "DanbooruTagsTransformerImageBatchUpload"].includes(nodeData.name)) return;
         const created = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {
             created?.apply(this, arguments);
+            if (nodeData.name.endsWith("ImageBatchUpload")) installUploadWidget(this, api);
             if (["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText"].includes(nodeData.name)) installStatusWidget(this);
             addTextPreviewWidgets(this);
             const preview = this.widgets?.find((widget) => widget.name === "preview_text");
@@ -139,6 +142,7 @@ app.registerExtension({
                 };
             }
             updateDescribeControls(this);
+            refreshUploadWidget(this);
         };
         const slotAt = nodeType.prototype.getSlotInPosition;
         if (slotAt) nodeType.prototype.getSlotInPosition = function (...args) {
@@ -166,6 +170,7 @@ app.registerExtension({
                 }
             }
             updateDescribeControls(this);
+            refreshUploadWidget(this);
         };
         const serialized = nodeType.prototype.onSerialize;
         nodeType.prototype.onSerialize = function (data) {
@@ -256,12 +261,18 @@ app.registerExtension({
                         }
                         if (isOutput) {
                             source.connect(index, next, targetIndex);
-                            if ((source.comfyClass || source.type) === "DanbooruTagsTransformerImageBatchSelector" && slot.name === "image" && type === "DanbooruTagsTransformerImageToText") {
+                            if (/ImageBatch(Selector|Upload)$/.test(source.comfyClass || source.type) && slot.name === "image" && type === "DanbooruTagsTransformerImageToText") {
                                 const nameSlot = next.findInputSlot("source_name");
                                 if (nameSlot >= 0) source.connect(1, next, nameSlot);
                             }
                         }
-                        else next.connect(targetIndex, source, index);
+                        else {
+                            next.connect(targetIndex, source, index);
+                            if (/ImageBatch(Selector|Upload)$/.test(type) && slot.name === "image" && (source.comfyClass || source.type) === "DanbooruTagsTransformerImageToText") {
+                                const nameSlot = source.findInputSlot("source_name");
+                                if (nameSlot >= 0) next.connect(1, source, nameSlot);
+                            }
+                        }
                     } finally {
                         graph.afterChange();
                     }

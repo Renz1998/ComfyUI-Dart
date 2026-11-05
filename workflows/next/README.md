@@ -8,6 +8,7 @@ These are complete **text-processing graphs** you can drag into ComfyUI. They cr
 | --- | --- | --- |
 | [keywords_to_concept.json](keywords_to_concept.json) | Keywords → Text Assistant → photographic concept | Full instruction Qwen; one assistant pass |
 | [describe_image.json](describe_image.json) | Description → tags + prose + debug preview | Full instruction Qwen; one pass |
+| [upload_images_to_captions.json](upload_images_to_captions.json) | Upload multiple files → thumbnails → sequential captions or one per queue | Full vision model; upload images before running |
 | [image_to_text.json](image_to_text.json) | Load Image → Image to Text caption | Full vision Qwen; one pass |
 | [folder_one_per_queue.json](folder_one_per_queue.json) | Folder → one caption per queued run; index advances | Full vision model; one image per run |
 | [folder_caption_list.json](folder_caption_list.json) | Folder → native image list → sequential captions | Full vision model; up to Max images per run |

@@ -23,6 +23,25 @@ def folder_choices():
     return ["Input directory"] + ["input/" + name for name in children] + ["Custom folder"]
 
 
+def decode_selection(root, files, selected, batch_mode):
+    from PIL import Image, ImageOps
+    import numpy as np
+    import torch
+    images = []
+    for path in selected:
+        try:
+            with Image.open(path) as opened:
+                rgb = ImageOps.exif_transpose(opened).convert("RGB")
+                image = torch.from_numpy(np.asarray(rgb, dtype=np.float32).copy() / 255.0).unsqueeze(0)
+        except (OSError, ValueError) as error:
+            raise ValueError("Could not read image " + path.name + ": " + str(error)) from None
+        images.append(image)
+    names = [path.relative_to(root).as_posix() for path in selected]
+    info = f"Selected {len(selected)} of {len(files)} images · {batch_mode}\n" + "\n".join(names[:12])
+    if len(names) > 12: info += f"\n… and {len(names)-12} more"
+    return {"ui": {"text": [info]}, "result": (images, names, len(selected), info)}
+
+
 def select_files(folder, custom_folder, pattern, recursive, batch_mode, index, wrap_index, max_images):
     if batch_mode not in MODES:
         raise ValueError("Choose one image per queued run or all selected images as list.")
@@ -83,26 +102,62 @@ class DanbooruTagsTransformerImageBatchSelector(BaseNode):
 
     def load(self, folder="Input directory", custom_folder="", pattern="*", recursive=False,
              batch_mode=MODES[0], index=0, wrap_index=True, max_images=16):
-        from PIL import Image, ImageOps
-        import numpy as np
-        import torch
         root, files, selected = select_files(folder, custom_folder, pattern, recursive, batch_mode, index, wrap_index, max_images)
-        images = []
-        for path in selected:
-            try:
-                with Image.open(path) as opened:
-                    rgb = ImageOps.exif_transpose(opened).convert("RGB")
-                    image = torch.from_numpy(np.asarray(rgb, dtype=np.float32).copy() / 255.0).unsqueeze(0)
-            except (OSError, ValueError) as error:
-                raise ValueError("Could not read image " + path.name + ": " + str(error)) from None
-            images.append(image)
-        names = [path.relative_to(root).as_posix() for path in selected]
-        info = f"Selected {len(selected)} of {len(files)} images · {batch_mode}\n" + "\n".join(names[:12])
-        if len(names) > 12: info += f"\n… and {len(names)-12} more"
-        return {"ui": {"text": [info]}, "result": (images, names, len(selected), info)}
+        return decode_selection(root, files, selected, batch_mode)
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
         root, files, selected = select_files(**kwargs)
+        return json.dumps([(str(path), path.stat().st_size, path.stat().st_mtime_ns) for path in files] +
+                          [(str(path.relative_to(root)),) for path in selected])
+
+
+def select_uploads(images, batch_mode, index, wrap_index, max_images):
+    try:
+        names = json.loads(images)
+    except (ValueError, TypeError):
+        raise ValueError("Upload images again: the saved image list is invalid.") from None
+    if not isinstance(names, list) or not names:
+        raise ValueError("Click Upload images and select one or more image files first.")
+    if len(names) > 512:
+        raise ValueError("An upload collection supports at most 512 images. Use the folder selector for larger collections.")
+    root = input_directory().resolve()
+    files = []
+    for name in names:
+        if not isinstance(name, str) or not name or Path(name).is_absolute():
+            raise ValueError("Uploaded images must use relative ComfyUI input paths.")
+        path = (root / name).resolve()
+        if not path.is_relative_to(root) or path.suffix.casefold() not in EXTENSIONS:
+            raise ValueError("Invalid uploaded image path. Upload the image again.")
+        if not path.is_file():
+            raise ValueError(f"Uploaded image is missing on this server: {name}. Upload it again; workflows do not embed image files.")
+        files.append(path)
+    if batch_mode not in MODES: raise ValueError("Choose one image per queued run or all selected images as list.")
+    if not isinstance(index, int) or isinstance(index, bool) or index < 0: raise ValueError("Image index must be a nonnegative integer.")
+    if not isinstance(max_images, int) or isinstance(max_images, bool) or not 1 <= max_images <= 512: raise ValueError("Max images must be between 1 and 512.")
+    if batch_mode == MODES[0]:
+        if index >= len(files) and not wrap_index:
+            raise ValueError(f"Image index {index} is past this collection's {len(files)} images. Reset Index to 0 or enable Wrap index.")
+        selected = [files[index % len(files)]]
+    else:
+        selected = files[:max_images]
+    return root, files, selected
+
+
+class DanbooruTagsTransformerImageBatchUpload(DanbooruTagsTransformerImageBatchSelector):
+    @classmethod
+    def INPUT_TYPES(cls):
+        fields = DanbooruTagsTransformerImageBatchSelector.INPUT_TYPES()["required"]
+        fields = {name: value for name, value in fields.items() if name in ("batch_mode", "index", "wrap_index", "max_images")}
+        fields["batch_mode"] = (MODES, {**fields["batch_mode"][1], "default": MODES[1]})
+        fields["index"] = ("INT", {**fields["index"][1], "tooltip": "First uploaded image is 0, following the visible list order. Use increment to advance between queued runs."})
+        return {"required": {"images": ("STRING", {"default": "[]", "multiline": True, "tooltip": "Saved uploaded image collection. Use Upload images to add files, thumbnails to check them, and arrow/remove buttons to edit the list. Workflows save paths, not image bytes."}), **fields}}
+
+    def load(self, images="[]", batch_mode=MODES[1], index=0, wrap_index=True, max_images=16):
+        return decode_selection(*select_uploads(images, batch_mode, index, wrap_index, max_images), batch_mode)
+
+    @classmethod
+    def IS_CHANGED(cls, **kwargs):
+        root, files, selected = select_uploads(**kwargs)
         return json.dumps([(str(path), path.stat().st_size, path.stat().st_mtime_ns) for path in files] +
                           [(str(path.relative_to(root)),) for path in selected])

@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {readCollection,uploadImage} from '../web/upload.mjs';
+assert.deepEqual(readCollection('["a.png","b.jpg"]'),['a.png','b.jpg']);
+assert.deepEqual(readCollection('{"wrong":true}'),[]);
+assert.deepEqual(readCollection('[null]'),[]);
+let request;
+const file=new Blob(['fixture'],{type:'image/png'}); file.name='example.png';
+const api={async fetchApi(path,options){request={path,options};return {ok:true,json:async()=>({name:'example (1).png',subfolder:'prompt-atelier/test',type:'input'})};}};
+assert.equal(await uploadImage(file,api,'prompt-atelier/test'),'prompt-atelier/test/example (1).png');
+assert.equal(request.path,'/upload/image');
+assert.equal(request.options.body.get('image').name,'example.png');
+assert.equal(request.options.body.get('type'),'input');
+assert.equal(request.options.body.get('subfolder'),'prompt-atelier/test');
+assert.equal(request.options.body.has('overwrite'),false);
+await assert.rejects(uploadImage(file,{fetchApi:async()=>({ok:false,status:413})},'test'),/413/);
+await assert.rejects(uploadImage(file,{fetchApi:async()=>({ok:true,json:async()=>({name:'bad',type:'output'})})},'test'),/invalid upload result/);
+console.log('Upload uses native endpoint, preserves renamed paths, avoids overwrite and reports failures.');

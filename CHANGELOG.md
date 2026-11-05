@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.5 — Direct multi-image uploads
+
+- Added Image Batch Upload: multi-file picker, drag-and-drop, thumbnail previews, reorder/remove/clear controls and upload progress/errors. Uses native ComfyUI input uploads, including on remote servers.
+- Supports one image per queued run or a sequential native image list, preserving independent dimensions and filename labels. Dragging from image also wires the filename to Image to Text.
+- Saved collections use input-relative paths; invalid, escaping or missing files report actionable errors. Removing from the list leaves server files intact.
+- Added Ember/Studio themes, animated flames and rising embers during execution, a stronger RUNNING badge and a canvas outline. Animation respects reduced motion and stops with execution.
+- Added an upload workflow example and upload endpoint/backend regression coverage.
+
 ## 1.5.4 — Visible override feedback and graceful handling
 
 - Added Image Batch Selector: folder choice, natural filename order, one image per queued run or a native list mapped sequentially through Image to Text. Images retain independent dimensions and filenames label reports.

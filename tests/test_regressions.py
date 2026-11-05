@@ -654,6 +654,34 @@ class ImageBatchTests(unittest.TestCase):
             self.assertEqual(cls.OUTPUT_IS_LIST,(True,True,False,False))
 
 
+class ImageUploadTests(unittest.TestCase):
+    def test_upload_order_dimensions_modes_and_missing_files(self):
+        from PIL import Image
+        cls=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerImageBatchUpload']
+        with tempfile.TemporaryDirectory() as folder, patch('dart_plugin.py.nodes.image_batch.input_directory',return_value=Path(folder)):
+            Image.new('RGB',(16,24)).save(Path(folder)/'second.png')
+            Image.new('RGB',(32,16)).save(Path(folder)/'first.png')
+            names=json.dumps(['second.png','first.png'])
+            values=cls().load(images=names)['result']
+            self.assertEqual(values[1],['second.png','first.png'])
+            self.assertEqual([tuple(image.shape) for image in values[0]],[(1,24,16,3),(1,16,32,3)])
+            self.assertEqual(cls().load(images=names,batch_mode='One image per queued run',index=1)['result'][1],['first.png'])
+            self.assertEqual(cls().load(images=names,batch_mode='One image per queued run',index=2)['result'][1],['second.png'])
+            self.assertEqual(cls().load(images=names,max_images=1)['result'][2],1)
+            with self.assertRaisesRegex(ValueError,'past this collection'):
+                cls().load(images=names,batch_mode='One image per queued run',index=2,wrap_index=False)
+            self.assertNotEqual(cls.IS_CHANGED(images=names,batch_mode='All selected images as list',index=0,wrap_index=True,max_images=16),cls.IS_CHANGED(images=json.dumps(['first.png','second.png']),batch_mode='All selected images as list',index=0,wrap_index=True,max_images=16))
+            with self.assertRaisesRegex(ValueError,'missing on this server'):
+                cls().load(images='["missing.png"]')
+
+    def test_upload_manifest_rejects_empty_invalid_and_escaping_paths(self):
+        cls=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerImageBatchUpload']
+        with tempfile.TemporaryDirectory() as folder, patch('dart_plugin.py.nodes.image_batch.input_directory',return_value=Path(folder)):
+            for value in ['[]','{}','bad','[4]','["../escape.png"]','["/outside.png"]','["code.py"]']:
+                with self.subTest(value=value),self.assertRaises(ValueError):cls().load(images=value)
+        self.assertEqual(cls.OUTPUT_IS_LIST,(True,True,False,False))
+
+
 class MemoryTests(unittest.TestCase):
     def test_targeted_offload_runs_on_success_and_error_and_can_be_disabled(self):
         from types import SimpleNamespace

@@ -18,9 +18,11 @@ An expanded fork of [nkchocoai/ComfyUI-Dart](https://github.com/nkchocoai/ComfyU
 | A photo or description | Native MOSS layout JSON with text/object placement | Image to Text → Text Assistant |
 | A description | DART v1/v2/v3 expansion with retained tags and sampling controls | Text Assistant → matching DART Composer → Generate |
 
-All 17 nodes include hover help and role-colored guides. Assistants show their result directly. Execution animations respect reduced motion; node designs can be toggled from the context menu.
+All 18 nodes include hover help and role-colored guides. Assistants show their result directly. Ember theme adds animated flames and embers while a node runs, a RUNNING badge and a glowing outline. Animations respect reduced motion. Right-click for Studio theme or to disable designs.
 
 ## Control prompt detail and wording
+
+**Image Batch Upload:** click Upload images and select several files from your computer, or drop them into the thumbnail panel. Files upload to the ComfyUI server, including RunPod. Reorder using arrows; remove/clear changes this node's list without deleting server files. Connect image to Image to Text and filename to source_name. The drag-create shortcut wires both. Choose All selected images as list for sequential captions in one run, or One image per queued run with increment to advance through the list. Wait until uploads finish before queuing. Workflow files save image paths, so upload again when moving a workflow to another server. Images keep their separate dimensions; use Image in batch = 0 on Image to Text. Max images limits CPU memory in list mode.
 
 **Image Batch Selector:** choose an input subfolder or a custom folder on the computer running ComfyUI. One image per queued run uses Index and the native increment control; queue multiple runs to advance through files. All selected images as list sends separate images through Image to Text sequentially in one run, preserving their different resolutions. Set its Image in batch to 0. Max images defaults to 16 to bound CPU memory; use queue mode for large folders. Connect filename to source_name to label reports (the drag-create shortcut wires both). Batch feedback summarizes per-file results and flags only blocked items.
 

@@ -5,6 +5,7 @@ document.head.append(stylesheet);
 
 const designs = new WeakMap();
 const profiles = {
+    upload: { title: "IMAGE BATCH UPLOAD", subtitle: "UPLOAD IMAGES → QUEUED CAPTIONS / LIST", color: "#233c49", accent: "#a2d6f4", text: "Select several files or drop images into the upload panel. Reorder with arrows; remove/clear changes this list and keeps server files. Connect image to Image to Text and filename to source_name. All selected images as list captions sequentially. Queue mode uses Index and increment. Wait until uploads finish before queuing." },
     batch: { title: "IMAGE BATCH SELECTOR", subtitle: "FOLDER → QUEUED IMAGE / SEQUENTIAL LIST", color: "#233c49", accent: "#a2d6f4", text: "Choose a folder on the computer running ComfyUI. One image per queued run uses Index plus the native increment control. List mode maps Image to Text sequentially over separate images. Keep its Image in batch at 0. Max images limits CPU memory in list mode; use queue mode for large folders." },
     appearance: { title: "APPEARANCE OVERRIDES", subtitle: "ONE RECIPE → BOTH ASSISTANTS", color: "#423044", accent: "#efb4df", text: "Connect appearance to Image to Text or Text Assistant. Keep unchanged leaves a trait alone. Custom reveals a free-text value. Choose the subject, optional character trigger and replacements. Changes apply to generated text in every format; source image pixels stay unchanged." },
     vision: { title: "VISION CAPTIONER", subtitle: "IMAGE → DETAILED TEXT", color: "#183d49", accent: "#79d9ee", text: "Connect an image, then Run for a detailed caption. Instructions can replace appearance while keeping pose, clothing and scene details. Character trigger inserts your exact training token. This creates text; it does not edit image pixels." },
@@ -16,6 +17,7 @@ const profiles = {
 };
 
 function profileFor(name) {
+    if (name.endsWith("ImageBatchUpload")) return profiles.upload;
     if (name.endsWith("ImageBatchSelector")) return profiles.batch;
     if (name.endsWith("AppearanceOverrides")) return profiles.appearance;
     if (name.endsWith("ImageToText")) return profiles.vision;
@@ -30,11 +32,14 @@ function applyAppearance(node) {
     const design = designs.get(node);
     if (!design) return;
     const enabled = node.properties.dart_design !== false;
+    const ember = node.properties.atelier_theme !== "studio";
+    design.root.dataset.theme = ember ? "ember" : "studio";
+    design.root.style.setProperty("--dart-accent", ember ? "#ffaf69" : design.profile.accent);
     design.widget.hidden = !enabled;
     if (enabled) {
-        node.color = design.profile.color;
-        node.bgcolor = "#172128";
-        node.boxcolor = design.profile.accent;
+        node.color = ember ? "#563021" : design.profile.color;
+        node.bgcolor = ember ? "#251c1b" : "#172128";
+        node.boxcolor = ember ? "#ffaf69" : design.profile.accent;
         node.shape = LiteGraph.ROUND_SHAPE;
     } else {
         Object.assign(node, design.original);
@@ -50,7 +55,7 @@ export function installDesign(node, data) {
     root.setAttribute("aria-label", `${profile.title} guide`);
     root.style.setProperty("--dart-accent", profile.accent);
     root.dataset.state = "ready";
-    root.innerHTML = `<div class="dart-panel-bar"><div class="dart-brand"><span class="dart-mark">PA</span><div><strong>PROMPT ATELIER</strong><span class="dart-role"></span></div></div><span class="dart-state"><i></i><span>READY</span></span><button class="dart-help-button" type="button" aria-expanded="false" title="Show a quick guide and wiring tips for this node">?</button></div><div class="dart-caption"></div><div class="dart-help"><p></p><span>Hover controls and sockets for details. Right-click the node to toggle this design.</span></div><div class="dart-scan"></div>`;
+    root.innerHTML = `<div class="dart-panel-bar"><div class="dart-brand"><span class="dart-mark">PA</span><div><strong>PROMPT ATELIER</strong><span class="dart-role"></span></div></div><span class="dart-state" role="status" aria-live="polite"><i></i><span>READY</span></span><button class="dart-help-button" type="button" aria-expanded="false" title="Show a quick guide and wiring tips for this node">?</button></div><div class="dart-caption"></div><div class="dart-help"><p></p><span>Hover controls and sockets for details. Right-click the node for Ember/Studio themes or to disable the design.</span></div><div class="dart-fire" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><b></b><b></b><b></b></div><div class="dart-scan"></div>`;
     root.querySelector(".dart-role").textContent = profile.title;
     root.querySelector(".dart-caption").textContent = profile.subtitle;
     root.querySelector(".dart-help p").textContent = profile.text || data.description || "Hover each control and socket for help.";
@@ -72,6 +77,18 @@ export function installDesign(node, data) {
         node.setDirtyCanvas(true, true);
     });
     designs.set(node, { root, widget, profile, original });
+    const foreground = node.onDrawForeground;
+    node.onDrawForeground = function (ctx) {
+        foreground?.apply(this, arguments);
+        if (root.dataset.state !== "running" || this.properties.dart_design === false || this.flags?.collapsed) return;
+        ctx.save();
+        ctx.strokeStyle = root.dataset.theme === "ember" ? "#ff9b48" : profile.accent;
+        ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 18; ctx.lineWidth = 3;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(-2,-2,this.size[0]+4,this.size[1]+4,12);
+        else ctx.rect(-2,-2,this.size[0]+4,this.size[1]+4);
+        ctx.stroke(); ctx.restore();
+    };
     applyAppearance(node);
     const size = node.computeSize();
     node.setSize([Math.max(380, node.size[0], size[0]), size[1]]);
@@ -91,13 +108,20 @@ export function toggleDesign(node) {
     node.setDirtyCanvas(true, true);
 }
 
+export function toggleTheme(node) {
+    node.properties.atelier_theme = node.properties.atelier_theme === "studio" ? "ember" : "studio";
+    applyAppearance(node);
+    node.setDirtyCanvas(true, true);
+}
+
 export function setDesignState(node, state) {
     const design = designs.get(node);
     if (!design) return;
     design.root.dataset.state = state;
     design.root.querySelector(".dart-state span").textContent = {
-        ready: "READY", running: "WORKING", done: "DONE", error: "CHECK INPUT", warning: "REVIEW OVERRIDES", blocked: "DOWNSTREAM BLOCKED",
+        ready: "READY", running: "RUNNING", done: "DONE", error: "CHECK INPUT", warning: "REVIEW OVERRIDES", blocked: "DOWNSTREAM BLOCKED",
     }[state] || "READY";
+    node.setDirtyCanvas(true, true);
 }
 
 export function updateDesignBackend(node, server) {

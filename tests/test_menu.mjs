@@ -15,9 +15,10 @@ class Canvas {
 const context = {
     app: { canvas: new Canvas(), registerExtension(value) { extension = value; } },
     api: { addEventListener() {} },
-    installDesign() {}, configureDesign() {}, toggleDesign() {}, setDesignState() {}, updateDesignBackend() {},
+    installDesign() {}, configureDesign() {}, toggleDesign() {}, toggleTheme() {}, setDesignState() {}, updateDesignBackend() {},
     installStatusWidget() {}, updateStatusWidget(node, report) {node.atelierLastReport=report;}, finishedState(node) {return node.atelierLastReport?.status || 'done';},
     combineReports,
+    installUploadWidget() {}, refreshUploadWidget() {},
     connectionsFor, resolveSlot, LGraphCanvas: Canvas,
     addTextPreviewWidgets() {}, updateTextPreviewWidgets(node, message) { previewMessage = message; }, convertToInput() {},
     LiteGraph: {
@@ -29,6 +30,7 @@ const context = {
             DanbooruTagsTransformerAppearanceOverrides: { title: "Prompt Atelier · Appearance Overrides" },
             DanbooruTagsTransformerImageToText: {title:"Prompt Atelier · Image to Text"},
             DanbooruTagsTransformerImageBatchSelector: {title:"Prompt Atelier · Image Batch Selector"},
+            DanbooruTagsTransformerImageBatchUpload: {title:"Prompt Atelier · Image Batch Upload"},
         },
         ContextMenu: class { constructor(entries) { menu = entries; } },
         createNode(type) {
@@ -176,3 +178,11 @@ assert.equal(connections.at(-2).args[0],0);
 assert.equal(connections.at(-2).args[2],0);
 assert.equal(connections.at(-1).args[0],1);
 assert.equal(connections.at(-1).args[2],1);
+batchSource.type='DanbooruTagsTransformerImageBatchUpload';
+canvas.showConnectionMenu({nodeFrom:batchSource,slotFrom:0,e:{}});menu[0].callback();
+assert.equal(connections.at(-1).args[0],1);
+const captionTarget={type:'DanbooruTagsTransformerImageToText',graph,inputs:[{name:'image',type:'IMAGE'},{name:'source_name',type:'STRING'}],findInputSlot(name){return this.inputs.findIndex(slot=>slot.name===name);}};
+canvas.showConnectionMenu({nodeTo:captionTarget,slotTo:0,e:{}});
+const uploadChoice=menu.find(entry=>entry?.content==='Prompt Atelier · Image Batch Upload');assert.ok(uploadChoice);uploadChoice.callback();
+assert.equal(connections.at(-2).args[0],0);assert.equal(connections.at(-2).args[2],0);
+assert.equal(connections.at(-1).args[0],1);assert.equal(connections.at(-1).args[2],1);
