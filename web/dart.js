@@ -6,6 +6,27 @@ import { connectionsFor, resolveSlot } from "./connections.mjs";
 import { installDesign, configureDesign, toggleDesign, setDesignState, updateDesignBackend } from "./design.mjs";
 
 const labels = new Map();
+const layoutFields = ["canvas_width", "canvas_height", "layout_json"];
+const guardedSlots = new WeakSet();
+
+function updateLayoutSockets(node, layout) {
+    for (const slot of node.inputs || []) {
+        if (!layoutFields.includes(slot.name)) continue;
+        slot.dartInactive = !layout;
+        // Keep slot indices and existing links intact. Native widget hiding alone
+        // still paints compatible/connected sockets during a drag.
+        if (guardedSlots.has(slot)) continue;
+        guardedSlots.add(slot);
+        for (const method of ["draw", "drawCollapsed", "isValidTarget"]) {
+            const original = slot[method];
+            if (typeof original !== "function") continue;
+            slot[method] = function (...args) {
+                if (this.dartInactive) return method === "isValidTarget" ? false : undefined;
+                return original.apply(this, args);
+            };
+        }
+    }
+}
 
 function updateDescribeControls(node) {
     const server = node.widgets?.find((widget) => widget.name === "backend")?.value === "Chat server";
@@ -13,8 +34,9 @@ function updateDescribeControls(node) {
     for (const widget of node.widgets || []) {
         if (["endpoint", "model", "timeout", "api_key_env"].includes(widget.name)) widget.hidden = !server;
         if (widget.name === "local_model") widget.hidden = server;
-        if (["canvas_width", "canvas_height", "layout_json"].includes(widget.name)) widget.hidden = !layout;
+        if (layoutFields.includes(widget.name)) widget.hidden = !layout;
     }
+    updateLayoutSockets(node, layout);
     updateDesignBackend(node, server);
     const size = node.computeSize();
     node.setSize([Math.max(420, node.size[0], size[0]), size[1]]);
@@ -63,7 +85,8 @@ app.registerExtension({
                 model: "Chat model", keep_tags: "Keep exact tags", avoid: "Avoid",
                 description: "Scene / keywords (optional with source tags)", custom_instructions: "Custom instructions",
                 canvas_width: "MOSS canvas width", canvas_height: "MOSS canvas height", layout_json: "Edit MOSS JSON (optional override)",
-                instructions: "Caption instructions / replacements", character_trigger: "Character trigger", image_index: "Image in batch", max_tokens: "Caption token limit" };
+                instructions: "Caption instructions / replacements", character_trigger: "Character trigger", image_index: "Image in batch",
+                prompt_length: "Prompt length", language_style: "Language style", max_tokens: "Generation token limit" };
             for (const widget of this.widgets || []) {
                 if (names[widget.name]) widget.label = names[widget.name];
             }
@@ -77,6 +100,11 @@ app.registerExtension({
                 };
             }
             updateDescribeControls(this);
+        };
+        const slotAt = nodeType.prototype.getSlotInPosition;
+        if (slotAt) nodeType.prototype.getSlotInPosition = function (...args) {
+            const found = slotAt.apply(this, args);
+            return found?.input?.dartInactive ? null : found;
         };
         const configured = nodeType.prototype.onConfigure;
         nodeType.prototype.onConfigure = function (data) {
@@ -99,7 +127,27 @@ app.registerExtension({
         const executed = nodeType.prototype.onExecuted;
         nodeType.prototype.onExecuted = function (message) {
             executed?.apply(this, arguments);
-            updateTextPreviewWidgets(this, message);
+            const json = message?.moss_json?.[0] === true;
+            const mode = this.widgets?.find((widget) => widget.name === "preview_mode");
+            // Markdown is a preview choice only: output wires always contain raw JSON.
+            if (json && !this.properties.dart_seen_json_preview && mode) {
+                mode.value = true;
+                this.properties.dart_seen_json_preview = true;
+            }
+            this.dartPreviewMessage = message;
+            const refresh = () => {
+                const current = this.dartPreviewMessage;
+                const formatted = current?.moss_json?.[0] && mode?.value;
+                updateTextPreviewWidgets(this, formatted ? {
+                    ...current, text: (current.text || []).map((text) => "```json\n" + text + "\n```"),
+                } : current);
+            };
+            if (mode && !mode.dartRefreshInstalled) {
+                const callback = mode.callback;
+                mode.callback = (...args) => { callback?.apply(mode, args); refresh(); };
+                mode.dartRefreshInstalled = true;
+            }
+            refresh();
         };
     },
     setup() {

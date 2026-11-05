@@ -75,17 +75,24 @@ def layout_instruction(width, height):
     return f"""
 Also return layout_draft, an object with summary and items for a {width}x{height} canvas.
 summary has meta (a short list of style/media tags), canvas (\"single\"), and caption (the overall scene).
+Write a substantive summary caption and specific item captions at the requested prompt length.
+Describe appearance, pose, clothing or surface textures, light, color, spatial relationships and framing
+where supported. Item captions should add local detail instead of repeating the summary.
 Each item has label (\"object\" or \"text\"), caption, and bbox [x_min,y_min,x_max,y_max].
 These draft boxes are TOP-LEFT pixel xyxy coordinates: x from 0 to {width}, y from 0 to {height}.
 Use at most 8 major items. All boxes must have positive area inside the canvas. Plan natural composition;
 intentional overlaps are allowed. Do not draw boxes around every small attribute.
 For text items include text with the EXACT requested wording and line breaks. Do not invent visible text.
+Only create text items when the user explicitly requests visible words in the image.
+Never turn the scene description, source tags or writing instructions into a text item.
+When no visible wording is requested, use object items only. This need not be a poster.
 Object items do not need text. Avoid prohibited concepts. Keep required concepts in summary.caption.
 Do not output centered coordinates: the application converts the draft into MOSS coordinates.
 The exact layout_draft structure is:
-{{"summary":{{"meta":["poster"],"canvas":"single","caption":"Overall scene"}},"items":[
-{{"label":"text","caption":"Typography and placement","text":"Exact requested visible words","bbox":[0,0,{width // 2},{height // 4}]}},
-{{"label":"object","caption":"Main subject","bbox":[0,{height // 4},{width},{height}]}}
+{{"summary":{{"meta":["requested medium/style"],"canvas":"single","caption":"Write the full overall scene here"}},"items":[
+{{"label":"object","caption":"Write this subject's specific appearance, pose, materials and light here","bbox":[0,{height // 4},{width},{height}]}}
 ]}}
-This is a schema example, not the requested scene. Every text item MUST have its own text key.
+This is a schema example, not the requested scene. Replace every placeholder.
+If visible words ARE requested, add a text item with label text, caption describing its lettering/placement,
+text containing ONLY those exact visible words, and its own bbox. Every text item MUST have a text key.
 """

@@ -4,6 +4,7 @@ import json
 import re
 
 from .local_assistant import load_local_clip
+from .assistant import language_guidance
 
 
 VISION_SYSTEM = """Describe the supplied image as a precise image-generation caption.
@@ -21,7 +22,7 @@ Return only the finished caption, without a heading, explanation, JSON or quotat
 
 
 def caption_image(image, instructions="", character_trigger="", detail="Detailed", image_index=0,
-                  max_tokens=1024, model_name="Automatic", clip=None):
+                  max_tokens=1024, model_name="Automatic", clip=None, language_style="Default"):
     import torch
     if not isinstance(image, torch.Tensor) or image.ndim != 4 or image.shape[-1] not in (3, 4) or min(image.shape[:3]) < 1:
         raise ValueError("Connect an IMAGE from Load Image: expected a nonempty batch of RGB/RGBA images.")
@@ -31,6 +32,7 @@ def caption_image(image, instructions="", character_trigger="", detail="Detailed
         raise ValueError("Choose Detailed or Concise caption detail.")
     if not 64 <= max_tokens <= 4096:
         raise ValueError("Caption max_tokens must be between 64 and 4096.")
+    system = VISION_SYSTEM + language_guidance(language_style)
     from comfy_extras.nodes_textgen import TextGenerate
     model = load_local_clip(model_name, clip)
     prompt = json.dumps({
@@ -40,7 +42,7 @@ def caption_image(image, instructions="", character_trigger="", detail="Detailed
     output = TextGenerate.execute(
         clip=model, prompt=prompt, image=image[image_index:image_index + 1, :, :, :3],
         max_length=max_tokens, sampling_mode={"sampling_mode": "off"},
-        thinking=False, system_prompt=VISION_SYSTEM, mtp="off",
+        thinking=False, system_prompt=system, mtp="off",
     )
     caption = re.sub(r"<think>.*?</think>", "", output.args[0], flags=re.S).strip()
     if not caption:

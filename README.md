@@ -20,6 +20,14 @@ An expanded fork of [nkchocoai/ComfyUI-Dart](https://github.com/nkchocoai/ComfyU
 
 All 15 nodes include hover help and role-colored guides. Assistants show their result directly. Execution animations respect reduced motion; node designs can be toggled from the context menu.
 
+## Control prompt detail and wording
+
+Text Assistant offers **Brief**, **Balanced**, **Detailed**, and **Extensive** prompt lengths. These are approximate detail targets. **Generation token limit** separately caps the entire response, including internal JSON and tags. Start with Detailed and 4096 tokens; try 8192 for Extensive layouts. Preserve prioritizes fidelity over word count; Expand and Concept allow creative additions.
+
+MOSS JSON is indented on its output wire and displayed in a fenced JSON block in Markdown preview. Switch the preview to Plain text to copy raw JSON. Feed **prompt** directly to MOSS conditioning: Markdown fences never go over that wire. Canvas controls and sockets are inactive outside JSON mode; existing connections are retained for switching back.
+
+Both assistants offer **Language style → Direct / explicit**, requesting precise terminology without euphemisms or masked words. It preserves supplied wording without introducing unrequested sexual details. The selected model's own capabilities and policies still determine its response. Custom instructions allow finer writing directions.
+
 ## Install
 
 This is a **replacement fork** of ComfyUI-Dart. Disable or remove the original installation before installing Prompt Atelier: legacy node IDs are retained so existing workflows load, and the two packs must not register them together. Keep a backup of your workflows.
@@ -33,7 +41,7 @@ python -m pip install -r prompt-atelier/requirements.txt
 
 Restart ComfyUI. Find nodes under **Prompt Atelier / Assistants**, **Vision**, and **DART**. The assistant names are **Prompt Atelier · Text Assistant** and **Prompt Atelier · Image to Text**; DART-specific tools keep their DART names. Existing workflow class IDs and socket positions are unchanged. An existing installed folder can stay named ComfyUI-Dart; folder names are not used for imports.
 
-**Manager/Registry:** listing is not live yet. The metadata and manual publication workflow are prepared; publisher @renz1998 is configured, and the publishing key still needs to be connected. See [PUBLISHING.md](PUBLISHING.md). Manual Git installation works independently of Registry approval.
+**Manager/Registry:** listing is not live yet. Publisher @renz1998 and the GitHub Actions publishing key are configured; release validation is in progress. See [PUBLISHING.md](PUBLISHING.md). Manual Git installation works independently of Registry approval.
 
 ## Try a workflow
 

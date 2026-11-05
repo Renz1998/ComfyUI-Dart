@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { connectionsFor, resolveSlot } from "../web/connections.mjs";
 
-let extension, menu;
+let extension, menu, previewMessage;
 const connections = [];
 const graph = { beforeChange() {}, afterChange() {}, add(node) { node.graph = this; } };
 class Canvas {
@@ -16,7 +16,7 @@ const context = {
     api: { addEventListener() {} },
     installDesign() {}, configureDesign() {}, toggleDesign() {}, setDesignState() {}, updateDesignBackend() {},
     connectionsFor, resolveSlot, LGraphCanvas: Canvas,
-    addTextPreviewWidgets() {}, updateTextPreviewWidgets() {}, convertToInput() {},
+    addTextPreviewWidgets() {}, updateTextPreviewWidgets(node, message) { previewMessage = message; }, convertToInput() {},
     LiteGraph: {
         registered_node_types: {
             CLIPTextEncode: { title: "CLIP Text Encode" }, PreviewAny: { title: "Preview as Text" },
@@ -63,12 +63,16 @@ assert.equal(connections[3].args[2], 2); // source_tags, not description or anot
 class Describe {
     constructor() {
         this.size = [380, 500];
-        this.widgets = ["backend", "local_model", "endpoint", "model", "timeout", "api_key_env", "keep_tags", "avoid", "target", "canvas_width", "canvas_height", "layout_json"]
+        this.properties = {};
+        this.inputs = ["canvas_width", "canvas_height", "layout_json"].map((name) => ({name,
+            link: 123, draw() { return "drawn"; }, isValidTarget() { return true; }}));
+        this.widgets = ["backend", "local_model", "endpoint", "model", "timeout", "api_key_env", "keep_tags", "avoid", "target", "canvas_width", "canvas_height", "layout_json", "preview_mode"]
             .map((name) => ({ name, value: name === "backend" ? "Local model" : "" }));
     }
     setSize(size) { this.size = size; }
     computeSize() { return [400, 500]; }
     setDirtyCanvas() {}
+    getSlotInPosition() { return {input: this.inputs[0]}; }
 }
 extension.beforeRegisterNodeDef(Describe, {name: "DanbooruTagsTransformerDescribeImage"});
 const describeNode = new Describe();
@@ -83,11 +87,24 @@ assert.equal(describeNode.widgets.find((w) => w.name === "local_model").hidden, 
 assert.equal(backend.label, "Assistant");
 assert.equal(describeNode.size[0], 420);
 assert.equal(describeNode.widgets.find((w) => w.name === "canvas_width").hidden, true);
+assert.equal(describeNode.inputs[0].draw(), undefined);
+assert.equal(describeNode.inputs[0].isValidTarget(), false);
+assert.equal(describeNode.getSlotInPosition(), null);
 const targetControl = describeNode.widgets.find((w) => w.name === "target");
 targetControl.value = "MOSS JSON layout";
 targetControl.callback("MOSS JSON layout");
 assert.equal(describeNode.widgets.find((w) => w.name === "canvas_width").hidden, false);
 assert.equal(describeNode.widgets.find((w) => w.name === "layout_json").hidden, false);
+assert.equal(describeNode.inputs[0].draw(), "drawn");
+assert.equal(describeNode.inputs[0].isValidTarget(), true);
+assert.equal(describeNode.inputs[0].link, 123);
+assert.equal(describeNode.getSlotInPosition().input.name, "canvas_width");
+describeNode.onExecuted({text: ['{\n  "summary": {}\n}'], moss_json: [true]});
+assert.equal(previewMessage.text[0], '```json\n{\n  "summary": {}\n}\n```');
+const previewMode = describeNode.widgets.find((w) => w.name === "preview_mode");
+previewMode.value = false;
+previewMode.callback();
+assert.equal(previewMessage.text[0], '{\n  "summary": {}\n}');
 targetControl.value = "Natural language";
 targetControl.callback("Natural language");
 assert.equal(describeNode.widgets.find((w) => w.name === "layout_json").hidden, true);

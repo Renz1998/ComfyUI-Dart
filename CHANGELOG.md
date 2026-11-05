@@ -6,6 +6,9 @@
 - Added source/model credits, Registry-shaped metadata, icon/banner, manual publication preparation and contributor guidance.
 - Added combined workflows for descriptions/photos → DART v3, photos → MOSS JSON, shared vision-to-prose, and keywords → MOSS JSON.
 - Grouped tools into Assistants, Vision and DART categories.
+- Added four prompt lengths, a configurable generation budget, and direct-language wording options for both assistants.
+- Formatted MOSS JSON output and Markdown preview; inactive layout sockets no longer draw or accept drops outside JSON mode.
+- Improved MOSS caption detail, removed a misleading example text box, and added one bounded revision for very short Detailed/Extensive creative responses.
 
 ## 1.4.0
 

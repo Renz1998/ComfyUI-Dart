@@ -34,9 +34,10 @@ def load_local_clip(model_name="Automatic", clip=None):
 
 
 def describe_local(description, mode, required, avoid, seed, model_name="Automatic", clip=None,
-                   source_tags="", custom_instructions="", target="DART tags", canvas_width=1024, canvas_height=1024):
+                   source_tags="", custom_instructions="", target="DART tags", canvas_width=1024, canvas_height=1024,
+                   prompt_length="Balanced", language_style="Default", max_tokens=4096):
     system, scene_input = scene_request(description, mode, required, avoid, source_tags, custom_instructions, target,
-                                       canvas_width, canvas_height)
+                                       canvas_width, canvas_height, prompt_length, language_style, max_tokens)
     from comfy_extras.nodes_textgen import TextGenerate
 
     clip = load_local_clip(model_name, clip)
@@ -46,7 +47,7 @@ def describe_local(description, mode, required, avoid, seed, model_name="Automat
         "top_p": 0.9, "min_p": 0.05, "repetition_penalty": 1.05, "seed": seed,
     }
     output = TextGenerate.execute(
-        clip=clip, prompt=payload, max_length=3072 if target == "MOSS JSON layout" else 1536, sampling_mode=sampling,
+        clip=clip, prompt=payload, max_length=max_tokens, sampling_mode=sampling,
         thinking=False, system_prompt=system, mtp="off",
     )
     scene = parse_scene(output.args[0])

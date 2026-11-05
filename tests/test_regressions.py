@@ -224,6 +224,9 @@ class MossTests(unittest.TestCase):
                                    layout_json=json.dumps(layout), keep_tags='must not corrupt JSON')
         local.assert_not_called()
         self.assertEqual(json.loads(result['result'][0]), layout)
+        self.assertIn('\n  "summary":', result['result'][0])
+        self.assertFalse(result['result'][0].startswith('```'))
+        self.assertEqual(result['ui']['moss_json'], [True])
         self.assertEqual(len(result['result']), 6)
 
     def test_generated_layout_is_compiled_and_custom_instructions_reach_request(self):
@@ -254,6 +257,52 @@ class MossTests(unittest.TestCase):
 
 
 class AssistantTests(unittest.TestCase):
+    def test_short_detailed_response_gets_one_revision_but_preserve_does_not(self):
+        node = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
+        longer = {**SCENE, 'description': ' '.join(['visual detail'] * 100)}
+        with patch('dart_plugin.py.nodes.assistant.describe_local', side_effect=[SCENE, longer]) as query:
+            output = node.describe('cafe', 'MOSS prose', 'Expand', '', '', 0, prompt_length='Detailed')
+        self.assertEqual(query.call_count, 2)
+        self.assertEqual(output['result'][0], longer['description'])
+        with patch('dart_plugin.py.nodes.assistant.describe_local', return_value=SCENE) as query:
+            node.describe('cafe', 'MOSS prose', 'Preserve', '', '', 0, prompt_length='Extensive')
+        self.assertEqual(query.call_count, 1)
+
+    def test_length_language_and_budget_reach_both_backends(self):
+        node = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
+        for backend, name in [('Local model', 'describe_local'), ('Chat server', 'request_scene')]:
+            with self.subTest(backend=backend), patch('dart_plugin.py.nodes.assistant.' + name, return_value=SCENE) as query:
+                node.describe('cafe', 'MOSS prose', 'Expand', 'http://localhost/v1', 'qwen', 0,
+                              backend=backend, prompt_length='Extensive', max_tokens=8192,
+                              language_style='Direct / explicit')
+                self.assertEqual(query.call_args.kwargs['max_tokens'], 8192)
+                self.assertEqual(query.call_args.kwargs['prompt_length'], 'Extensive')
+                self.assertEqual(query.call_args.kwargs['language_style'], 'Direct / explicit')
+
+    def test_length_guidance_preserves_fidelity_and_language_is_opt_in(self):
+        default, _ = scene_request('cafe', 'Preserve', '', '')
+        detailed, payload = scene_request('cafe', 'Preserve', '', '', prompt_length='Extensive',
+                                         language_style='Direct / explicit', max_tokens=8192)
+        self.assertIn('400–650', detailed)
+        self.assertIn('fidelity', detailed)
+        self.assertIn('avoid euphemisms', detailed)
+        self.assertNotIn('avoid euphemisms', default)
+        self.assertEqual(payload['prompt_length'], 'Extensive')
+        with self.assertRaisesRegex(ValueError, 'token limit'):
+            scene_request('cafe', 'Preserve', '', '', max_tokens=1)
+
+    def test_local_generation_uses_selected_budget(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from dart_plugin.py.dart.local_assistant import describe_local
+        execute = Mock(return_value=SimpleNamespace(args=(json.dumps(SCENE),)))
+        module = SimpleNamespace(TextGenerate=SimpleNamespace(execute=execute))
+        with patch.dict(sys.modules, {'comfy_extras.nodes_textgen': module}):
+            describe_local('cafe', 'Concept', '', '', 0, clip='model', max_tokens=8192,
+                           prompt_length='Detailed', language_style='Direct / explicit')
+        self.assertEqual(execute.call_args.kwargs['max_length'], 8192)
+        self.assertIn('200–350', execute.call_args.kwargs['system_prompt'])
+
     def test_keywords_only_concept_and_custom_instructions_reach_local_model(self):
         node = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
         instructions = 'Create a photograph. Do not use realistic or photorealistic. Only output the prompt.'
@@ -366,6 +415,10 @@ class AssistantTests(unittest.TestCase):
 
 
 class VisionTests(unittest.TestCase):
+    def test_direct_language_reaches_vision_system(self):
+        _, execute, _ = self.run_caption(torch.zeros(1, 16, 16, 3), language_style='Direct / explicit')
+        self.assertIn('avoid euphemisms', execute.call_args.kwargs['system_prompt'])
+
     def run_caption(self, image, caption='A blue square on a pale background.', **kwargs):
         from types import SimpleNamespace
         from unittest.mock import Mock

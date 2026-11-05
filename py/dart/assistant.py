@@ -11,6 +11,35 @@ from .tags import keep_tags, split_tags
 from .moss import layout_instruction
 
 TARGETS = ["DART tags", "Anima hybrid", "MOSS prose", "Natural language", "MOSS JSON layout"]
+PROMPT_LENGTHS = ["Brief", "Balanced", "Detailed", "Extensive"]
+LANGUAGE_STYLES = ["Default", "Direct / explicit"]
+
+
+def language_guidance(language_style):
+    if language_style not in LANGUAGE_STYLES:
+        raise ValueError("Choose a supported language style.")
+    return ("Use direct, precise visual and anatomical language, including explicit terminology supplied "
+            "by the user when applicable. Preserve the requested meaning and intensity; avoid euphemisms, "
+            "asterisk masking and unsolicited moral commentary. Do not introduce sexual details absent "
+            "from the request. This is a wording preference, not a request to override model policies.\n"
+            if language_style == "Direct / explicit" else "")
+
+
+def generation_guidance(prompt_length="Balanced", language_style="Default", max_tokens=4096):
+    if prompt_length not in PROMPT_LENGTHS or language_style not in LANGUAGE_STYLES:
+        raise ValueError("Choose a supported prompt length and language style.")
+    if isinstance(max_tokens, bool) or not isinstance(max_tokens, int) or not 512 <= max_tokens <= 16384:
+        raise ValueError("Generation token limit must be an integer from 512 to 16384.")
+    words, tags = {"Brief": ("40–80", "8–15"), "Balanced": ("100–180", "15–30"),
+                   "Detailed": ("200–350", "30–50"), "Extensive": ("400–650", "45–75")}[prompt_length]
+    guidance = (f"\nRequested prompt length: {prompt_length}. Aim for {words} words in the description "
+                f"and {tags} relevant tags when the supplied scene supports them. "
+                "For layout_draft, apply the word target to summary.caption and item captions combined. "
+                "Describe subject appearance, pose, materials, setting, composition, light and color when supported. "
+                "Do not pad with repeated synonyms or invent facts to reach a word count. Preserve mode's fidelity "
+                "takes priority over length. Custom instructions can refine the requested length. "
+                "Finish the complete JSON within the available generation budget.\n")
+    return guidance + language_guidance(language_style)
 
 SYSTEM_PROMPT = """You turn image descriptions into faithful image-generation prompts.
 Return ONLY a JSON object with these fields:
@@ -37,7 +66,8 @@ where known, such as looking out window, rain, indoors, and red coat.
 
 
 def scene_request(description, mode, required, avoid, source_tags="", custom_instructions="", target="DART tags",
-                  canvas_width=1024, canvas_height=1024):
+                  canvas_width=1024, canvas_height=1024, prompt_length="Balanced", language_style="Default",
+                  max_tokens=4096):
     if not description.strip() and not source_tags.strip():
         raise ValueError("Enter a description or connect source tags from Dart Generate first.")
     system = SYSTEM_PROMPT + "\nThe output_target specifies the final prompt style. For Natural language or MOSS prose, write a fluent image prompt in description. For Anima hybrid, provide complementary tags and prose.\n"
@@ -48,18 +78,23 @@ def scene_request(description, mode, required, avoid, source_tags="", custom_ins
                    "They may creatively reinterpret the input when requested. Keep the JSON schema above: "
                    "requests such as 'only output the prompt' mean no explanations inside description; "
                    "the application extracts the final prompt from your JSON. Keep literal required tags intact.\n")
+    system += generation_guidance(prompt_length, language_style, max_tokens)
     return system, {
         "description": description, "source_tags": source_tags, "mode": mode,
         "required_literal_tags": required, "avoid": avoid,
         "custom_instructions": custom_instructions, "output_target": target,
+        "prompt_length": prompt_length, "language_style": language_style,
+        "length_instruction": {"Brief": "40–80 words", "Balanced": "100–180 words",
+                               "Detailed": "200–350 words", "Extensive": "400–650 words"}[prompt_length],
     }
 
 
 def request_scene(description, endpoint, model, mode, required, avoid, seed,
                   timeout=120, api_key_env="", source_tags="", custom_instructions="", target="DART tags",
-                  canvas_width=1024, canvas_height=1024):
+                  canvas_width=1024, canvas_height=1024, prompt_length="Balanced", language_style="Default",
+                  max_tokens=4096):
     system, scene_input = scene_request(description, mode, required, avoid, source_tags, custom_instructions, target,
-                                       canvas_width, canvas_height)
+                                       canvas_width, canvas_height, prompt_length, language_style, max_tokens)
     parsed = urlsplit(endpoint)
     if parsed.scheme not in ("http", "https") or not parsed.hostname or parsed.query or parsed.fragment:
         raise ValueError("Use a chat server base URL such as http://localhost:1234/v1.")
@@ -80,7 +115,7 @@ def request_scene(description, endpoint, model, mode, required, avoid, seed,
             {"role": "user", "content": json.dumps(scene_input, ensure_ascii=False)},
         ],
         "temperature": 0.2 if mode == "Preserve" else 0.7,
-        "max_tokens": 3072 if target == "MOSS JSON layout" else 1536,
+        "max_tokens": max_tokens,
         "seed": seed,
         "stream": False,
     }
@@ -97,6 +132,8 @@ def request_scene(description, endpoint, model, mode, required, avoid, seed,
         content = result["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError):
         raise ValueError("The chat server returned no assistant message. Check its model and chat-completions support.") from None
+    if result["choices"][0].get("finish_reason") == "length":
+        raise ValueError("The assistant reached the generation token limit. Increase max_tokens or choose a shorter prompt length.")
     scene = parse_scene(content)
     scene["source_description"] = description
     scene["source_tags"] = source_tags
