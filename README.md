@@ -41,7 +41,7 @@ python -m pip install -r prompt-atelier/requirements.txt
 
 Restart ComfyUI. Find nodes under **Prompt Atelier / Assistants**, **Vision**, and **DART**. The assistant names are **Prompt Atelier · Text Assistant** and **Prompt Atelier · Image to Text**; DART-specific tools keep their DART names. Existing workflow class IDs and socket positions are unchanged. An existing installed folder can stay named ComfyUI-Dart; folder names are not used for imports.
 
-**Manager/Registry:** listing is not live yet. Publisher @renz1998 and the GitHub Actions publishing key are configured; release validation is in progress. See [PUBLISHING.md](PUBLISHING.md). Manual Git installation works independently of Registry approval.
+**Registry:** [Prompt Atelier 1.5.0 is published](https://registry.comfy.org/nodes/prompt-atelier) under @renz1998. The public page provides `comfy node install prompt-atelier`. Manager search visibility is not yet verified. See [PUBLISHING.md](PUBLISHING.md).
 
 ## Try a workflow
 

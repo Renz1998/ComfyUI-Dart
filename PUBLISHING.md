@@ -2,18 +2,18 @@
 
 ## Current status
 
-The repository metadata, credits, icon/banner, workflow gallery, tests and manual publishing action are prepared. **Publisher [@renz1998](https://registry.comfy.org/publishers/renz1998) and its GitHub Actions publishing secret are configured. This pack has not yet been published to Comfy Registry; release validation is in progress.** A GitHub repository or a successful test run does not establish Manager visibility.
+**Version 1.5.0 was published on November 5, 2026**, under [@renz1998](https://registry.comfy.org/publishers/renz1998). The [public Registry page](https://registry.comfy.org/nodes/prompt-atelier) shows Version 1.5.0 and its install command. The [publishing workflow](https://github.com/Renz1998/ComfyUI-Prompt-Atelier/actions/runs/42039759348) completed validation and upload successfully, using source commit efda46a62b7e0e73ce4c0845478d5b8741e07085. Manager search visibility and any separate review/indexing status have not been verified.
 
 ## Registry route
 
 Follow the [official publishing guide](https://docs.comfy.org/registry/publishing) and [metadata specification](https://docs.comfy.org/registry/specifications):
 
 1. Completed: publisher `renz1998` is registered at registry.comfy.org. Its publisher ID is permanent.
-2. Completed: `PublisherId = "renz1998"` is set under `[tool.comfy]` in pyproject.toml. The package ID is `prompt-atelier`; it is not reserved until Registry publication.
+2. Completed: `PublisherId = "renz1998"` is set under `[tool.comfy]` in pyproject.toml. The published package ID is `prompt-atelier`.
 3. Completed: the publisher key is saved in GitHub Actions Secrets as `REGISTRY_ACCESS_TOKEN`. Never put its value in source, workflow examples, issues or chat.
 4. Ensure the public default branch is `main` and includes this implementation, not the untouched upstream branch. Repository, icon and banner URLs must resolve publicly.
-5. Run **Publish Prompt Atelier** manually from GitHub Actions on main. It validates metadata and runs the test suites before the official publish action.
-6. Check the actual Registry version status and search result in Manager. Publication/scanning/indexing may require additional review. Do not label it installable in Manager before verifying the listing.
+5. Completed for 1.5.0: **Publish Prompt Atelier** ran on main and passed metadata validation, all 42 Python tests and both JavaScript suites before upload.
+6. Public Registry version/page verified. Manager search visibility remains to be checked; publication/scanning/indexing can be separate steps.
 
 The action is manual-only; changing documentation or branding does not automatically publish a package. Increment the version for each subsequent Registry release.
 
