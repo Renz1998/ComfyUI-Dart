@@ -33,7 +33,7 @@ python -m pip install -r prompt-atelier/requirements.txt
 
 Restart ComfyUI. Find nodes under **Prompt Atelier / Assistants**, **Vision**, and **DART**. The assistant names are **Prompt Atelier · Text Assistant** and **Prompt Atelier · Image to Text**; DART-specific tools keep their DART names. Existing workflow class IDs and socket positions are unchanged. An existing installed folder can stay named ComfyUI-Dart; folder names are not used for imports.
 
-**Manager/Registry:** listing is not live yet. The metadata and manual publication workflow are prepared; a real Comfy Registry publisher identity and publishing key are still required. See [PUBLISHING.md](PUBLISHING.md). Manual Git installation works independently of Registry approval.
+**Manager/Registry:** listing is not live yet. The metadata and manual publication workflow are prepared; publisher @renz1998 is configured, and the publishing key still needs to be connected. See [PUBLISHING.md](PUBLISHING.md). Manual Git installation works independently of Registry approval.
 
 ## Try a workflow
 

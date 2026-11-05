@@ -16,4 +16,4 @@ Documentation = "https://github.com/Renz1998/ComfyUI-Prompt-Atelier/blob/main/QU
 DisplayName = "Prompt Atelier"
 Icon = "https://raw.githubusercontent.com/Renz1998/ComfyUI-Prompt-Atelier/main/assets/icon.svg"
 Banner = "https://raw.githubusercontent.com/Renz1998/ComfyUI-Prompt-Atelier/main/assets/banner.svg"
-# PublisherId must be the actual ID created at registry.comfy.org. See PUBLISHING.md.
+PublisherId = "renz1998"

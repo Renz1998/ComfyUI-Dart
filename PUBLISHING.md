@@ -2,14 +2,14 @@
 
 ## Current status
 
-The repository metadata, credits, icon/banner, workflow gallery, tests and a manual Registry publishing action are prepared. **No Registry publisher identity is configured and this pack has not been published to Comfy Registry.** A GitHub repository or a successful test run does not establish Manager visibility.
+The repository metadata, credits, icon/banner, workflow gallery, tests and a manual Registry publishing action are prepared. **Publisher [@renz1998](https://registry.comfy.org/publishers/renz1998) is created and configured. This pack has not yet been published to Comfy Registry; the publishing key still needs to be connected.** A GitHub repository or a successful test run does not establish Manager visibility.
 
 ## Registry route
 
 Follow the [official publishing guide](https://docs.comfy.org/registry/publishing) and [metadata specification](https://docs.comfy.org/registry/specifications):
 
-1. Create or select your publisher at registry.comfy.org. Its publisher ID is permanent; choose it yourself.
-2. Add the actual ID as `PublisherId` under `[tool.comfy]` in pyproject.toml. The prepared package ID is `prompt-atelier`; its availability is not reserved by this repository.
+1. Completed: publisher `renz1998` is registered at registry.comfy.org. Its publisher ID is permanent.
+2. Completed: `PublisherId = "renz1998"` is set under `[tool.comfy]` in pyproject.toml. The package ID is `prompt-atelier`; it is not reserved until Registry publication.
 3. Create a Registry publishing key for that publisher and save it in GitHub Actions Secrets as `REGISTRY_ACCESS_TOKEN`. Do not put the key in source, workflow examples, issues or chat.
 4. Ensure the public default branch is `main` and includes this implementation, not the untouched upstream branch. Repository, icon and banner URLs must resolve publicly.
 5. Run **Publish Prompt Atelier** manually from GitHub Actions on main. It validates metadata and runs the test suites before the official publish action.
