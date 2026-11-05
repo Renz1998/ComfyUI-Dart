@@ -7,6 +7,7 @@ from ..dart.moss import compile_layout, read_layout
 
 
 class DanbooruTagsTransformerDescribeImage(BaseNode):
+    CATEGORY = "Prompt Atelier/Assistants"
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {

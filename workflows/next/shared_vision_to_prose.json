@@ -1,0 +1,575 @@
+{
+  "last_node_id": 6,
+  "last_link_id": 5,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        20,
+        20
+      ],
+      "size": [
+        400,
+        440
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "dart-vision-example.png",
+        "image"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "DanbooruTagsTransformerImageToText",
+      "pos": [
+        500,
+        20
+      ],
+      "size": [
+        560,
+        780
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 1
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2,
+          "shape": 7
+        },
+        {
+          "name": "instructions",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "instructions"
+          }
+        },
+        {
+          "name": "detail",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "detail"
+          }
+        },
+        {
+          "name": "local_model",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "local_model"
+          }
+        },
+        {
+          "name": "character_trigger",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "character_trigger"
+          }
+        },
+        {
+          "name": "image_index",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "image_index"
+          }
+        },
+        {
+          "name": "max_tokens",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "max_tokens"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "description",
+          "type": "STRING",
+          "links": [
+            4
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerImageToText"
+      },
+      "widgets_values": [
+        "Describe the image in detail. Keep exact visible text.",
+        "Detailed",
+        "Automatic",
+        "",
+        0,
+        1024
+      ],
+      "dart_widget_values": {
+        "instructions": "Describe the image in detail. Keep exact visible text.",
+        "detail": "Detailed",
+        "local_model": "Automatic",
+        "character_trigger": "",
+        "image_index": 0,
+        "max_tokens": 1024
+      }
+    },
+    {
+      "id": 3,
+      "type": "DanbooruTagsTransformerDescribeImage",
+      "pos": [
+        1140,
+        20
+      ],
+      "size": [
+        560,
+        1000
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "clip",
+          "name": "clip",
+          "shape": 7,
+          "type": "CLIP",
+          "link": 3
+        },
+        {
+          "localized_name": "source_tags",
+          "name": "source_tags",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "localized_name": "description",
+          "name": "description",
+          "type": "STRING",
+          "widget": {
+            "name": "description"
+          },
+          "link": 4
+        },
+        {
+          "localized_name": "target",
+          "name": "target",
+          "type": "COMBO",
+          "widget": {
+            "name": "target"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "mode",
+          "name": "mode",
+          "type": "COMBO",
+          "widget": {
+            "name": "mode"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "endpoint",
+          "name": "endpoint",
+          "type": "STRING",
+          "widget": {
+            "name": "endpoint"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "STRING",
+          "widget": {
+            "name": "model"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "keep_tags",
+          "name": "keep_tags",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "keep_tags"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "avoid",
+          "name": "avoid",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "avoid"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "timeout",
+          "name": "timeout",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "timeout"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "api_key_env",
+          "name": "api_key_env",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "api_key_env"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "backend",
+          "name": "backend",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "backend"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "local_model",
+          "name": "local_model",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "local_model"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "custom_instructions",
+          "name": "custom_instructions",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "custom_instructions"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "canvas_width",
+          "name": "canvas_width",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "canvas_width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "canvas_height",
+          "name": "canvas_height",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "canvas_height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "layout_json",
+          "name": "layout_json",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "layout_json"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            5
+          ]
+        },
+        {
+          "name": "general_tags",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "copyright",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "character",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "negative_prompt",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "scene_json",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerDescribeImage"
+      },
+      "widgets_values": [
+        "",
+        "Natural language",
+        "Concept",
+        "http://localhost:1234/v1",
+        "",
+        42,
+        "fixed",
+        "",
+        "",
+        120,
+        "",
+        "Local model",
+        "Automatic",
+        "Develop a coherent photographic scene from this caption. Describe concrete framing, light and texture. Output only the prompt.",
+        1024,
+        1024,
+        ""
+      ],
+      "widgets_values_named": {
+        "description": "",
+        "target": "Natural language",
+        "mode": "Concept",
+        "endpoint": "http://localhost:1234/v1",
+        "model": "",
+        "seed": 42,
+        "control_after_generate": "fixed",
+        "keep_tags": "",
+        "avoid": "",
+        "timeout": 120,
+        "api_key_env": "",
+        "backend": "Local model",
+        "local_model": "Automatic",
+        "custom_instructions": "Develop a coherent photographic scene from this caption. Describe concrete framing, light and texture. Output only the prompt.",
+        "canvas_width": 1024,
+        "canvas_height": 1024,
+        "layout_json": ""
+      },
+      "color": "#173d36",
+      "bgcolor": "#172128",
+      "boxcolor": "#79e5bd",
+      "shape": 2,
+      "dart_widget_values": {
+        "description": "",
+        "target": "Natural language",
+        "mode": "Concept",
+        "endpoint": "http://localhost:1234/v1",
+        "model": "",
+        "seed": 42,
+        "control_after_generate": "fixed",
+        "keep_tags": "",
+        "avoid": "",
+        "timeout": 120,
+        "api_key_env": "",
+        "backend": "Local model",
+        "local_model": "Automatic",
+        "custom_instructions": "Develop a coherent photographic scene from this caption. Describe concrete framing, light and texture. Output only the prompt.",
+        "canvas_width": 1024,
+        "canvas_height": 1024,
+        "layout_json": ""
+      }
+    },
+    {
+      "id": 4,
+      "type": "CLIPLoader",
+      "pos": [
+        20,
+        540
+      ],
+      "size": [
+        400,
+        140
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            2,
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "qwen3vl_4b_int8_convrot.safetensors",
+        "stable_diffusion",
+        "default"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "PreviewAny",
+      "pos": [
+        1780,
+        20
+      ],
+      "size": [
+        380,
+        360
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [],
+      "title": "Finished prompt — connect to your image encoder"
+    },
+    {
+      "id": 6,
+      "type": "Note",
+      "pos": [
+        20,
+        -210
+      ],
+      "size": [
+        440,
+        170
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "Upload your own image in Load Image (or use the neutral demo). Choose a full Qwen vision model in Load CLIP. Both assistants share it. Edit caption instructions for character replacements, then use Text Assistant instructions for the new concept."
+      ],
+      "title": "START HERE · Prompt Atelier"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      4,
+      0,
+      2,
+      1,
+      "CLIP"
+    ],
+    [
+      3,
+      4,
+      0,
+      3,
+      0,
+      "CLIP"
+    ],
+    [
+      4,
+      2,
+      0,
+      3,
+      2,
+      "STRING"
+    ],
+    [
+      5,
+      3,
+      0,
+      5,
+      0,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.65,
+      "offset": [
+        50,
+        250
+      ]
+    }
+  },
+  "version": 0.4
+}

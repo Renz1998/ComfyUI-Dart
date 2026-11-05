@@ -4,6 +4,7 @@ from ..dart.vision import caption_image
 
 
 class DanbooruTagsTransformerImageToText(BaseNode):
+    CATEGORY = "Prompt Atelier/Vision"
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {

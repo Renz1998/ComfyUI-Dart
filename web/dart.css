@@ -22,12 +22,12 @@
 .dart-brand { display: flex; align-items: center; gap: 9px; flex: 1; min-width: 0; }
 .dart-mark {
     width: 30px; height: 30px; flex: 0 0 30px; display: grid; place-items: center;
-    color: var(--dart-accent); font-size: 17px; font-weight: 800;
+    color: var(--dart-accent); font-size: 12px; font-weight: 800;
     border: 1px solid color-mix(in srgb, var(--dart-accent) 48%, transparent);
     border-radius: 9px 9px 9px 2px;
     background: color-mix(in srgb, var(--dart-accent) 9%, transparent);
 }
-.dart-brand strong { display: block; font-size: 12px; line-height: 15px; letter-spacing: .22em; }
+.dart-brand strong { display: block; font-size: 10px; line-height: 15px; letter-spacing: .12em; }
 .dart-role { display: block; color: #9dafba; font-size: 9px; line-height: 13px; letter-spacing: .12em; white-space: nowrap; }
 .dart-caption { margin-top: 9px; color: var(--dart-accent); font-size: 9px; font-weight: 600; letter-spacing: .11em; }
 .dart-state { display: flex; align-items: center; gap: 5px; color: #a9b9c3; font-size: 9px; letter-spacing: .07em; white-space: nowrap; }

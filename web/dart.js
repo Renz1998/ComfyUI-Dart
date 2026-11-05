@@ -50,7 +50,7 @@ app.registerExtension({
         const baseMenu = nodeType.prototype.getExtraMenuOptions;
         nodeType.prototype.getExtraMenuOptions = function (_, options) {
             baseMenu?.apply(this, arguments);
-            options.push({ content: this.properties.dart_design === false ? "Enable DART design" : "Disable DART design", callback: () => toggleDesign(this) });
+            options.push({ content: this.properties.dart_design === false ? "Enable Atelier design" : "Disable Atelier design", callback: () => toggleDesign(this) });
         };
         if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText"].includes(nodeData.name)) return;
         const created = nodeType.prototype.onNodeCreated;

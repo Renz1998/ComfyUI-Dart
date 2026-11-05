@@ -1,25 +1,35 @@
-name: Publish to Comfy registry
+name: Publish Prompt Atelier
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - "pyproject.toml"
-
 permissions:
-  issues: write
-
+  contents: read
 jobs:
-  publish-node:
-    name: Publish Custom Node to registry
+  validate:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'nkchocoai' }}
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      - name: Publish Custom Node
-        uses: Comfy-Org/publish-node-action@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          ## Add your own personal access token to your Github Repository secrets and reference it here.
+          python-version: '3.11'
+      - run: python -c "import tomllib; p=tomllib.load(open('pyproject.toml','rb')); assert p['tool']['comfy'].get('PublisherId'), 'Set the real Comfy Registry PublisherId first'"
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install 'transformers==5.17.0'
+      - run: python tests/test_regressions.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/test_connections.mjs
+      - run: node tests/test_menu.mjs
+  publish:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check publishing key
+        env:
+          REGISTRY_ACCESS_TOKEN: ${{ secrets.REGISTRY_ACCESS_TOKEN }}
+        run: test -n "$REGISTRY_ACCESS_TOKEN"
+      - uses: Comfy-Org/publish-node-action@main
+        with:
           personal_access_token: ${{ secrets.REGISTRY_ACCESS_TOKEN }}

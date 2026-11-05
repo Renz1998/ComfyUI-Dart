@@ -71,6 +71,33 @@ class TagTests(unittest.TestCase):
 
 
 class GeometryTests(unittest.TestCase):
+    def test_gallery_connections_and_cycles(self):
+        for path in (ROOT / 'workflows' / 'next').glob('*.json'):
+            with self.subTest(workflow=path.name):
+                workflow = json.loads(path.read_text(encoding='utf-8'))
+                nodes = {node['id']: node for node in workflow['nodes']}
+                self.assertEqual(len(nodes), len(workflow['nodes']))
+                links = {link[0]: link for link in workflow['links']}
+                self.assertEqual(len(links), len(workflow['links']))
+                for link_id, source, output, target, input_index, _ in links.values():
+                    self.assertIn(link_id, nodes[source]['outputs'][output]['links'])
+                    self.assertEqual(nodes[target]['inputs'][input_index]['link'], link_id)
+                visited, active = set(), set()
+
+                def visit(node_id):
+                    self.assertNotIn(node_id, active, 'Workflow contains a cycle')
+                    if node_id in visited:
+                        return
+                    active.add(node_id)
+                    for slot in nodes[node_id].get('inputs', []):
+                        if slot.get('link') is not None:
+                            visit(links[slot['link']][1])
+                    active.remove(node_id)
+                    visited.add(node_id)
+
+                for node_id in nodes:
+                    visit(node_id)
+
     def test_aspect_boundaries(self):
         node = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerGetAspectRatio']()
         for width, height, expected in [(1024, 1024, 'square'), (9, 8, 'square'), (8, 9, 'square'), (2, 1, 'ultra_wide'), (1, 2, 'ultra_tall'), (3, 2, 'wide'), (2, 3, 'tall')]:

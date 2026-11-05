@@ -1,26 +1,26 @@
-# Dart Next: first development version
+# Prompt Atelier — Quickstart
 
-This is a local development fork of [nkchocoai/ComfyUI-Dart](https://github.com/nkchocoai/ComfyUI-Dart). It keeps the old node identifiers and adds experimental v3 and a description assistant. Do not install two copies of Dart together: they register the same existing node names.
+Prompt Atelier is an expanded fork of [nkchocoai/ComfyUI-Dart](https://github.com/nkchocoai/ComfyUI-Dart). It keeps the original node identifiers and adds DART v3, local text/vision assistants, custom instructions and MOSS layouts. Do not install two copies of Dart together: they register the same existing node names.
 
-Development source: [Renz1998/ComfyUI-Dart](https://github.com/Renz1998/ComfyUI-Dart/tree/feature/modern-dart-assistant), branch `feature/modern-dart-assistant`.
+Source: [Renz1998/ComfyUI-Prompt-Atelier](https://github.com/Renz1998/ComfyUI-Prompt-Atelier). Start with the [workflow gallery](workflows/next/README.md).
 
 ## Help and appearance
 
-Hover a control or socket for its purpose, option meanings, examples, and wiring advice. Node descriptions explain the complete step. Each DART node has a color-coded guide card: teal for the assistant, blue for loaders, amber for composers, violet for generation, and slate for utilities. Click its **?** button for a short guide. The card shows Working during execution and Done or Check Input afterward. Motion is limited to execution/completion and respects the browser's reduced-motion preference. Right-click a node and choose **Disable DART design** to return to its previous appearance.
+Hover a control or socket for its purpose, option meanings, examples, and wiring advice. Node descriptions explain the complete step. Each DART node has a color-coded guide card: teal for the assistant, blue for loaders, amber for composers, violet for generation, and slate for utilities. Click its **?** button for a short guide. The card shows Working during execution and Done or Check Input afterward. Motion is limited to execution/completion and respects the browser's reduced-motion preference. Right-click a node and choose **Disable Atelier design** to return to its previous appearance.
 
 ## What DART does
 
 DART predicts more image tags from tags you supply. For example, `1girl, solo, red hair` can become a longer list describing a plausible scene. It can invent details. It is not a conversational assistant.
 
-The separate **Dart Describe Image** node uses a local Qwen model to interpret ordinary descriptions. You can use its prompt directly, or send its tag outputs through DART for further expansion. A chat server is an optional alternative.
+The separate **Prompt Atelier · Text Assistant** node uses a local Qwen model to interpret ordinary descriptions. You can use its prompt directly, or send its tag outputs through DART for further expansion. A chat server is an optional alternative.
 
 ## Installation
 
-1. Put this folder under `ComfyUI/custom_nodes/ComfyUI-Dart` (replace or disable any older Dart installation first).
+1. Put this folder under `ComfyUI/custom_nodes/prompt-atelier` (replace or disable any older Dart installation first).
 2. Use your ComfyUI Python environment to install `requirements.txt` if needed. Keep its existing Torch build. The development version was checked with Python 3.13.14, Torch 2.14.1+cu130, and Transformers 5.17.0.
 3. Restart ComfyUI and load a workflow from `workflows/next/`.
 
-The original project's GPL-3.0 license remains in effect. This development package is not published to the Comfy registry and has no configured publisher identity.
+The original project's GPL-3.0 license remains in effect. Registry publication is a separate step; see [PUBLISHING.md](PUBLISHING.md). Creator/model attribution is in [CREDITS.md](CREDITS.md).
 
 ## Try v3 without a chat server
 
@@ -87,7 +87,7 @@ Example: `A minimalist travel poster with a blue mountain below and the exact ti
 
 ## Describe an actual image
 
-Add **Dart Image to Text**, connect **Load Image → image**, and leave **Local model** at **Automatic**. Run for a detailed visual caption, shown directly on the node. It uses your installed full Qwen vision model through ComfyUI. This node processes the selected image locally; it does not edit its pixels.
+Add **Prompt Atelier · Image to Text**, connect **Load Image → image**, and leave **Local model** at **Automatic**. Run for a detailed visual caption, shown directly on the node. It uses your installed full Qwen vision model through ComfyUI. This node processes the selected image locally; it does not edit its pixels.
 
 Use the open **Instructions** box for changes, for example:
 
@@ -101,7 +101,7 @@ Connect **description** directly to your positive text encoder, or to **Dart Des
 
 ## Validation
 
-Run `python tests/test_regressions.py` in an environment with Torch and Transformers. The 36 tests include local/backend routing, tag aliases, settings isolation, RNG restoration, zero-temperature mode, control-token protection, sequence removal, retained weights, aspect boundaries, truncated decoding, response validation, and a temporary loopback HTTP server. Run `node tests/test_connections.mjs` and `node tests/test_menu.mjs` to check drag suggestions, exact connection targets, and backend control visibility. A separate real local-model run verified description conversion with Qwen3-VL 4B; semantic output quality is still model-dependent.
+Run `python tests/test_regressions.py` in an environment with Torch and Transformers. The 37 tests include local/backend routing, tag aliases, settings isolation, RNG restoration, zero-temperature mode, control-token protection, sequence removal, retained weights, aspect boundaries, truncated decoding, response validation, and a temporary loopback HTTP server. Run `node tests/test_connections.mjs` and `node tests/test_menu.mjs` to check drag suggestions, exact connection targets, and backend control visibility. A separate real local-model run verified description conversion with Qwen3-VL 4B; semantic output quality is still model-dependent.
 
 A separate real-model smoke run used v3 revision `80b8bb0f763f14394551b1c542ac368c7e960275`, seed 7, CPU, and repeated generation. See the accompanying validation report. CI is configured for Transformers 4.46.3 and 5.17.0; local validation does not imply that the remote CI jobs have run.
 

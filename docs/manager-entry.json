@@ -1,0 +1,10 @@
+{
+  "author": "Renz1998",
+  "title": "Prompt Atelier",
+  "reference": "https://github.com/Renz1998/ComfyUI-Prompt-Atelier",
+  "files": [
+    "https://github.com/Renz1998/ComfyUI-Prompt-Atelier"
+  ],
+  "install_type": "git-clone",
+  "description": "Local text/vision prompt assistants, custom character instructions, DART v1/v2/v3 expansion and MOSS JSON layouts. Replacement fork of nkchocoai/ComfyUI-Dart; disable the original pack before installing."
+}

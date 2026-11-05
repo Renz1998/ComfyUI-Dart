@@ -41,9 +41,9 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "DanbooruTagsTransformerImageToText": "Dart Image to Text",
+    "DanbooruTagsTransformerImageToText": "Prompt Atelier · Image to Text",
     "DanbooruTagsTransformerComposePromptV3": "Dart Compose Prompt V3 (Experimental)",
-    "DanbooruTagsTransformerDescribeImage": "Dart Describe Image",
+    "DanbooruTagsTransformerDescribeImage": "Prompt Atelier · Text Assistant",
     "DanbooruTagsTransformerLoader": "Dart Load",
     "DanbooruTagsTransformerGenerate": "Dart Generate",
     "DanbooruTagsTransformerComposePrompt": "Dart Compose Prompt",

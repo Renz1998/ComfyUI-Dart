@@ -46,7 +46,7 @@ export function installDesign(node, data) {
     root.setAttribute("aria-label", `${profile.title} guide`);
     root.style.setProperty("--dart-accent", profile.accent);
     root.dataset.state = "ready";
-    root.innerHTML = `<div class="dart-panel-bar"><div class="dart-brand"><span class="dart-mark">D</span><div><strong>DART</strong><span class="dart-role"></span></div></div><span class="dart-state"><i></i><span>READY</span></span><button class="dart-help-button" type="button" aria-expanded="false" title="Show a quick guide and wiring tips for this node">?</button></div><div class="dart-caption"></div><div class="dart-help"><p></p><span>Hover controls and sockets for details. Right-click the node to toggle this design.</span></div><div class="dart-scan"></div>`;
+    root.innerHTML = `<div class="dart-panel-bar"><div class="dart-brand"><span class="dart-mark">PA</span><div><strong>PROMPT ATELIER</strong><span class="dart-role"></span></div></div><span class="dart-state"><i></i><span>READY</span></span><button class="dart-help-button" type="button" aria-expanded="false" title="Show a quick guide and wiring tips for this node">?</button></div><div class="dart-caption"></div><div class="dart-help"><p></p><span>Hover controls and sockets for details. Right-click the node to toggle this design.</span></div><div class="dart-scan"></div>`;
     root.querySelector(".dart-role").textContent = profile.title;
     root.querySelector(".dart-caption").textContent = profile.subtitle;
     root.querySelector(".dart-help p").textContent = profile.text || data.description || "Hover each control and socket for help.";
