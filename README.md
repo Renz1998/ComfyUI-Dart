@@ -1,52 +1,91 @@
-# ComfyUI-Dart
-![Dart Preview](workflows/dart_generate_with_config.png)  
-日本語版READMEは[こちら](README.jp.md)。
+<p align="center"><img src="assets/banner.svg" alt="Prompt Mage — words, tags and images into your next scene" /></p>
 
-- Custom node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI).
-- Add nodes that generates danbooru tags by [Dart(Danbooru Tags Transformer)](https://huggingface.co/p1atdev/dart-v1-sft).
+# ComfyUI Prompt Mage
 
-## Installation
+Formerly **Prompt Atelier**. Search **Prompt Mage** in ComfyUI for every node. Existing workflow class IDs, the GitHub URL and Registry package ID `prompt-atelier` are retained for updates and compatibility.
+
+**Build image prompts from words, DART tags, or a reference image.** Use a local vision model to caption a photo, change character descriptions with your own instructions, develop tag lists into concepts, and output prose or native MOSS layout JSON.
+
+An expanded fork of [nkchocoai/ComfyUI-Dart](https://github.com/nkchocoai/ComfyUI-Dart), using [p1atdev's DART models](https://huggingface.co/p1atdev) and installed Qwen language/vision models. [Full creator and model credits →](CREDITS.md)
+
+[Quickstart](QUICKSTART.md) · [Workflow gallery](workflows/next/README.md) · [Publishing status](PUBLISHING.md) · [License](LICENSE)
+
+## What you can build
+
+| Start with | Make | Tools |
+| --- | --- | --- |
+| A sentence | Tags, natural-language prompts, or a new scene concept | Text Assistant + custom instructions |
+| A few keywords | Expanded visual tags, then a photographic concept | DART Composer → Generate → Text Assistant |
+| A photo | A detailed caption, optionally with a character trigger and requested appearance changes | Image to Text |
+| A photo or description | Native MOSS layout JSON with text/object placement | Image to Text → Text Assistant |
+| A description | DART v1/v2/v3 expansion with retained tags and sampling controls | Text Assistant → matching DART Composer → Generate |
+
+All 18 nodes include hover help and role-colored guides. Assistants show their result directly. Ember theme adds animated flames and embers while a node runs, a RUNNING badge and a glowing outline. Animations respect reduced motion. Right-click for Studio theme or to disable designs.
+
+## Control prompt detail and wording
+
+**Prompt Mage · Upload Images:** click the large drop area to select files, drop images anywhere on the node, or use Choose folder to upload images from a folder on your computer (including subfolders). This opens your local file/folder picker even when ComfyUI runs on RunPod. Files upload to the ComfyUI server, including RunPod. Reorder using arrows; remove/clear changes this node's list without deleting server files. Connect image to Image to Text and filename to source_name. The drag-create shortcut wires both. Choose All selected images as list for sequential captions in one run, or One image per queued run with increment to advance through the list. Wait until uploads finish before queuing. Workflow files save image paths, so upload again when moving a workflow to another server. Images keep their separate dimensions; use Image in batch = 0 on Image to Text. Max images limits CPU memory in list mode.
+
+**Server Folder (Advanced):** choose an input subfolder or a custom folder on the computer running ComfyUI. One image per queued run uses Index and the native increment control; queue multiple runs to advance through files. All selected images as list sends separate images through Image to Text sequentially in one run, preserving their different resolutions. Set its Image in batch to 0. Max images defaults to 16 to bound CPU memory; use queue mode for large folders. Connect filename to source_name to label reports (the drag-create shortcut wires both). Batch feedback summarizes per-file results and flags only blocked items.
+
+**Apply exact breast-size wording** on Appearance Overrides is an explicit post-edit option, enabled by default for newly built recipes when a breast size is selected. It replaces a weaker phrase or adds the selected size in an identifiable subject's caption. For example, large bust can become gigantic breasts. Unrelated objects and visible text items are left alone; ambiguous multi-person targets may still require a unique trigger or model correction. Feedback says size-edited, with original model text in report.model_output and the applied changes in post_edits. This edits captions only: it does not unlock model policies, change pixels, or guarantee a diffusion model will render the requested anatomy. Turn it off to evaluate the model's own wording.
+
+**Strict trait wording** on Appearance Overrides is enabled by default. Missing or conflicting selected phrases request a correction. If the model still does not comply, the assistant now defaults to **On override mismatch → Warn and continue**: an expanded amber panel names the missing phrases, conflicting wording and affected captions, and the generated output continues downstream unchanged. This is an unconfirmed result, not a successful replacement. Choose **Block downstream** on that assistant when matching is required: dependent data outputs are blocked, while the actual model output stays available in the preview/report. Appearance mismatches no longer need to throw a confusing traceback. Invalid JSON, model failures and invalid inputs remain execution errors.
+
+Both assistants append **status** and **report** outputs; earlier socket positions are preserved. Status is ok, corrected, edited, warning, blocked or unchecked. Report is JSON containing issues, attempts, policy, original model wording and the actual output. The feedback panel works even when Mage branding is disabled; prompt wires contain clean prose/JSON without warning text. Disable strict wording on Appearance Overrides to allow paraphrasing. These checks do not prove image accuracy, multi-person identity assignment or free-form instruction compliance.
+
+**Appearance Overrides:** drag from either assistant's **appearance** input and choose **Prompt Mage · Appearance Overrides**. Connect one recipe to either or both assistants. Dropdowns cover hair color/style/length, eyes, breast size, body type, skin tone, clothing and expression. Keep unchanged leaves a trait alone; Custom reveals a free-text value. Set an optional exact character trigger, choose who receives changes, and add extra replacement directions. The on/off switch bypasses the recipe. Selected traits replace conflicting source traits in prose, tags and JSON; interpretation is model-guided. Keep exact tags still appends literal text. Manual MOSS layout overrides bypass generation, so clear them before applying a recipe. These controls edit generated descriptions, not image pixels.
+
+**Unload assistant model after generation:** enable when the assistant encoder differs from your image encoder. ComfyUI offloads this encoder and its clones/related models after generation (including errors), while preserving unrelated loaded models. Weights are not deleted. A shared encoder may reload later, so leave this off when reuse is more valuable than freeing VRAM. Chat-server inference is external and unaffected; cached nodes do not run cleanup again.
+
+**Image to Text → Output format** offers Plain text, Structured JSON, and MOSS JSON layout. Structured JSON contains description, subjects, environment, lighting, composition and visible_text; use the MOSS choice for its native summary/items format. Instructions and character triggers work in every format. JSON is validated, indented and previewed as Markdown; the description output always carries raw text/JSON.
+
+Set **Image megapixel budget** to the desired total pixels (1.0 = 1,000,000), then choose **Downscale only** or **Resize to budget** and a resize method. Lanczos/bicubic/bilinear/area/nearest-exact are interpolation choices, with no extra model download. A zero budget keeps original size subject to an 8192-pixel side limit. **Layout dimensions → From processed image** sets the MOSS canvas automatically, aligned to multiples of 16; width/height outputs can drive your latent. Manual canvas allows a separate output resolution. The image output is the selected resized RGB image; caption replacement instructions do not alter its depicted content. Layout boxes are model estimates, not measured segmentation.
+
+Text Assistant offers **Brief**, **Balanced**, **Detailed**, and **Extensive** prompt lengths. These are approximate detail targets. **Generation token limit** separately caps the entire response, including internal JSON and tags. Start with Detailed and 4096 tokens; try 8192 for Extensive layouts. Preserve prioritizes fidelity over word count; Expand and Concept allow creative additions.
+
+MOSS JSON is indented on its output wire and displayed in a fenced JSON block in Markdown preview. Switch the preview to Plain text to copy raw JSON. Feed **prompt** directly to MOSS conditioning: Markdown fences never go over that wire. Canvas controls and sockets are inactive outside JSON mode; existing connections are retained for switching back.
+
+Both assistants offer **Language style → Direct / explicit**, requesting precise terminology without euphemisms or masked words. It preserves supplied wording without introducing unrequested sexual details. The selected model's own capabilities and policies still determine its response. Custom instructions allow finer writing directions.
+
+## Install
+
+This is a **replacement fork** of ComfyUI-Dart. Disable or remove the original installation before installing Prompt Mage: legacy node IDs are retained so existing workflows load, and the two packs must not register them together. Keep a backup of your workflows.
+
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/Renz1998/ComfyUI-Prompt-Atelier.git prompt-atelier
+# Use the Python environment that runs your ComfyUI:
+python -m pip install -r prompt-atelier/requirements.txt
 ```
-cd <ComfyUI directory>/custom_nodes
-git clone https://github.com/nkchocoai/ComfyUI-Dart.git
-```
 
-## Nodes
-### Dart Generate
-- Generate danbooru tags by [Dart(Danbooru Tags Transformer)](https://huggingface.co/p1atdev/dart-v1-sft).
-- See the following URL for the syntax of prompt.
-  - https://huggingface.co/p1atdev/dart-v1-sft#prompt-guidde
-- Tags specified with `remove_tags` will not be output.
+Restart ComfyUI. Search **Prompt Mage** to find all nodes, including **Prompt Mage · DART Generate**, **DART Load**, and the composers. Categories are **Prompt Mage / Assistants**, **Vision**, and **DART**. Existing workflow class IDs and socket positions are unchanged. An existing installed folder can stay named ComfyUI-Dart; folder names are not used for imports.
 
-### Dart Compose Prompt
-- Output input "prompt" of Dart Generate node (dart-v1).
+**Registry:** [Prompt Mage](https://registry.comfy.org/nodes/prompt-atelier) is published under @renz1998. Version 1.6.0 upload and its CDN archive are verified. Latest-version detail-page and Manager indexing remain unverified. Git installation receives the latest source. See [PUBLISHING.md](PUBLISHING.md).
 
-### Dart Compose Prompt V2
-- Output input "prompt" of Dart Generate node (dart-v2).
+## Try a workflow
 
-### Dart Get Aspect Ratio
-- Output aspect ratio tags for dart-v2 prompts from width and height.
+1. Start with [keywords to concept](workflows/next/keywords_to_concept.json) if an instruction-capable Qwen model is installed.
+2. Try [image to text](workflows/next/image_to_text.json), uploading your own image with Load Image.
+3. Combine tools with [photo to MOSS layout](workflows/next/photo_to_moss_layout.json) or [description to DART v3](workflows/next/description_to_dart_v3.json).
 
-### Dart Generation Config
-- Output input "config" of Dart Generate node.
+[Browse every example and its model requirements →](workflows/next/README.md)
 
-### Dart Ban Tags From Regex
-- Output input "ban tags" of Dart Generate node from regular expressions.
-- Search with multiple regular expressions by splitting into multiple lines.
+The examples produce text and conditioning inputs for your existing image workflow. They do not bundle diffusion checkpoints or automatically generate/save pictures. Local assistance needs recent ComfyUI native Generate Text support and a full generation-capable Qwen checkpoint in text_encoders; photo captioning also needs its vision weights. No assistant weights are downloaded automatically. The optional Chat server backend sends text to the endpoint you configure.
 
-### Dart Generate(Advanced)
-- Output a token ID sequence of danbooru tags generated by [Dart(Danbooru Tags Transformer)](https://huggingface.co/p1atdev/dart-v1-sft).
-- See the following URL for the syntax of prompt.
-  - https://huggingface.co/p1atdev/dart-v1-sft#prompt-guidde
+[Caption model choices and the limits of uncensored labels →](docs/MODEL_CHOICES.md)
 
-### Dart Decode
-- Decode the token ID sequence.
+## Model support and limits
 
-### Dart Rearranged By Animagine
-- Rearrange the token ID sequence in the order of Animagine prompt.
+- DART v1-sft and v2-sft use their matching composers; v3 Preview E uses the experimental V3 composer. V2-MoE is available but has not had a real-model smoke test here.
+- Local text/vision assistance was tested with a full Qwen3-VL 4B checkpoint. Other checkpoints depend on native ComfyUI support and their capabilities.
+- MOSS JSON uses the [official experimental layout format](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md). Match canvas dimensions to your image generation dimensions. Valid boxes do not guarantee exact image placement.
+- Character replacement instructions edit the caption, not image pixels. Their interpretation is model-guided. Character triggers do not load LoRAs.
 
-### Dart Decode By Splited Parts
-- Output decoded strings of the token ID sequence split by part.
+## Credits and development
 
-### Dart Remove Tag Token
-- Remove the specified tag from the token ID sequence.
+Original ComfyUI node foundation: **nkchocoai and contributors**. DART models: **p1atdev**. Language/vision models: **Qwen team** and checkpoint conversion authors. MOSS model/layout format: **OpenMOSS team**. Native runtime/frontend: **ComfyUI contributors**. See [CREDITS.md](CREDITS.md).
+
+The original GPL-3.0 source license and upstream history are retained. No model weights are bundled or claimed as our own. Each model retains its own license and access terms.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for tests and useful bug reports. If the pack helps your workflow, a GitHub star helps other users find it; reproducible bug reports and example improvements are welcome too.

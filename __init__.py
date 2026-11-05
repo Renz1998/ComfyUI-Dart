@@ -16,8 +16,20 @@ from .py.nodes.advanced.token_ids import (
     DanbooruTagsTransformerRemoveTagToken,
 )
 from .py.nodes.ban_tags import DanbooruTagsTransformerBanTagsFromRegex
+from .py.nodes.prompt_v3 import DanbooruTagsTransformerComposePromptV3
+from .py.nodes.assistant import DanbooruTagsTransformerDescribeImage
+from .py.nodes.vision import DanbooruTagsTransformerImageToText
+from .py.nodes.help import attach_help
+from .py.nodes.appearance import DanbooruTagsTransformerAppearanceOverrides
+from .py.nodes.image_batch import DanbooruTagsTransformerImageBatchSelector, DanbooruTagsTransformerImageBatchUpload
 
 NODE_CLASS_MAPPINGS = {
+    "DanbooruTagsTransformerImageBatchUpload": DanbooruTagsTransformerImageBatchUpload,
+    "DanbooruTagsTransformerImageBatchSelector": DanbooruTagsTransformerImageBatchSelector,
+    "DanbooruTagsTransformerAppearanceOverrides": DanbooruTagsTransformerAppearanceOverrides,
+    "DanbooruTagsTransformerImageToText": DanbooruTagsTransformerImageToText,
+    "DanbooruTagsTransformerComposePromptV3": DanbooruTagsTransformerComposePromptV3,
+    "DanbooruTagsTransformerDescribeImage": DanbooruTagsTransformerDescribeImage,
     "DanbooruTagsTransformerLoader": DanbooruTagsTransformerLoader,
     "DanbooruTagsTransformerGenerate": DanbooruTagsTransformerGenerate,
     "DanbooruTagsTransformerComposePrompt": DanbooruTagsTransformerComposePrompt,
@@ -34,19 +46,29 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "DanbooruTagsTransformerLoader": "Dart Load",
-    "DanbooruTagsTransformerGenerate": "Dart Generate",
-    "DanbooruTagsTransformerComposePrompt": "Dart Compose Prompt",
-    "DanbooruTagsTransformerComposePromptV2": "Dart Compose Prompt V2",
-    "DanbooruTagsTransformerGetAspectRatio": "Dart Get Aspect Ratio",
-    "DanbooruTagsTransformerGenerationConfig": "Dart Generation Config",
-    "DanbooruTagsTransformerBanTagsFromRegex": "Dart Ban Tags From Regex",
+    "DanbooruTagsTransformerImageBatchUpload": "Prompt Mage · Upload Images",
+    "DanbooruTagsTransformerImageBatchSelector": "Prompt Mage · Server Folder (Advanced)",
+    "DanbooruTagsTransformerAppearanceOverrides": "Prompt Mage · Appearance Overrides",
+    "DanbooruTagsTransformerImageToText": "Prompt Mage · Image to Text",
+    "DanbooruTagsTransformerComposePromptV3": "Prompt Mage · DART Compose Prompt V3 (Experimental)",
+    "DanbooruTagsTransformerDescribeImage": "Prompt Mage · Text Assistant",
+    "DanbooruTagsTransformerLoader": "Prompt Mage · DART Load",
+    "DanbooruTagsTransformerGenerate": "Prompt Mage · DART Generate",
+    "DanbooruTagsTransformerComposePrompt": "Prompt Mage · DART Compose Prompt",
+    "DanbooruTagsTransformerComposePromptV2": "Prompt Mage · DART Compose Prompt V2",
+    "DanbooruTagsTransformerGetAspectRatio": "Prompt Mage · DART Get Aspect Ratio",
+    "DanbooruTagsTransformerGenerationConfig": "Prompt Mage · DART Generation Config",
+    "DanbooruTagsTransformerBanTagsFromRegex": "Prompt Mage · DART Ban Tags From Regex",
     # Advanced
-    "DanbooruTagsTransformerGenerateAdvanced": "Dart Generate(Advanced)",
-    "DanbooruTagsTransformerDecode": "Dart Decode",
-    "DanbooruTagsTransformerDecodeBySplitedParts": "Dart Decode By Splited Parts",
-    "DanbooruTagsTransformerRearrangedByAnimagine": "Dart Rearranged By Animagine",
-    "DanbooruTagsTransformerRemoveTagToken": "Dart Remove Tag Token",
+    "DanbooruTagsTransformerGenerateAdvanced": "Prompt Mage · DART Generate(Advanced)",
+    "DanbooruTagsTransformerDecode": "Prompt Mage · DART Decode",
+    "DanbooruTagsTransformerDecodeBySplitedParts": "Prompt Mage · DART Decode By Splited Parts",
+    "DanbooruTagsTransformerRearrangedByAnimagine": "Prompt Mage · DART Rearranged By Animagine",
+    "DanbooruTagsTransformerRemoveTagToken": "Prompt Mage · DART Remove Tag Token",
 }
 
-__all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
+attach_help(NODE_CLASS_MAPPINGS)
+
+WEB_DIRECTORY = "./web"
+
+__all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]

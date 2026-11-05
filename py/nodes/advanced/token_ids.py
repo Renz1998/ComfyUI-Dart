@@ -1,6 +1,7 @@
 from ...dart.tokenizer.tokenizer import DartTokenizer
 
 from ..base import BaseNode
+from ...dart.tags import remove_tags as remove_tag_sequences
 
 
 class DanbooruTagsTransformerRearrangedByAnimagine(BaseNode):
@@ -47,6 +48,5 @@ class DanbooruTagsTransformerRemoveTagToken(BaseNode):
     FUNCTION = "remove"
 
     def remove(self, tokenizer: DartTokenizer, token_ids, remove_tags):
-        remove_tag_token_ids = tokenizer.tokenizer.encode_plus(remove_tags).input_ids
-        token_ids = [token for token in token_ids if token not in remove_tag_token_ids]
+        token_ids = remove_tag_sequences(tokenizer.tokenizer, token_ids, remove_tags)
         return (token_ids,)

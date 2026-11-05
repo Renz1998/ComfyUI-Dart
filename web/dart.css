@@ -1,0 +1,105 @@
+.dart-panel {
+    --dart-accent: #79e5bd;
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--dart-accent) 28%, transparent);
+    border-radius: 12px;
+    color: #ecf3f5;
+    background: linear-gradient(120deg, #1b2c34, #152027 72%);
+    padding: 12px 14px;
+    font-family: Inter, "Segoe UI", sans-serif;
+    text-align: left;
+    transition: border-color 180ms, box-shadow 180ms;
+}
+.dart-panel:hover {
+    border-color: color-mix(in srgb, var(--dart-accent) 66%, transparent);
+    box-shadow: inset 0 0 20px color-mix(in srgb, var(--dart-accent) 6%, transparent);
+}
+.dart-panel-bar { display: flex; align-items: center; gap: 10px; }
+.dart-brand { display: flex; align-items: center; gap: 9px; flex: 1; min-width: 0; }
+.dart-mark {
+    width: 30px; height: 30px; flex: 0 0 30px; display: grid; place-items: center;
+    color: var(--dart-accent); font-size: 12px; font-weight: 800;
+    border: 1px solid color-mix(in srgb, var(--dart-accent) 48%, transparent);
+    border-radius: 9px 9px 9px 2px;
+    background: color-mix(in srgb, var(--dart-accent) 9%, transparent);
+}
+.dart-brand strong { display: block; font-size: 10px; line-height: 15px; letter-spacing: .12em; }
+.dart-role { display: block; color: #9dafba; font-size: 9px; line-height: 13px; letter-spacing: .12em; white-space: nowrap; }
+.dart-caption { margin-top: 9px; color: var(--dart-accent); font-size: 9px; font-weight: 600; letter-spacing: .11em; }
+.dart-state { display: flex; align-items: center; gap: 5px; color: #a9b9c3; font-size: 9px; letter-spacing: .07em; white-space: nowrap; }
+.dart-state i { width: 5px; height: 5px; border-radius: 50%; background: var(--dart-accent); }
+.dart-help-button {
+    width: 24px; height: 24px; flex: 0 0 24px; padding: 0;
+    border: 1px solid #52616b; border-radius: 50%; color: #cfdae0;
+    background: #ffffff05; font: 600 12px Inter, "Segoe UI", sans-serif;
+    cursor: pointer; transition: background 160ms, color 160ms, transform 160ms;
+}
+.dart-help-button:hover, .dart-help-button:focus-visible {
+    color: #122028; background: var(--dart-accent); border-color: var(--dart-accent); transform: scale(1.08);
+}
+.dart-help { max-height: 0; opacity: 0; overflow: auto; transform: translateY(-5px); transition: max-height 220ms, opacity 180ms, transform 220ms; }
+.dart-panel[data-open="true"] .dart-help { max-height: 150px; opacity: 1; transform: translateY(0); }
+.dart-help p { margin: 12px 0 8px; padding-top: 10px; border-top: 1px solid #ffffff15; color: #d4dfe5; font-size: 11px; line-height: 1.55; }
+.dart-help > span { display: block; color: #91a6b4; font-size: 10px; line-height: 1.4; }
+.dart-scan { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; opacity: 0; background: linear-gradient(90deg, transparent, var(--dart-accent), transparent); }
+.dart-panel[data-state="running"] .dart-scan { opacity: 1; animation: dart-sweep 1.5s ease-in-out infinite; }
+.dart-panel[data-state="running"] .dart-state { color: var(--dart-accent); }
+.dart-panel[data-state="running"] .dart-state i { animation: dart-pulse 1.1s ease-in-out infinite; }
+.dart-panel[data-state="done"] { animation: dart-complete 650ms ease-out; }
+.dart-panel[data-state="done"] .dart-state { color: var(--dart-accent); }
+.dart-panel[data-state="warning"] .dart-state { color: #ffd38b; }
+.dart-panel[data-state="blocked"] .dart-state { color: #ff9eaa; }
+.atelier-status { box-sizing: border-box; padding: 10px 12px; border: 1px solid #58716b; border-radius: 8px; background: #182b27; color: #d6f0e6; font: 12px/1.5 Inter, "Segoe UI", sans-serif; overflow: auto; }
+.atelier-status[hidden] { display: none !important; }
+.atelier-status summary { cursor: pointer; font-weight: 600; overflow-wrap: anywhere; }
+.atelier-status-details { margin-top: 10px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 180px; overflow: auto; }
+.atelier-status[data-status="warning"] { background: #352b18; border-color: #aa8243; color: #ffe1a7; }
+.atelier-status[data-status="blocked"], .atelier-status[data-status="error"] { background: #371e24; border-color: #b96576; color: #ffd3dc; }
+.atelier-status[data-status="unchecked"], .atelier-status[data-status="running"] { background: #1c2932; border-color: #526674; color: #c6dce9; }
+.dart-panel[data-state="error"] { border-color: #ed9c7e; }
+.dart-panel[data-state="error"] .dart-state { color: #ed9c7e; }
+.dart-panel[data-state="error"] .dart-state i { background: #ed9c7e; }
+@keyframes dart-sweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@keyframes dart-pulse { 50% { opacity: .35; box-shadow: 0 0 9px var(--dart-accent); } }
+@keyframes dart-complete { from { box-shadow: inset 0 0 30px color-mix(in srgb, var(--dart-accent) 25%, transparent); } to { box-shadow: none; } }
+@media (prefers-reduced-motion: reduce) {
+    .dart-panel, .dart-panel *, .dart-panel::before, .dart-panel::after { animation: none !important; transition: none !important; }
+}
+.dart-fire {display:none;position:absolute;bottom:0;left:0;right:0;height:55px;pointer-events:none;z-index:0;opacity:.8}
+.dart-panel-bar,.dart-caption,.dart-help {position:relative;z-index:1}
+.dart-panel[data-theme="ember"] {background:radial-gradient(ellipse at 10% 140%,#67341d88,transparent 70%),linear-gradient(130deg,#35251f,#1f1c22 80%);border-color:#b66c3d88}
+.dart-panel[data-state="running"] {border-color:var(--dart-accent);animation:atelier-heat 2s ease-in-out infinite}
+.dart-panel[data-state="running"] .dart-state {font-weight:800;background:#0006;border:1px solid var(--dart-accent);border-radius:5px;padding:4px 6px;color:#ffe4c6}
+.dart-panel[data-theme="ember"][data-state="running"] .dart-fire {display:block}
+.dart-fire i {position:absolute;bottom:-24px;width:48px;height:65px;background:radial-gradient(ellipse at 50% 85%,#fff0a0 5%,#ffac32 30%,#fa5016 55%,transparent 73%);border-radius:65% 5% 65% 40%;filter:blur(1px);transform-origin:50% 100%;animation:atelier-flame 1.7s ease-in-out infinite alternate}
+.dart-fire i:nth-child(1){left:4%;animation-delay:-.4s}.dart-fire i:nth-child(2){left:22%;height:48px;animation-delay:-1.1s}.dart-fire i:nth-child(3){left:42%;animation-delay:-.8s}.dart-fire i:nth-child(4){left:62%;height:50px;animation-delay:-.2s}.dart-fire i:nth-child(5){left:80%;animation-delay:-1.4s}.dart-fire i:nth-child(6){left:93%;height:45px;animation-delay:-.6s}
+.dart-fire b {position:absolute;bottom:5px;left:24%;width:3px;height:5px;border-radius:50%;background:#ffc368;box-shadow:0 0 6px #ff7e28;animation:atelier-ember 2.8s linear infinite}
+.dart-fire b:nth-last-child(2){left:67%;animation-delay:-1s}.dart-fire b:last-child{left:88%;animation-delay:-2s}
+@keyframes atelier-flame {from{transform:scale(.65,.6) rotate(-12deg);opacity:.45}to{transform:scale(1.1,1.15) rotate(10deg);opacity:.85}}
+@keyframes atelier-ember {0%{transform:translate(0,0);opacity:0}20%{opacity:.9}100%{transform:translate(18px,-60px);opacity:0}}
+@keyframes atelier-heat {0%,100%{box-shadow:inset 0 -5px 22px #ff6e2022,0 0 5px #ff873333}50%{box-shadow:inset 0 -7px 28px #ff6e2044,0 0 12px #ff873355}}
+.atelier-upload {box-sizing:border-box;height:360px;display:flex;flex-direction:column;gap:9px;padding:12px;background:#14252e;border:1px solid #355866;border-radius:12px;color:#dceaf2;font:12px/1.4 system-ui;overflow:hidden}
+.atelier-upload-toolbar {display:flex;gap:8px}
+.atelier-upload button {background:#254856;color:#e6f6ff;border:1px solid #4b7b8e;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit}
+.atelier-upload button:hover:enabled {background:#326478}
+.atelier-upload button:focus-visible {outline:2px solid #9ee4ff;outline-offset:2px}
+.atelier-upload button:disabled {opacity:.4;cursor:default}
+.atelier-upload-status {white-space:pre-wrap;overflow:auto;max-height:64px;color:#b5cbd7;flex-shrink:0}
+.atelier-upload-list {overflow:auto;min-height:0;flex:1;display:flex;flex-direction:column;gap:7px}
+.atelier-upload-row {display:flex;align-items:center;gap:9px;padding:5px;border-radius:8px;background:#1c333f}
+.atelier-upload-row img {width:48px;height:48px;object-fit:contain;background:#0e1a21;border-radius:5px;flex-shrink:0}
+.atelier-upload-row span {flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.atelier-upload-actions {display:flex;gap:4px;flex-shrink:0}
+.atelier-upload-actions button {padding:4px 7px}
+.atelier-upload .mage-dropzone {min-height:64px;flex-shrink:0;border:2px dashed #7695a9;background:#ffffff04;font-size:13px;font-weight:650;letter-spacing:.02em}
+.atelier-upload[data-dragging="true"] .mage-dropzone {border-color:#ffd2a1;background:#ffb76d22;box-shadow:inset 0 0 18px #ff9a2833}
+.atelier-upload[data-theme="ember"] .mage-dropzone {background:#ffbd6f08;border-color:#c88c59}
+.atelier-upload[data-theme="ember"] {background:linear-gradient(140deg,#30231f,#211c20);border-color:#98603d;color:#ffebdc}
+.atelier-upload[data-theme="ember"] button {background:#593b29;border-color:#b27b4b;color:#ffe9d4}
+.atelier-upload[data-theme="ember"] button:hover:enabled {background:#805334}
+.atelier-upload[data-theme="ember"] .atelier-upload-row {background:#3a2d28}
+.atelier-upload[data-theme="ember"] .atelier-upload-status {color:#d9bda8}

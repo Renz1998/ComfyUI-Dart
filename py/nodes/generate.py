@@ -2,6 +2,7 @@ from .base import BaseNode
 
 from ..dart.model import DartModel
 from ..dart.tokenizer.tokenizer import DartTokenizer
+from ..dart.tags import remove_tags as remove_tag_sequences, keep_tags as preserve_tags
 
 
 class DanbooruTagsTransformerGenerate(BaseNode):
@@ -46,6 +47,7 @@ class DanbooruTagsTransformerGenerate(BaseNode):
                         "multiline": True,
                     },
                 ),
+                "keep_tags": ("STRING", {"default": "", "multiline": True, "tooltip": "Append required tags verbatim. Overrides removal and bans."}),
             },
         }
 
@@ -64,16 +66,16 @@ class DanbooruTagsTransformerGenerate(BaseNode):
         setting=None,
         ban_tags="",
         remove_tags="",
+        keep_tags="",
     ):
         outputs = model.generate(tokenizer, prompt, seed, setting, ban_tags)
         token_ids = outputs[0]
 
         # remove tags
-        remove_tag_token_ids = tokenizer.tokenizer.encode_plus(remove_tags).input_ids
-        token_ids = [token for token in token_ids if token not in remove_tag_token_ids]
+        token_ids = remove_tag_sequences(tokenizer.tokenizer, token_ids, remove_tags)
 
         if animagine_order:
             result = tokenizer.decode_by_animagine(token_ids)
         else:
             result = tokenizer.decode(token_ids)
-        return (result,)
+        return (preserve_tags(result, keep_tags),)

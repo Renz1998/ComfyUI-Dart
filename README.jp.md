@@ -1,3 +1,5 @@
+> Legacy Japanese documentation for the original ComfyUI-Dart nodes. For the maintained Prompt Mage pack, see [README.md](README.md) and [CREDITS.md](CREDITS.md).
+
 # ComfyUI-Dart
 ![Dart Preview](workflows/dart_generate_with_config.png)  
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI)用のカスタムノードです。
