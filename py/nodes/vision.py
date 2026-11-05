@@ -54,7 +54,7 @@ class DanbooruTagsTransformerImageToText(BaseNode):
         text = caption_image(prepared, instructions, character_trigger, detail, 0,
                              max_tokens, model_name=local_model, clip=clip, language_style=language_style,
                              output_format=output_format, canvas_width=canvas_width, canvas_height=canvas_height,
-                             unload_after_generation=unload_after_generation)
+                             unload_after_generation=unload_after_generation, appearance=appearance)
         if output_format == "MOSS JSON layout":
             width, height = canvas_width, canvas_height
         return {"ui": {"text": [text], "json_preview": [output_format != "Plain text"]}, "result": (text, width, height, prepared)}

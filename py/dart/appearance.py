@@ -1,5 +1,6 @@
 """Reusable, optional visual-edit instructions shared by both assistants."""
 import json
+import re
 from copy import deepcopy
 
 KEEP = "Keep unchanged"
@@ -14,6 +15,76 @@ TRAITS = {
     "clothing": ["Casual clothes", "Dress", "Suit", "Shirt and jeans", "Swimwear", "Lingerie"],
     "expression": ["Neutral", "Smiling", "Serious", "Laughing", "Surprised", "Confident"],
 }
+
+
+def _words(text):
+    return " ".join(re.findall(r"\w+", text.casefold().replace("_", " ")))
+
+
+def required_trait_phrases(settings):
+    if not settings or not settings.get("enabled") or not settings.get("strict_wording", True):
+        return {}
+    phrases = {}
+    for key, value in settings.get("traits", {}).items():
+        if key == "hair_color": value += " hair"
+        elif key == "eye_color": value += " eyes"
+        elif key == "skin_tone": value += " skin"
+        elif key == "hair_length" and value != "Bald": value += " hair"
+        elif key == "hair_style" and value in ("Straight", "Wavy", "Curly"): value += " hair"
+        phrases[key] = value
+    return phrases
+
+
+def check_appearance_wording(text, settings, location="description"):
+    """Check requested wording without inserting traits into unrelated objects."""
+    phrases = required_trait_phrases(settings)
+    if not phrases:
+        return
+    normalized = _words(text)
+    # Equivalent skin nouns are fine; selected breast-size wording stays literal.
+    comparable = normalized.replace("skin tone", "skin").replace("complexion", "skin")
+    for original, equivalent in (("haired", "hair"), ("eyed", "eyes"), ("skinned", "skin"), ("tanned", "tan")):
+        comparable = re.sub(r"\b" + original + r"\b", equivalent, comparable)
+    missing = []
+    for key, value in phrases.items():
+        words = _words(value)
+        pattern = re.escape(words)
+        if key in ("hair_color", "hair_length", "eye_color") and " " in words:
+            attribute, noun = words.rsplit(" ", 1)
+            pattern = re.escape(attribute) + r"(?:\s+\w+){0,3}\s+" + re.escape(noun)
+        if not re.search(r"\b" + pattern + r"\b", comparable): missing.append(value)
+    size = phrases.get("breast_size")
+    conflicts = []
+    if size:
+        size_words = _words(size)
+        pattern = r"\b(?:(?:very|extremely|exceptionally|moderately)\s+)?(?:small|medium|large|huge|massive|gigantic|enormous|ample|full|flat)\s+(?:breasts?|bust|chest)\b"
+        conflicts = [m.group() for m in re.finditer(pattern, normalized) if _words(m.group()) != size_words]
+        if re.search(r"\b(?:no|not|without)\s+(?:\w+\s+){0,2}" + re.escape(size_words) + r"\b", normalized):
+            conflicts.append("negated " + size)
+    if missing or conflicts:
+        details = []
+        if missing: details.append("missing exact selected wording: " + ", ".join(missing))
+        if conflicts: details.append("conflicting/weakened size wording: " + ", ".join(conflicts))
+        raise ValueError("Appearance override not followed in " + location + ": " + "; ".join(details) +
+                         ". Keep the exact selected phrases; do not soften, negate or replace them with synonyms.")
+
+
+def check_layout_appearance(layout, settings):
+    check_appearance_wording(layout["summary"]["caption"], settings, "MOSS summary.caption")
+    if not required_trait_phrases(settings): return
+    trigger = settings.get("trigger", "")
+    people = [item for item in layout["items"] if item.get("label") == "object" and (
+        (trigger and trigger in item["caption"]) or re.search(
+        r"\b(?:woman|man|person|girl|boy|character|traveler|female|male|individual)\b", " ".join(item["caption"].split()[:8]), re.I))]
+    for item in people:
+        if settings.get("subject") == "All people" or len(people) == 1 or (trigger and trigger in item["caption"]):
+            check_appearance_wording(item["caption"], settings, "MOSS subject caption")
+
+
+def check_scene_appearance(scene, settings, target):
+    check_appearance_wording(scene["description"], settings)
+    if target in ("DART tags", "Anima hybrid"):
+        check_appearance_wording(", ".join(scene["tags"]), settings, "tags")
 
 
 def apply_trigger(scene, trigger):
@@ -46,6 +117,16 @@ def override_instructions(settings):
             raise ValueError("Appearance override fields must be text.")
     if not traits and not settings["trigger"] and not settings["custom"]:
         return "", ""
+    wording = ("Use the exact selected trait wording, preserving its strength. In particular, 'Gigantic breasts' "
+               "must remain 'gigantic breasts', not 'large bust', 'large breasts' or another weaker phrase. "
+               "Include selected traits in the overall description and every caption describing the target person, "
+               "not in captions for unrelated objects. Do not describe an original conflicting size as well. "
+               if settings.get("strict_wording", True) else
+               "Paraphrasing is allowed, but preserve the meaning and strength of the selected traits. ")
+    if settings.get("strict_wording", True) and "breast_size" not in traits:
+        wording = ("Use the exact selected trait wording, preserving its strength. Include selected traits in the "
+                   "overall description and target-person captions, not unrelated objects. Do not introduce "
+                   "unselected anatomy or identity changes. ")
     instructions = (
         "\nApply these requested appearance replacements to the selected subject, even in Preserve mode. "
         "Describe the changed version directly; omit conflicting original attributes instead of explaining the edits. "
@@ -56,8 +137,10 @@ def override_instructions(settings):
         "If identity_mode is 'Trigger replaces identity details', omit unselected identity traits such as original "
         "hair, eyes and body attributes, retaining the trigger and explicitly selected replacements. "
         "Selected replacements take priority over conflicting input descriptions and writing instructions. "
+        + wording +
         "Do not render these settings as visible writing in the image. Do not change the required output schema. "
         "These instructions modify generated text, not image pixels. Settings:\n"
-        + json.dumps({key: settings[key] for key in ("subject", "trigger", "identity_mode", "traits", "custom")}, ensure_ascii=False)
+        + json.dumps({**{key: settings[key] for key in ("subject", "trigger", "identity_mode", "traits", "custom")},
+                      "required_phrases": required_trait_phrases(settings)}, ensure_ascii=False)
     )
     return instructions, settings["trigger"].strip()

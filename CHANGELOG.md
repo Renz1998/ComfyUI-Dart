@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.3 — Preserve selected appearance wording
+
+- Appearance Overrides now defaults to Strict trait wording: missing selected phrases or weakened/conflicting size wording trigger a bounded correction instead of being returned silently.
+- Checks prose, structured descriptions/subjects, DART tags and MOSS summaries/target-person captions. Unrelated object captions are not modified. Remaining failures report the missing/conflicting phrases.
+- Disable Strict trait wording to allow model paraphrasing. Wording checks do not prove visual accuracy, multi-person identity assignment or free-form instruction compliance.
+
 ## 1.5.2 — Appearance recipes, targeted offloading and MOSS parsing
 
 - Added optional Appearance Overrides with trait dropdowns, custom values, subject selection, literal character trigger and identity wording controls, shared by both assistants.

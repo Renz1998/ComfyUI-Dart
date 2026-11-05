@@ -4,7 +4,7 @@ from .base import BaseNode
 from ..dart.assistant import TARGETS, PROMPT_LENGTHS, LANGUAGE_STYLES, request_scene, format_scene
 from ..dart.local_assistant import local_models, describe_local
 from ..dart.moss import compile_layout, read_layout
-from ..dart.appearance import override_instructions, apply_trigger
+from ..dart.appearance import override_instructions, apply_trigger, check_scene_appearance, check_layout_appearance
 
 
 class DanbooruTagsTransformerDescribeImage(BaseNode):
@@ -53,7 +53,7 @@ class DanbooruTagsTransformerDescribeImage(BaseNode):
         custom_instructions += replacements
         if replacements and target == "MOSS JSON layout" and layout_json.strip():
             raise ValueError("Clear the manual MOSS JSON override to generate a layout with appearance replacements. Manual JSON bypasses the assistant.")
-        def query(instructions):
+        def invoke(instructions):
             if backend == "Chat server" or (backend is None and model.strip()):
                 return apply_trigger(request_scene(description, endpoint, model, mode, keep_tags, avoid,
                                      seed, timeout, api_key_env, source_tags=source_tags,
@@ -65,6 +65,17 @@ class DanbooruTagsTransformerDescribeImage(BaseNode):
                                   canvas_width=canvas_width, canvas_height=canvas_height,
                                   prompt_length=prompt_length, language_style=language_style, max_tokens=max_tokens,
                                   unload_after_generation=unload_after_generation), trigger)
+
+        def query(instructions):
+            original = instructions
+            for attempt in range(2):
+                scene = invoke(instructions)
+                try:
+                    check_scene_appearance(scene, appearance, target)
+                    return scene
+                except ValueError as error:
+                    if attempt: raise
+                    instructions = original + "\nCorrect the appearance wording in the complete scene JSON. " + str(error) + "\nPrevious scene: " + json.dumps(scene, ensure_ascii=False)
 
         layout = None
         if target == "MOSS JSON layout" and layout_json.strip():
@@ -102,6 +113,7 @@ class DanbooruTagsTransformerDescribeImage(BaseNode):
             if layout is None:
                 try:
                     layout = compile_layout(scene.get("layout_draft"), canvas_width, canvas_height, draft=True)
+                    check_layout_appearance(layout, appearance)
                 except ValueError as error:
                     # One bounded repair for small instruction models; never alter a manual override.
                     repair = (custom_instructions + "\nRepair the previous layout draft. Validation error: " + str(error)
@@ -109,6 +121,7 @@ class DanbooruTagsTransformerDescribeImage(BaseNode):
                               + json.dumps(scene.get("layout_draft"), ensure_ascii=False))
                     scene = query(repair)
                     layout = compile_layout(scene.get("layout_draft"), canvas_width, canvas_height, draft=True)
+                    check_layout_appearance(layout, appearance)
                     scene["layout_repaired"] = True
                 if keep_tags.strip():
                     layout["summary"]["caption"] += "\n" + keep_tags.strip()

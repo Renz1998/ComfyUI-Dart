@@ -101,7 +101,8 @@ app.registerExtension({
                 instructions: "Caption instructions / replacements", character_trigger: "Character trigger", image_index: "Image in batch",
                 prompt_length: "Prompt length", output_format: "Output format", image_megapixels: "Image megapixel budget", dimension_source: "Layout dimensions", resize_mode: "Resize mode", resize_method: "Resize method", language_style: "Language style", max_tokens: "Generation token limit", unload_after_generation: "Unload assistant model after generation", trigger: "Character trigger", identity_mode: "Identity wording", custom_overrides: "Extra appearance replacements" };
             for (const widget of this.widgets || []) {
-                if (names[widget.name]) widget.label = names[widget.name];
+                if (widget.name === "strict_wording") widget.label = "Strict trait wording";
+                else if (names[widget.name]) widget.label = names[widget.name];
                 else if (nodeData.name.endsWith("AppearanceOverrides")) widget.label = widget.name.replaceAll("_", " ");
             }
             const appearanceSelectors = nodeData.name.endsWith("AppearanceOverrides") ? (this.widgets || []).filter((widget) => widget.type === "combo").map((widget) => widget.name) : [];

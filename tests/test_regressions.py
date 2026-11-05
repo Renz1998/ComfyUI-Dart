@@ -442,13 +442,69 @@ class AppearanceTests(unittest.TestCase):
         self.assertTrue(caption.call_args.kwargs['unload_after_generation'])
         assistant = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
         for backend, path in [('Local model','describe_local'),('Chat server','request_scene')]:
-            with patch('dart_plugin.py.nodes.assistant.' + path, return_value=SCENE) as query:
+            with patch('dart_plugin.py.nodes.assistant.' + path, return_value={**SCENE, 'description':'A traveler with silver hair and green eyes.'}) as query:
                 result = assistant.describe('cafe', 'Natural language', 'Preserve', 'http://localhost/v1', 'qwen', 0, backend=backend, appearance=recipe, custom_instructions='Use cinematic light.')
             self.assertIn('Use cinematic light.', query.call_args.kwargs['custom_instructions'])
             self.assertIn('Silver', query.call_args.kwargs['custom_instructions'])
             self.assertIn('vzx_character', result['result'][0])
         with self.assertRaisesRegex(ValueError, 'Clear the manual'):
             assistant.describe('cafe','MOSS JSON layout','Preserve','','',0,layout_json='{}',appearance=recipe)
+
+
+    def test_reported_gigantic_to_large_bust_regression_and_subject_caption(self):
+        from dart_plugin.py.dart.appearance import check_layout_appearance, check_appearance_wording
+        settings=self.recipe(trigger='test_character',hair_color='Brown',eye_color='Brown',breast_size='Gigantic breasts',skin_tone='Tan')
+        weak='test_character, a woman with brown hair, brown eyes, tan skin and a large bust.'
+        exact='test_character, a woman with brown hair, brown eyes, tan skin and gigantic breasts.'
+        with self.assertRaisesRegex(ValueError,'Gigantic breasts'):
+            check_appearance_wording(weak,settings)
+        check_appearance_wording(exact,settings)
+        check_appearance_wording('A brown-haired, brown-eyed, tan-skinned adult woman with gigantic breasts.',settings)
+        check_appearance_wording('Long curly brown hair and green eyes.',self.recipe(hair_color='Brown',hair_length='Long',eye_color='Green'))
+        self.assertNotIn('Gigantic breasts',plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerAppearanceOverrides']().build(hair_color='Brown')['result'][1])
+        layout={'summary':{'caption':exact},'items':[{'label':'object','caption':weak},
+                {'label':'object','caption':'A golf club held by the subject.'}]}
+        with self.assertRaisesRegex(ValueError,'subject caption'):
+            check_layout_appearance(layout,settings)
+        layout['items'][0]['caption']=exact
+        check_layout_appearance(layout,settings)
+        self.assertEqual(layout['items'][1]['caption'],'A golf club held by the subject.')
+        for bad in ('A woman with gigantic breasts and a large bust.','A woman without gigantic breasts.'):
+            with self.assertRaises(ValueError):check_appearance_wording(bad,self.recipe(breast_size='Gigantic breasts'))
+        check_appearance_wording(weak,self.recipe(breast_size='Gigantic breasts',strict_wording=False))
+
+    def test_text_assistant_corrects_weakened_trait_once_then_rejects_if_still_wrong(self):
+        node=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerDescribeImage']()
+        settings=self.recipe(breast_size='Gigantic breasts')
+        weak={**SCENE,'description':'An adult woman with a large bust.'}
+        exact={**SCENE,'description':'An adult woman with gigantic breasts.'}
+        with patch('dart_plugin.py.nodes.assistant.describe_local',side_effect=[weak,exact]) as model:
+            output=node.describe('adult woman','Natural language','Preserve','','',0,appearance=settings)
+        self.assertIn('gigantic breasts',output['result'][0])
+        self.assertEqual(model.call_count,2)
+        with patch('dart_plugin.py.nodes.assistant.describe_local',return_value=weak) as model:
+            with self.assertRaisesRegex(ValueError,'Appearance override not followed'):
+                node.describe('adult woman','Natural language','Preserve','','',0,appearance=settings)
+        self.assertEqual(model.call_count,2)
+
+    def test_vision_moss_correction_checks_captions_before_returning_json(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from dart_plugin.py.dart.vision import caption_image
+        settings=self.recipe(breast_size='Gigantic breasts')
+        weak={'summary':{'caption':'A clothed adult woman with a large bust.'},'items':[
+             {'label':'object','caption':'An adult woman with a large bust.','bbox':[0,0,1024,1024]}]}
+        exact=deepcopy(weak)
+        exact['summary']['caption']='A clothed adult woman with gigantic breasts.'
+        exact['items'][0]['caption']='An adult woman with gigantic breasts.'
+        execute=Mock(side_effect=[SimpleNamespace(args=(json.dumps({'layout_draft':value}),)) for value in (weak,exact)])
+        with patch.dict(sys.modules,{'comfy_extras.nodes_textgen':SimpleNamespace(TextGenerate=SimpleNamespace(execute=execute))}):
+            text=caption_image(torch.zeros(1,16,16,3),clip='model',output_format='MOSS JSON layout',appearance=settings)
+        output=json.loads(text)
+        self.assertIn('gigantic breasts',output['summary']['caption'])
+        self.assertIn('gigantic breasts',output['items'][0]['caption'])
+        self.assertEqual(execute.call_count,2)
+        self.assertIn('Gigantic breasts',execute.call_args.kwargs['prompt'])
 
 
 class MemoryTests(unittest.TestCase):

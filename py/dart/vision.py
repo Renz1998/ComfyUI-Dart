@@ -8,6 +8,7 @@ from .local_assistant import load_local_clip
 from .assistant import language_guidance
 from .moss import compile_layout, layout_instruction, canvas_size
 from .memory import offload_after
+from .appearance import check_appearance_wording, check_layout_appearance
 
 VISION_FORMATS = ["Plain text", "Structured JSON", "MOSS JSON layout"]
 RESIZE_METHODS = ["lanczos", "bicubic", "bilinear", "area", "nearest-exact"]
@@ -115,7 +116,8 @@ def extract_vision_layout(value, width, height):
 
 def caption_image(image, instructions="", character_trigger="", detail="Detailed", image_index=0,
                   max_tokens=1024, model_name="Automatic", clip=None, language_style="Default",
-                  output_format="Plain text", canvas_width=1024, canvas_height=1024, unload_after_generation=False):
+                  output_format="Plain text", canvas_width=1024, canvas_height=1024, unload_after_generation=False,
+                  appearance=None):
     import torch
     if not isinstance(image, torch.Tensor) or image.ndim != 4 or image.shape[-1] not in (3, 4) or min(image.shape[:3]) < 1:
         raise ValueError("Connect an IMAGE from Load Image: expected a nonempty batch of RGB/RGBA images.")
@@ -159,7 +161,8 @@ def caption_image(image, instructions="", character_trigger="", detail="Detailed
         }, ensure_ascii=False)
         trigger = character_trigger.strip()
         original_prompt = prompt
-        for attempt in range(2 if output_format != "Plain text" else 1):
+        attempts = 2 if output_format != "Plain text" or (appearance and appearance.get("enabled")) else 1
+        for attempt in range(attempts):
             output = TextGenerate.execute(
                 clip=model, prompt=prompt, image=image[image_index:image_index + 1, :, :, :3],
                 max_length=max_tokens, sampling_mode={"sampling_mode": "off"},
@@ -170,17 +173,25 @@ def caption_image(image, instructions="", character_trigger="", detail="Detailed
                 if not caption:
                     raise ValueError("The vision model returned an empty caption. Use a full vision-capable Qwen model and increase max_tokens if needed.")
                 if output_format == "Structured JSON":
-                    return format_caption_json(parse_caption_json(caption), trigger)
+                    value = parse_caption_json(caption)
+                    formatted = format_caption_json(value, trigger)
+                    check_appearance_wording(value["description"], appearance)
+                    for subject in value["subjects"]:
+                        if len(value["subjects"]) == 1 or (trigger and trigger in subject) or (appearance and appearance.get("subject") == "All people"):
+                            check_appearance_wording(subject, appearance, "structured subject")
+                    return formatted
                 if output_format == "MOSS JSON layout":
                     value = parse_caption_json(caption)
                     layout = extract_vision_layout(value, canvas_width, canvas_height)
                     if trigger and trigger not in layout["summary"]["caption"]:
                         layout["summary"]["caption"] = trigger + ", " + layout["summary"]["caption"]
+                    check_layout_appearance(layout, appearance)
                     return json.dumps(layout, ensure_ascii=False, indent=2)
                 if trigger and trigger not in caption:
                     caption = trigger + ", " + caption
+                check_appearance_wording(caption, appearance)
                 return caption
             except ValueError as error:
-                if output_format == "Plain text" or attempt:
+                if attempt + 1 >= attempts:
                     raise
-                prompt = original_prompt + "\nRepair the previous response to match the required JSON schema. Validation error: " + str(error) + "\nReturn the complete corrected JSON only. Previous response:\n" + caption
+                prompt = original_prompt + "\nCorrect the previous response, retaining the requested format and all selected trait wording. Validation error: " + str(error) + "\nReturn the complete corrected response only. Previous response:\n" + caption
