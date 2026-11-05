@@ -550,7 +550,7 @@
       "widgets_values": [
         "Write a scene in Text Assistant. Its tags/series/character feed the V3 composer, then DART expands them. Requires full Qwen plus gated DART v3 Preview E access/cache. The output is text, not an image."
       ],
-      "title": "START HERE · Prompt Atelier"
+      "title": "START HERE · Prompt Mage"
     }
   ],
   "links": [

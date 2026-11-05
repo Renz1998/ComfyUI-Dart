@@ -106,7 +106,7 @@ app.registerExtension({
         const baseMenu = nodeType.prototype.getExtraMenuOptions;
         nodeType.prototype.getExtraMenuOptions = function (_, options) {
             baseMenu?.apply(this, arguments);
-            options.push({ content: this.properties.dart_design === false ? "Enable Atelier design" : "Disable Atelier design", callback: () => toggleDesign(this) });
+            options.push({ content: this.properties.dart_design === false ? "Enable Mage design" : "Disable Mage design", callback: () => toggleDesign(this) });
             options.push({ content: this.properties.atelier_theme === "studio" ? "Use Ember theme (fire while running)" : "Use Studio theme", callback: () => { toggleTheme(this); refreshUploadWidget(this); } });
         };
         if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerAppearanceOverrides", "DanbooruTagsTransformerImageBatchSelector", "DanbooruTagsTransformerImageBatchUpload"].includes(nodeData.name)) return;

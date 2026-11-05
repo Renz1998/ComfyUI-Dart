@@ -82,7 +82,7 @@
 @keyframes atelier-flame {from{transform:scale(.65,.6) rotate(-12deg);opacity:.45}to{transform:scale(1.1,1.15) rotate(10deg);opacity:.85}}
 @keyframes atelier-ember {0%{transform:translate(0,0);opacity:0}20%{opacity:.9}100%{transform:translate(18px,-60px);opacity:0}}
 @keyframes atelier-heat {0%,100%{box-shadow:inset 0 -5px 22px #ff6e2022,0 0 5px #ff873333}50%{box-shadow:inset 0 -7px 28px #ff6e2044,0 0 12px #ff873355}}
-.atelier-upload {box-sizing:border-box;height:300px;display:flex;flex-direction:column;gap:9px;padding:12px;background:#14252e;border:1px solid #355866;border-radius:12px;color:#dceaf2;font:12px/1.4 system-ui;overflow:hidden}
+.atelier-upload {box-sizing:border-box;height:360px;display:flex;flex-direction:column;gap:9px;padding:12px;background:#14252e;border:1px solid #355866;border-radius:12px;color:#dceaf2;font:12px/1.4 system-ui;overflow:hidden}
 .atelier-upload-toolbar {display:flex;gap:8px}
 .atelier-upload button {background:#254856;color:#e6f6ff;border:1px solid #4b7b8e;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit}
 .atelier-upload button:hover:enabled {background:#326478}
@@ -95,6 +95,9 @@
 .atelier-upload-row span {flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .atelier-upload-actions {display:flex;gap:4px;flex-shrink:0}
 .atelier-upload-actions button {padding:4px 7px}
+.atelier-upload .mage-dropzone {min-height:64px;flex-shrink:0;border:2px dashed #7695a9;background:#ffffff04;font-size:13px;font-weight:650;letter-spacing:.02em}
+.atelier-upload[data-dragging="true"] .mage-dropzone {border-color:#ffd2a1;background:#ffb76d22;box-shadow:inset 0 0 18px #ff9a2833}
+.atelier-upload[data-theme="ember"] .mage-dropzone {background:#ffbd6f08;border-color:#c88c59}
 .atelier-upload[data-theme="ember"] {background:linear-gradient(140deg,#30231f,#211c20);border-color:#98603d;color:#ffebdc}
 .atelier-upload[data-theme="ember"] button {background:#593b29;border-color:#b27b4b;color:#ffe9d4}
 .atelier-upload[data-theme="ember"] button:hover:enabled {background:#805334}

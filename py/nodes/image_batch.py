@@ -79,7 +79,7 @@ def select_files(folder, custom_folder, pattern, recursive, batch_mode, index, w
 
 
 class DanbooruTagsTransformerImageBatchSelector(BaseNode):
-    CATEGORY = "Prompt Atelier/Vision"
+    CATEGORY = "Prompt Mage/Vision"
 
     @classmethod
     def INPUT_TYPES(cls):

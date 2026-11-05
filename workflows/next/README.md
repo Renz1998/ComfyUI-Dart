@@ -1,4 +1,4 @@
-# Prompt Atelier workflow gallery
+# Prompt Mage workflow gallery
 
 These are complete **text-processing graphs** you can drag into ComfyUI. They create prompts for an existing image-generation workflow; diffusion checkpoints, samplers and image saving are deliberately left to that workflow. Existing DanbooruTagsTransformer node IDs remain compatible.
 

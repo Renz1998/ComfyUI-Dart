@@ -178,7 +178,7 @@
         "dimension_source": "From processed image",
         "unload_after_generation": true
       },
-      "title": "Prompt Atelier · Image to MOSS JSON (auto size)"
+      "title": "Prompt Mage · Image to MOSS JSON (auto size)"
     },
     {
       "id": 3,

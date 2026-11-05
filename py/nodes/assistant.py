@@ -10,7 +10,7 @@ from ..dart.appearance import (override_instructions, apply_trigger, check_scene
 
 
 class DanbooruTagsTransformerDescribeImage(BaseNode):
-    CATEGORY = "Prompt Atelier/Assistants"
+    CATEGORY = "Prompt Mage/Assistants"
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {

@@ -171,7 +171,7 @@
         "resize_method": "lanczos",
         "dimension_source": "From processed image"
       },
-      "title": "Prompt Atelier · Image to Structured JSON"
+      "title": "Prompt Mage · Image to Structured JSON"
     }
   ],
   "links": [

@@ -6,7 +6,7 @@ from ..dart.appearance import override_instructions, MISMATCH_POLICIES, appearan
 
 
 class DanbooruTagsTransformerImageToText(BaseNode):
-    CATEGORY = "Prompt Atelier/Vision"
+    CATEGORY = "Prompt Mage/Vision"
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {

@@ -31,7 +31,7 @@ assert.equal(widgets[0].serialize,false);
 assert.equal(widgets[0].hidden,true);
 updateStatusWidget(node,report);
 const root=widgets[0].element;
-assert.equal(root.hidden,false); // Feedback remains visible with Atelier designs disabled.
+assert.equal(root.hidden,false); // Feedback remains visible with Mage designs disabled.
 assert.equal(root.dataset.status,"warning");
 assert.equal(root.open,true); // The cause is shown without needing another click.
 assert.match(root.children[1].textContent,/Gigantic breasts/);

@@ -26,7 +26,7 @@ def appearance_report(settings, issues, policy, attempts=0, corrected=False, out
         "blocked": "Overrides not confirmed. Downstream processing is blocked; model output is available below.",
         "warning": "Overrides not confirmed. Continuing with the model output; selected traits may be missing or changed.",
         "corrected": "Appearance wording confirmed after an automatic correction.",
-        "edited": "Atelier applied the selected size phrase to the caption. This is a text edit, not model compliance or an image change.",
+        "edited": "Prompt Mage applied the selected size phrase to the caption. This is a text edit, not model compliance or an image change.",
         "ok": "Selected appearance wording confirmed.",
         "unchecked": "Appearance wording checks are off or no traits were selected.",
     }[status]
@@ -170,7 +170,7 @@ def override_instructions(settings):
     if settings is None:
         return "", ""
     if not isinstance(settings, dict) or settings.get("version") != 1 or not isinstance(settings.get("enabled"), bool):
-        raise ValueError("Connect appearance from Prompt Atelier · Appearance Overrides.")
+        raise ValueError("Connect appearance from Prompt Mage · Appearance Overrides.")
     if not settings["enabled"]:
         return "", ""
     traits = settings.get("traits")

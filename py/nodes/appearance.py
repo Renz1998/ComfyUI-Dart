@@ -3,7 +3,7 @@ from ..dart.appearance import TRAITS, KEEP, override_instructions
 
 
 class DanbooruTagsTransformerAppearanceOverrides(BaseNode):
-    CATEGORY = "Prompt Atelier/Assistants"
+    CATEGORY = "Prompt Mage/Assistants"
 
     @classmethod
     def INPUT_TYPES(cls):

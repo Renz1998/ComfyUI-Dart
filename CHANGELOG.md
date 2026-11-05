@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.0 — Prompt Mage and simpler remote uploads
+
+- Rebranded visible node names, categories, guides, documentation and Registry display name to Prompt Mage. Existing class IDs, repository URL and Registry package ID stay compatible.
+- Upload Images now has a large click-to-browse drop area, whole-node image drops and a local Choose folder action, preserving nested folder paths during upload.
+- Renamed the path-based selector to Server Folder (Advanced) to distinguish server paths from uploads on RunPod.
+- Removed the dependency on secure-context crypto.randomUUID so uploads do not hang on HTTP hosts where it is unavailable.
+
+
 ## 1.5.5 — Direct multi-image uploads
 
 - Added Image Batch Upload: multi-file picker, drag-and-drop, thumbnail previews, reorder/remove/clear controls and upload progress/errors. Uses native ComfyUI input uploads, including on remote servers.
@@ -11,7 +19,7 @@
 ## 1.5.4 — Visible override feedback and graceful handling
 
 - Added Image Batch Selector: folder choice, natural filename order, one image per queued run or a native list mapped sequentially through Image to Text. Images retain independent dimensions and filenames label reports.
-- Added explicit Apply exact breast-size wording. Identifiable target captions can be post-edited to use the selected phrase, with original output and edit details retained. This is labeled as an Atelier caption edit, not a model unlock/compliance guarantee; ambiguous targets are not blindly rewritten.
+- Added explicit Apply exact breast-size wording. Identifiable target captions can be post-edited to use the selected phrase, with original output and edit details retained. This is labeled as an Prompt Mage caption edit, not a model unlock/compliance guarantee; ambiguous targets are not blindly rewritten.
 - Both assistants now default to Warn and continue when valid model output still misses selected wording after correction. A visible amber report names missing/conflicting phrases and their output locations.
 - Added On override mismatch directly to each assistant. Block downstream preserves the raw preview/report while blocking dependent data outputs, without an appearance-validation traceback.
 - Appended status/report outputs; existing output positions remain unchanged. Reports include attempts, issues, policy and the actual generated text. Prompt wires remain clean prose/JSON.
@@ -34,12 +42,12 @@
 
 - Image to Text now supports Plain text, Structured JSON and native MOSS JSON layout, with character instructions and formatted previews.
 - MOSS vision layouts expose canvas dimensions, validate boxes and convert to native centered yxyx coordinates. Box placement is model-estimated.
-- All DART display names now start with Prompt Atelier for node search. Persisted class IDs and output socket positions are unchanged.
+- All DART display names now start with Prompt Mage for node search. Persisted class IDs and output socket positions are unchanged.
 - Added an image megapixel budget, downscale-only or upscale-to-budget mode, five interpolation methods, automatic MOSS canvas sizing and width/height/processed-image outputs. Existing description connections keep output index 0.
 
-## 1.5.0 — Prompt Atelier branding and workflow gallery
+## 1.5.0 — Prompt Mage branding and workflow gallery
 
-- Renamed the pack and assistant display names to Prompt Atelier; preserved legacy class IDs, sockets and the upstream license/history.
+- Renamed the pack and assistant display names to Prompt Mage; preserved legacy class IDs, sockets and the upstream license/history.
 - Added source/model credits, Registry-shaped metadata, icon/banner, manual publication preparation and contributor guidance.
 - Added combined workflows for descriptions/photos → DART v3, photos → MOSS JSON, shared vision-to-prose, and keywords → MOSS JSON.
 - Grouped tools into Assistants, Vision and DART categories.

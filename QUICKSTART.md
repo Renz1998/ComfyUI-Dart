@@ -1,18 +1,18 @@
-# Prompt Atelier — Quickstart
+# Prompt Mage — Quickstart
 
-Prompt Atelier is an expanded fork of [nkchocoai/ComfyUI-Dart](https://github.com/nkchocoai/ComfyUI-Dart). It keeps the original node identifiers and adds DART v3, local text/vision assistants, custom instructions and MOSS layouts. Do not install two copies of Dart together: they register the same existing node names.
+Prompt Mage is an expanded fork of [nkchocoai/ComfyUI-Dart](https://github.com/nkchocoai/ComfyUI-Dart). It keeps the original node identifiers and adds DART v3, local text/vision assistants, custom instructions and MOSS layouts. Do not install two copies of Dart together: they register the same existing node names.
 
 Source: [Renz1998/ComfyUI-Prompt-Atelier](https://github.com/Renz1998/ComfyUI-Prompt-Atelier). Start with the [workflow gallery](workflows/next/README.md).
 
 ## Help and appearance
 
-Hover a control or socket for its purpose, option meanings, examples, and wiring advice. Node descriptions explain the complete step. Each DART node has a color-coded guide card: teal for the assistant, blue for loaders, amber for composers, violet for generation, and slate for utilities. Click its **?** button for a short guide. The card shows Working during execution and Done or Check Input afterward. Motion is limited to execution/completion and respects the browser's reduced-motion preference. Right-click a node and choose **Disable Atelier design** to return to its previous appearance.
+Hover a control or socket for its purpose, option meanings, examples, and wiring advice. Node descriptions explain the complete step. Each DART node has a color-coded guide card: teal for the assistant, blue for loaders, amber for composers, violet for generation, and slate for utilities. Click its **?** button for a short guide. The card shows Working during execution and Done or Check Input afterward. Motion is limited to execution/completion and respects the browser's reduced-motion preference. Right-click a node and choose **Disable Mage design** to return to its previous appearance.
 
 ## What DART does
 
 DART predicts more image tags from tags you supply. For example, `1girl, solo, red hair` can become a longer list describing a plausible scene. It can invent details. It is not a conversational assistant.
 
-The separate **Prompt Atelier · Text Assistant** node uses a local Qwen model to interpret ordinary descriptions. You can use its prompt directly, or send its tag outputs through DART for further expansion. A chat server is an optional alternative.
+The separate **Prompt Mage · Text Assistant** node uses a local Qwen model to interpret ordinary descriptions. You can use its prompt directly, or send its tag outputs through DART for further expansion. A chat server is an optional alternative.
 
 ## Installation
 
@@ -87,7 +87,7 @@ Example: `A minimalist travel poster with a blue mountain below and the exact ti
 
 ## Describe an actual image
 
-Add **Prompt Atelier · Image to Text**, connect **Load Image → image**, and leave **Local model** at **Automatic**. Run for a detailed visual caption, shown directly on the node. It uses your installed full Qwen vision model through ComfyUI. This node processes the selected image locally; it does not edit its pixels.
+Add **Prompt Mage · Image to Text**, connect **Load Image → image**, and leave **Local model** at **Automatic**. Run for a detailed visual caption, shown directly on the node. It uses your installed full Qwen vision model through ComfyUI. This node processes the selected image locally; it does not edit its pixels.
 
 Use the open **Instructions** box for changes, for example:
 

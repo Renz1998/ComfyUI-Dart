@@ -1,6 +1,6 @@
 # Credits and provenance
 
-Prompt Atelier is maintained by [Renz1998](https://github.com/Renz1998). It extends the original ComfyUI-Dart node pack with local language/vision assistance, prompt design, MOSS layout compilation, workflow examples and interface improvements. The new name does not imply authorship of the underlying models.
+Prompt Mage is maintained by [Renz1998](https://github.com/Renz1998). It extends the original ComfyUI-Dart node pack with local language/vision assistance, prompt design, MOSS layout compilation, workflow examples and interface improvements. The new name does not imply authorship of the underlying models.
 
 | Contribution | Creator / source |
 | --- | --- |
@@ -15,4 +15,4 @@ Prompt Atelier is maintained by [Renz1998](https://github.com/Renz1998). It exte
 
 The original [GPL-3.0 LICENSE](LICENSE) is retained unchanged for this derived node pack. Git history preserves the upstream source and subsequent changes. Model weights are not bundled; the software license does not replace each model's own license, access conditions or attribution. Refer to the specific model/checkpoint card before redistribution. MOSS-Image is a downstream target, not a model trained by this project.
 
-The Anima hybrid and MOSS prose options are formatting choices, not endorsements or renamed model releases. Prompt Atelier is an independent community project.
+The Anima hybrid and MOSS prose options are formatting choices, not endorsements or renamed model releases. Prompt Mage is an independent community project.

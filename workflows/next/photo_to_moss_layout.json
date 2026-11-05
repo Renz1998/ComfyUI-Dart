@@ -515,7 +515,7 @@
       "widgets_values": [
         "Upload your own image in Load Image (or use the neutral demo). Choose a full Qwen vision model in Load CLIP. Both assistants share it. Set MOSS canvas width/height equal to your image latent dimensions. Connect prompt to MOSS positive text encoding."
       ],
-      "title": "START HERE · Prompt Atelier"
+      "title": "START HERE · Prompt Mage"
     }
   ],
   "links": [

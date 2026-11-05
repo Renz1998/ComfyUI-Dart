@@ -1,6 +1,6 @@
 # Caption models and exact wording
 
-Prompt Atelier does not filter the phrase `gigantic breasts`. A model can still omit or paraphrase requested attributes. A low refusal rate does not establish exact wording, caption accuracy, schema compliance, or good image conditioning.
+Prompt Mage does not filter the phrase `gigantic breasts`. A model can still omit or paraphrase requested attributes. A low refusal rate does not establish exact wording, caption accuracy, schema compliance, or good image conditioning.
 
 ## Requested local checkpoint
 
@@ -18,4 +18,4 @@ Choose this filename explicitly in Image to Text's Local model selector. Automat
 
 Appearance Overrides → Apply exact breast-size wording performs an explicit caption edit for an identifiable target. It can replace a weaker size phrase or add the selected attribute. It does not remove model policies, rewrite explicit refusals into claimed compliance, alter source pixels, or guarantee the image generator follows the final prompt. Ambiguous subjects remain unconfirmed.
 
-The report distinguishes model-generated wording from Atelier's post-edit: `model_output` retains the text before the size edit, `post_edits` records changes, and `output` is the actual downstream prompt. Turn this option off when comparing models' own wording. Keep Warn and continue or choose Block downstream according to whether incomplete overrides should stop dependent processing.
+The report distinguishes model-generated wording from Prompt Mage's post-edit: `model_output` retains the text before the size edit, `post_edits` records changes, and `output` is the actual downstream prompt. Turn this option off when comparing models' own wording. Keep Warn and continue or choose Block downstream according to whether incomplete overrides should stop dependent processing.

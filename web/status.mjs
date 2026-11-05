@@ -24,7 +24,7 @@ export function statusView(report) {
         warning: "Overrides not confirmed · output continues",
         blocked: "Overrides not confirmed · downstream blocked",
         corrected: "Overrides confirmed after correction",
-        edited: "Selected size phrase applied by Atelier",
+        edited: "Selected size phrase applied by Prompt Mage",
         ok: "Selected appearance wording confirmed",
         unchecked: "Appearance wording checks are off",
         running: "Checking appearance overrides…",

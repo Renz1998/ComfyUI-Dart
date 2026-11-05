@@ -691,7 +691,7 @@
       "widgets_values": [
         "Upload an image. Image to Text captions it; Text Assistant extracts tags; the V3 composer and DART expand them. This creative expansion may add details. Requires a full Qwen vision model and DART v3 access. Use Keep tags for exact required text."
       ],
-      "title": "START HERE · Prompt Atelier"
+      "title": "START HERE · Prompt Mage"
     }
   ],
   "links": [

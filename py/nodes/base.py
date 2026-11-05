@@ -1,2 +1,2 @@
 class BaseNode:
-    CATEGORY = "Prompt Atelier/DART"
+    CATEGORY = "Prompt Mage/DART"

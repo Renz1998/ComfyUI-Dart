@@ -769,7 +769,7 @@ class VisionTests(unittest.TestCase):
 
     def test_all_nodes_have_searchable_atelier_prefix(self):
         self.assertEqual(len(plugin.NODE_DISPLAY_NAME_MAPPINGS), len(plugin.NODE_CLASS_MAPPINGS))
-        self.assertTrue(all(name.startswith('Prompt Atelier') for name in plugin.NODE_DISPLAY_NAME_MAPPINGS.values()))
+        self.assertTrue(all(name.startswith('Prompt Mage') for name in plugin.NODE_DISPLAY_NAME_MAPPINGS.values()))
 
     def test_structured_caption_validates_json_and_keeps_literal_trigger(self):
         value = dict(description='A red coat.', subjects=['A traveler wearing a red coat.'],

@@ -27,10 +27,10 @@ const context = {
             DanbooruTagsTransformerComposePromptV3: { title: "Dart Compose Prompt V3" },
             DanbooruTagsTransformerLoader: { title: "Dart Load" },
             DanbooruTagsTransformerDescribeImage: { title: "Dart Describe Image" },
-            DanbooruTagsTransformerAppearanceOverrides: { title: "Prompt Atelier · Appearance Overrides" },
-            DanbooruTagsTransformerImageToText: {title:"Prompt Atelier · Image to Text"},
-            DanbooruTagsTransformerImageBatchSelector: {title:"Prompt Atelier · Image Batch Selector"},
-            DanbooruTagsTransformerImageBatchUpload: {title:"Prompt Atelier · Image Batch Upload"},
+            DanbooruTagsTransformerAppearanceOverrides: { title: "Prompt Mage · Appearance Overrides" },
+            DanbooruTagsTransformerImageToText: {title:"Prompt Mage · Image to Text"},
+            DanbooruTagsTransformerImageBatchSelector: {title:"Prompt Mage · Server Folder (Advanced)"},
+            DanbooruTagsTransformerImageBatchUpload: {title:"Prompt Mage · Upload Images"},
         },
         ContextMenu: class { constructor(entries) { menu = entries; } },
         createNode(type) {
@@ -150,7 +150,7 @@ assert.deepEqual(oldVision.outputs[0].links, [99]);
 oldVision.onConfigure({});
 assert.equal(oldVision.outputs.length, 6);
 canvas.showConnectionMenu({nodeTo: {type:'DanbooruTagsTransformerImageToText',graph,inputs:[{name:'appearance',type:'ATELIER_APPEARANCE'}]},slotTo:0,e:{}});
-assert.equal(menu[0].content, 'Prompt Atelier · Appearance Overrides');
+assert.equal(menu[0].content, 'Prompt Mage · Appearance Overrides');
 menu[0].callback();
 assert.equal(connections.at(-1).from, 'DanbooruTagsTransformerAppearanceOverrides');
 assert.equal(connections.at(-1).args[0], 0);
@@ -183,6 +183,6 @@ canvas.showConnectionMenu({nodeFrom:batchSource,slotFrom:0,e:{}});menu[0].callba
 assert.equal(connections.at(-1).args[0],1);
 const captionTarget={type:'DanbooruTagsTransformerImageToText',graph,inputs:[{name:'image',type:'IMAGE'},{name:'source_name',type:'STRING'}],findInputSlot(name){return this.inputs.findIndex(slot=>slot.name===name);}};
 canvas.showConnectionMenu({nodeTo:captionTarget,slotTo:0,e:{}});
-const uploadChoice=menu.find(entry=>entry?.content==='Prompt Atelier · Image Batch Upload');assert.ok(uploadChoice);uploadChoice.callback();
+const uploadChoice=menu.find(entry=>entry?.content==='Prompt Mage · Upload Images');assert.ok(uploadChoice);uploadChoice.callback();
 assert.equal(connections.at(-2).args[0],0);assert.equal(connections.at(-2).args[2],0);
 assert.equal(connections.at(-1).args[0],1);assert.equal(connections.at(-1).args[2],1);

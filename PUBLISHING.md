@@ -1,4 +1,4 @@
-# Publishing Prompt Atelier
+# Publishing Prompt Mage
 
 ## Current status
 
@@ -12,7 +12,7 @@ Follow the [official publishing guide](https://docs.comfy.org/registry/publishin
 2. Completed: `PublisherId = "renz1998"` is set under `[tool.comfy]` in pyproject.toml. The published package ID is `prompt-atelier`.
 3. Completed: the publisher key is saved in GitHub Actions Secrets as `REGISTRY_ACCESS_TOKEN`. Never put its value in source, workflow examples, issues or chat.
 4. Ensure the public default branch is `main` and includes this implementation, not the untouched upstream branch. Repository, icon and banner URLs must resolve publicly.
-5. Completed for 1.5.5: **Publish Prompt Atelier** ran on main and passed metadata validation, all 70 Python tests and four JavaScript suites before upload.
+5. Completed for 1.5.5: **Publish Prompt Mage** ran on main and passed metadata validation, all 70 Python tests and four JavaScript suites before upload.
 6. The 1.5.5 CDN archive is verified. Latest-version visibility on the detail page and Manager search remains to be checked; upload, scanning and indexing can be separate steps.
 
 The action is manual-only; changing documentation or branding does not automatically publish a package. Increment the version for each subsequent Registry release.
@@ -21,7 +21,7 @@ The action is manual-only; changing documentation or branding does not automatic
 
 The [Manager registration guide](https://github.com/Comfy-Org/ComfyUI-Manager#how-to-register-your-custom-node-into-comfyui-manager) also documents a PR adding an entry to custom-node-list.json. A candidate entry is in docs/manager-entry.json. Validate it against the live catalogue and verify the default branch before submitting it. A prepared entry is not an accepted listing.
 
-Prompt Atelier retains the old DanbooruTagsTransformer class IDs for workflow compatibility. State clearly that it replaces ComfyUI-Dart and cannot be installed alongside it; catalogue conflict detection may report these shared IDs. Do not hide the inherited IDs or claim the original nodes as new model work.
+Prompt Mage retains the old DanbooruTagsTransformer class IDs for workflow compatibility. State clearly that it replaces ComfyUI-Dart and cannot be installed alongside it; catalogue conflict detection may report these shared IDs. Do not hide the inherited IDs or claim the original nodes as new model work.
 
 ## Release material
 
