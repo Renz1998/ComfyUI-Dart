@@ -8,6 +8,8 @@ const generators = (slot) => [node("Generate", slot), node("GenerateAdvanced", s
 export function connectionsFor(type, name, slotType, isOutput) {
     if (!type?.startsWith(prefix)) return [];
     if (!isOutput) {
+        if (name === "image") return [{ type: "LoadImage", slot: 0 }];
+        if (type === prefix + "DescribeImage" && name === "description") return [node("ImageToText", 0)];
         if (name === "model") return [node("Loader", 0)];
         if (name === "tokenizer") return [node("Loader", 1)];
         if (name === "setting") return [node("GenerationConfig", 0)];
@@ -35,6 +37,7 @@ export function connectionsFor(type, name, slotType, isOutput) {
         if (name === "scene_json") return [preview];
         return [encode, preview];
     }
+    if (type === prefix + "ImageToText") return [node("DescribeImage", "description"), encode, preview];
     if (/ComposePrompt/.test(type)) return [...generators("prompt"), preview];
     if (/BanTagsFromRegex/.test(type)) return [...generators("ban_tags"), preview];
     if (slotType === "STRING") return [node("DescribeImage", "source_tags"), encode, preview];

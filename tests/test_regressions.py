@@ -338,5 +338,58 @@ class AssistantTests(unittest.TestCase):
             request_scene('scene', 'http://localhost:1234/v1', '', 'Preserve', '', '', 0)
 
 
+class VisionTests(unittest.TestCase):
+    def run_caption(self, image, caption='A blue square on a pale background.', **kwargs):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from dart_plugin.py.dart.vision import caption_image
+        execute = Mock(return_value=SimpleNamespace(args=(caption,)))
+        module = SimpleNamespace(TextGenerate=SimpleNamespace(execute=execute))
+        with patch.dict(sys.modules, {'comfy_extras.nodes_textgen': module}), \
+                patch('dart_plugin.py.dart.vision.load_local_clip', return_value='vision-model') as loader:
+            result = caption_image(image, **kwargs)
+        return result, execute, loader
+
+    def test_selected_image_and_free_instructions_reach_vision_model(self):
+        image = torch.zeros(2, 24, 32, 4)
+        image[1, :, :, 2] = 1
+        text, execute, _ = self.run_caption(image, image_index=1,
+                                           instructions='Use silver hair, omit original hair color.',
+                                           character_trigger='my_character', max_tokens=512)
+        call = execute.call_args.kwargs
+        self.assertTrue(torch.equal(call['image'], image[1:2, :, :, :3]))
+        self.assertEqual(json.loads(call['prompt'])['instructions'], 'Use silver hair, omit original hair color.')
+        self.assertEqual(call['max_length'], 512)
+        self.assertTrue(text.startswith('my_character, '))
+
+    def test_exact_trigger_is_not_duplicated(self):
+        text, _, _ = self.run_caption(torch.zeros(1, 16, 16, 3), caption='my_character wears a red coat.',
+                                      character_trigger='my_character')
+        self.assertEqual(text, 'my_character wears a red coat.')
+
+    def test_invalid_image_or_batch_index_fails_before_model_loading(self):
+        from dart_plugin.py.dart.vision import caption_image
+        with patch('dart_plugin.py.dart.vision.load_local_clip') as loader:
+            for image in (torch.zeros(16, 16, 3), torch.zeros(0, 16, 16, 3), torch.zeros(1, 16, 16, 1)):
+                with self.assertRaisesRegex(ValueError, 'IMAGE'):
+                    caption_image(image)
+            with self.assertRaisesRegex(ValueError, 'outside this batch'):
+                caption_image(torch.zeros(1, 16, 16, 3), image_index=1)
+        loader.assert_not_called()
+
+    def test_empty_caption_has_actionable_error(self):
+        with self.assertRaisesRegex(ValueError, 'empty caption'):
+            self.run_caption(torch.zeros(1, 16, 16, 3), caption='')
+
+    def test_new_node_previews_caption_and_has_complete_help(self):
+        node = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerImageToText']()
+        with patch('dart_plugin.py.nodes.vision.caption_image', return_value='A red coat beside a cafe window.'):
+            output = node.describe(torch.zeros(1, 16, 16, 3), instructions='Keep the setting.')
+        self.assertEqual(output['ui']['text'], list(output['result']))
+        for fields in node.INPUT_TYPES().values():
+            for spec in fields.values():
+                self.assertTrue(spec[1]['tooltip'])
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

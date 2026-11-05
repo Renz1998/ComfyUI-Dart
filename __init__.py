@@ -18,9 +18,11 @@ from .py.nodes.advanced.token_ids import (
 from .py.nodes.ban_tags import DanbooruTagsTransformerBanTagsFromRegex
 from .py.nodes.prompt_v3 import DanbooruTagsTransformerComposePromptV3
 from .py.nodes.assistant import DanbooruTagsTransformerDescribeImage
+from .py.nodes.vision import DanbooruTagsTransformerImageToText
 from .py.nodes.help import attach_help
 
 NODE_CLASS_MAPPINGS = {
+    "DanbooruTagsTransformerImageToText": DanbooruTagsTransformerImageToText,
     "DanbooruTagsTransformerComposePromptV3": DanbooruTagsTransformerComposePromptV3,
     "DanbooruTagsTransformerDescribeImage": DanbooruTagsTransformerDescribeImage,
     "DanbooruTagsTransformerLoader": DanbooruTagsTransformerLoader,
@@ -39,6 +41,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "DanbooruTagsTransformerImageToText": "Dart Image to Text",
     "DanbooruTagsTransformerComposePromptV3": "Dart Compose Prompt V3 (Experimental)",
     "DanbooruTagsTransformerDescribeImage": "Dart Describe Image",
     "DanbooruTagsTransformerLoader": "Dart Load",

@@ -5,6 +5,7 @@ document.head.append(stylesheet);
 
 const designs = new WeakMap();
 const profiles = {
+    vision: { title: "VISION CAPTIONER", subtitle: "IMAGE → DETAILED TEXT", color: "#183d49", accent: "#79d9ee", text: "Connect an image, then Run for a detailed caption. Instructions can replace appearance while keeping pose, clothing and scene details. Character trigger inserts your exact training token. This creates text; it does not edit image pixels." },
     assistant: { title: "SCENE ASSISTANT", subtitle: "WORDS → TAGS / PROSE", color: "#173d36", accent: "#79e5bd", text: "Write a scene or connect Dart Generate to source_tags. Concept turns keywords into a new scene; Natural language outputs prose. Custom instructions control style and wording. Local model + Automatic uses installed Qwen. Connect prompt to image text encoding." },
     loader: { title: "MODEL LIBRARY", subtitle: "MODEL + MATCHING TOKENIZER", color: "#1e3453", accent: "#8ebcff" },
     composer: { title: "PROMPT BUILDER", subtitle: "VISUAL TAGS → DART FORMAT", color: "#44351f", accent: "#f0c780" },
@@ -13,6 +14,7 @@ const profiles = {
 };
 
 function profileFor(name) {
+    if (name.endsWith("ImageToText")) return profiles.vision;
     if (name.endsWith("DescribeImage")) return profiles.assistant;
     if (name.endsWith("Loader")) return profiles.loader;
     if (name.includes("ComposePrompt")) return profiles.composer;

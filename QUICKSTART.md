@@ -85,9 +85,23 @@ For manual changes, copy the resulting **prompt** into **Edit MOSS JSON** and ed
 
 Example: `A minimalist travel poster with a blue mountain below and the exact title EXPLORE at the top.` Set 1024×1024 and ask for cream paper, dark blue type and space between the title and mountain. Keep exact tags, when generating automatically, are stored inside the summary caption so they cannot break JSON syntax.
 
+## Describe an actual image
+
+Add **Dart Image to Text**, connect **Load Image → image**, and leave **Local model** at **Automatic**. Run for a detailed visual caption, shown directly on the node. It uses your installed full Qwen vision model through ComfyUI. This node processes the selected image locally; it does not edit its pixels.
+
+Use the open **Instructions** box for changes, for example:
+
+> Replace the main subject with my character. Use silver hair and green eyes instead of the original colors. Keep the pose, clothing, background, framing and lighting. Output only a detailed image caption.
+
+Put an exact training token in **Character trigger**, such as `my_character`. The model is asked to use it for the main subject. If it omits the literal token, the node prepends it. The trigger does not load a LoRA; load your character model in your image workflow separately. Attribute changes follow the instructions given to the vision model, so inspect the result.
+
+**Detailed/Concise** controls the requested caption length. **Caption token limit** sets its output budget. **Image in batch** chooses one image, starting at index 0. An optional full vision-capable **CLIP** overrides the model selector. Text-only weights cannot inspect images; use a full Qwen vision checkpoint.
+
+Connect **description** directly to your positive text encoder, or to **Dart Describe Image → description** for tags, a concept, or a MOSS JSON layout. Dragging the image input offers Load Image; dragging the caption output offers the text assistant and text encoders. This is a separate node, so existing text-assistant workflows keep their inputs and output positions.
+
 ## Validation
 
-Run `python tests/test_regressions.py` in an environment with Torch and Transformers. The 31 tests include local/backend routing, tag aliases, settings isolation, RNG restoration, zero-temperature mode, control-token protection, sequence removal, retained weights, aspect boundaries, truncated decoding, response validation, and a temporary loopback HTTP server. Run `node tests/test_connections.mjs` and `node tests/test_menu.mjs` to check drag suggestions, exact connection targets, and backend control visibility. A separate real local-model run verified description conversion with Qwen3-VL 4B; semantic output quality is still model-dependent.
+Run `python tests/test_regressions.py` in an environment with Torch and Transformers. The 36 tests include local/backend routing, tag aliases, settings isolation, RNG restoration, zero-temperature mode, control-token protection, sequence removal, retained weights, aspect boundaries, truncated decoding, response validation, and a temporary loopback HTTP server. Run `node tests/test_connections.mjs` and `node tests/test_menu.mjs` to check drag suggestions, exact connection targets, and backend control visibility. A separate real local-model run verified description conversion with Qwen3-VL 4B; semantic output quality is still model-dependent.
 
 A separate real-model smoke run used v3 revision `80b8bb0f763f14394551b1c542ac368c7e960275`, seed 7, CPU, and repeated generation. See the accompanying validation report. CI is configured for Transformers 4.46.3 and 5.17.0; local validation does not imply that the remote CI jobs have run.
 

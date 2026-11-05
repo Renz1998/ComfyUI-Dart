@@ -24,18 +24,22 @@ def select_model(names):
     ))
 
 
+def load_local_clip(model_name="Automatic", clip=None):
+    if clip is not None:
+        return clip
+    from nodes import CLIPLoader
+    if model_name == "Automatic":
+        model_name = select_model(local_models())
+    return CLIPLoader().load_clip(model_name, type="stable_diffusion")[0]
+
+
 def describe_local(description, mode, required, avoid, seed, model_name="Automatic", clip=None,
                    source_tags="", custom_instructions="", target="DART tags", canvas_width=1024, canvas_height=1024):
     system, scene_input = scene_request(description, mode, required, avoid, source_tags, custom_instructions, target,
                                        canvas_width, canvas_height)
-    from nodes import CLIPLoader
     from comfy_extras.nodes_textgen import TextGenerate
 
-    if clip is None:
-        if model_name == "Automatic":
-            model_name = select_model(local_models())
-        # Native loader resolves the filename inside configured model directories.
-        clip = CLIPLoader().load_clip(model_name, type="stable_diffusion")[0]
+    clip = load_local_clip(model_name, clip)
     payload = json.dumps(scene_input, ensure_ascii=False)
     sampling = {"sampling_mode": "off"} if mode == "Preserve" else {
         "sampling_mode": "on", "temperature": 0.7, "top_k": 40,

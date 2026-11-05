@@ -52,7 +52,7 @@ app.registerExtension({
             baseMenu?.apply(this, arguments);
             options.push({ content: this.properties.dart_design === false ? "Enable DART design" : "Disable DART design", callback: () => toggleDesign(this) });
         };
-        if (nodeData.name !== "DanbooruTagsTransformerDescribeImage") return;
+        if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText"].includes(nodeData.name)) return;
         const created = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {
             created?.apply(this, arguments);
@@ -62,7 +62,8 @@ app.registerExtension({
             const names = { backend: "Assistant", local_model: "Local model", endpoint: "Server URL",
                 model: "Chat model", keep_tags: "Keep exact tags", avoid: "Avoid",
                 description: "Scene / keywords (optional with source tags)", custom_instructions: "Custom instructions",
-                canvas_width: "MOSS canvas width", canvas_height: "MOSS canvas height", layout_json: "Edit MOSS JSON (optional override)" };
+                canvas_width: "MOSS canvas width", canvas_height: "MOSS canvas height", layout_json: "Edit MOSS JSON (optional override)",
+                instructions: "Caption instructions / replacements", character_trigger: "Character trigger", image_index: "Image in batch", max_tokens: "Caption token limit" };
             for (const widget of this.widgets || []) {
                 if (names[widget.name]) widget.label = names[widget.name];
             }
