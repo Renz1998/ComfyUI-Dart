@@ -2,7 +2,7 @@
 
 ## Current status
 
-**Version 1.5.3 was uploaded on November 5, 2026**, under [@renz1998](https://registry.comfy.org/publishers/renz1998). Its [publishing workflow](https://github.com/Renz1998/ComfyUI-Prompt-Atelier/actions/runs/42058814509) completed validation and upload successfully, using runtime commit 80bdc466342d12decf17744dec7380baf4773a2c. The public CDN archive was downloaded and checked for version 1.5.3 and strict appearance-wording validation. Latest-version visibility on the [Registry detail page](https://registry.comfy.org/nodes/prompt-atelier), separate review/indexing status and Manager search visibility remain unverified.
+**Version 1.5.4 was uploaded on November 6, 2026**, under [@renz1998](https://registry.comfy.org/publishers/renz1998). Its [publishing workflow](https://github.com/Renz1998/ComfyUI-Prompt-Atelier/actions/runs/42095075733) completed validation and upload successfully, using runtime commit 83488f91521516c7d7bbe4c6c02e2adf156469fb. The public CDN archive was downloaded and checked for version 1.5.4 and the new batch selector, size-editing and feedback runtime. Latest-version visibility on the [Registry detail page](https://registry.comfy.org/nodes/prompt-atelier), separate review/indexing status and Manager search visibility remain unverified.
 
 ## Registry route
 
@@ -12,8 +12,8 @@ Follow the [official publishing guide](https://docs.comfy.org/registry/publishin
 2. Completed: `PublisherId = "renz1998"` is set under `[tool.comfy]` in pyproject.toml. The published package ID is `prompt-atelier`.
 3. Completed: the publisher key is saved in GitHub Actions Secrets as `REGISTRY_ACCESS_TOKEN`. Never put its value in source, workflow examples, issues or chat.
 4. Ensure the public default branch is `main` and includes this implementation, not the untouched upstream branch. Repository, icon and banner URLs must resolve publicly.
-5. Completed for 1.5.3: **Publish Prompt Atelier** ran on main and passed metadata validation, all 58 Python tests and both JavaScript suites before upload.
-6. The 1.5.3 CDN archive is verified. Latest-version visibility on the detail page and Manager search remains to be checked; upload, scanning and indexing can be separate steps.
+5. Completed for 1.5.4: **Publish Prompt Atelier** ran on main and passed metadata validation, all 68 Python tests and three JavaScript suites before upload.
+6. The 1.5.4 CDN archive is verified. Latest-version visibility on the detail page and Manager search remains to be checked; upload, scanning and indexing can be separate steps.
 
 The action is manual-only; changing documentation or branding does not automatically publish a package. Increment the version for each subsequent Registry release.
 
