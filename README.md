@@ -49,7 +49,7 @@ python -m pip install -r prompt-atelier/requirements.txt
 
 Restart ComfyUI. Search **Prompt Atelier** to find all nodes, including **Prompt Atelier · DART Generate**, **DART Load**, and the composers. Categories are **Prompt Atelier / Assistants**, **Vision**, and **DART**. Existing workflow class IDs and socket positions are unchanged. An existing installed folder can stay named ComfyUI-Dart; folder names are not used for imports.
 
-**Registry:** [Prompt Atelier](https://registry.comfy.org/nodes/prompt-atelier) is published under @renz1998. Version 1.5.1 upload and its CDN archive are verified; the detail page last showed 1.5.0. Manager search/latest-version indexing is not yet verified. Git installation receives the latest source. See [PUBLISHING.md](PUBLISHING.md).
+**Registry:** [Prompt Atelier](https://registry.comfy.org/nodes/prompt-atelier) is published under @renz1998. Version 1.5.2 upload and its CDN archive are verified; the detail page last showed 1.5.1. Manager search/latest-version indexing is not yet verified. Git installation receives the latest source. See [PUBLISHING.md](PUBLISHING.md).
 
 ## Try a workflow
 
