@@ -22,6 +22,10 @@ All 15 nodes include hover help and role-colored guides. Assistants show their r
 
 ## Control prompt detail and wording
 
+**Image to Text → Output format** offers Plain text, Structured JSON, and MOSS JSON layout. Structured JSON contains description, subjects, environment, lighting, composition and visible_text; use the MOSS choice for its native summary/items format. Instructions and character triggers work in every format. JSON is validated, indented and previewed as Markdown; the description output always carries raw text/JSON.
+
+Set **Image megapixel budget** to the desired total pixels (1.0 = 1,000,000), then choose **Downscale only** or **Resize to budget** and a resize method. Lanczos/bicubic/bilinear/area/nearest-exact are interpolation choices, with no extra model download. A zero budget keeps original size subject to an 8192-pixel side limit. **Layout dimensions → From processed image** sets the MOSS canvas automatically, aligned to multiples of 16; width/height outputs can drive your latent. Manual canvas allows a separate output resolution. The image output is the selected resized RGB image; caption replacement instructions do not alter its depicted content. Layout boxes are model estimates, not measured segmentation.
+
 Text Assistant offers **Brief**, **Balanced**, **Detailed**, and **Extensive** prompt lengths. These are approximate detail targets. **Generation token limit** separately caps the entire response, including internal JSON and tags. Start with Detailed and 4096 tokens; try 8192 for Extensive layouts. Preserve prioritizes fidelity over word count; Expand and Concept allow creative additions.
 
 MOSS JSON is indented on its output wire and displayed in a fenced JSON block in Markdown preview. Switch the preview to Plain text to copy raw JSON. Feed **prompt** directly to MOSS conditioning: Markdown fences never go over that wire. Canvas controls and sockets are inactive outside JSON mode; existing connections are retained for switching back.
@@ -39,7 +43,7 @@ git clone https://github.com/Renz1998/ComfyUI-Prompt-Atelier.git prompt-atelier
 python -m pip install -r prompt-atelier/requirements.txt
 ```
 
-Restart ComfyUI. Find nodes under **Prompt Atelier / Assistants**, **Vision**, and **DART**. The assistant names are **Prompt Atelier · Text Assistant** and **Prompt Atelier · Image to Text**; DART-specific tools keep their DART names. Existing workflow class IDs and socket positions are unchanged. An existing installed folder can stay named ComfyUI-Dart; folder names are not used for imports.
+Restart ComfyUI. Search **Prompt Atelier** to find all nodes, including **Prompt Atelier · DART Generate**, **DART Load**, and the composers. Categories are **Prompt Atelier / Assistants**, **Vision**, and **DART**. Existing workflow class IDs and socket positions are unchanged. An existing installed folder can stay named ComfyUI-Dart; folder names are not used for imports.
 
 **Registry:** [Prompt Atelier 1.5.0 is published](https://registry.comfy.org/nodes/prompt-atelier) under @renz1998. The public page provides `comfy node install prompt-atelier`. Manager search visibility is not yet verified. See [PUBLISHING.md](PUBLISHING.md).
 

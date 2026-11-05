@@ -415,6 +415,97 @@ class AssistantTests(unittest.TestCase):
 
 
 class VisionTests(unittest.TestCase):
+    def test_pixel_budget_resize_uses_selected_batch_method_and_auto_canvas(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from dart_plugin.py.dart.vision import prepare_caption_image
+        def resize(image, width, height, method, crop):
+            return torch.nn.functional.interpolate(image, size=(height, width), mode='bilinear')
+        upscale = Mock(side_effect=resize)
+        image = torch.zeros(2, 100, 200, 4)
+        image[1, :, :, 2] = 1
+        with patch.dict(sys.modules, {'comfy.utils': SimpleNamespace(common_upscale=upscale)}):
+            prepared, width, height = prepare_caption_image(image, 1, .02, 'Downscale only', 'bicubic', True)
+        self.assertEqual((width, height), (192, 96))
+        self.assertEqual(tuple(prepared.shape), (1, 96, 192, 3))
+        self.assertTrue(torch.all(prepared[..., 2] == 1))
+        self.assertEqual(upscale.call_args.args[3:], ('bicubic', 'disabled'))
+        self.assertLessEqual(width * height, 20000)
+
+    def test_small_image_stays_small_unless_upscaling_requested(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from dart_plugin.py.dart.vision import prepare_caption_image
+        upscale = Mock(side_effect=lambda image, w, h, *args: torch.nn.functional.interpolate(image, size=(h, w), mode='nearest'))
+        image = torch.zeros(1, 32, 64, 3)
+        with patch.dict(sys.modules, {'comfy.utils': SimpleNamespace(common_upscale=upscale)}):
+            self.assertEqual(prepare_caption_image(image)[1:], (64, 32))
+            upscale.assert_not_called()
+            _, width, height = prepare_caption_image(image, megapixels=.01, resize_mode='Resize to budget')
+        self.assertGreater(width, 64)
+        self.assertLessEqual(width * height, 10000)
+        with self.assertRaisesRegex(ValueError, 'megapixel'):
+            prepare_caption_image(image, megapixels=float('nan'))
+
+    def test_node_auto_dimensions_reach_moss_and_append_outputs(self):
+        node = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerImageToText']()
+        image = torch.zeros(1, 48, 64, 3)
+        with patch('dart_plugin.py.nodes.vision.caption_image', return_value='{}') as caption:
+            result = node.describe(image, output_format='MOSS JSON layout', canvas_width=1024, canvas_height=1024)
+        self.assertEqual(caption.call_args.kwargs['canvas_width'], 64)
+        self.assertEqual(caption.call_args.kwargs['canvas_height'], 48)
+        self.assertEqual(result['result'][:3], ('{}', 64, 48))
+        self.assertEqual(tuple(result['result'][3].shape), (1, 48, 64, 3))
+        with patch('dart_plugin.py.nodes.vision.caption_image', return_value='{}') as caption:
+            result = node.describe(image, output_format='MOSS JSON layout', dimension_source='Manual canvas', canvas_width=1536)
+        self.assertEqual(caption.call_args.kwargs['canvas_width'], 1536)
+        self.assertEqual(result['result'][1:3], (1536, 1024))
+
+    def test_all_nodes_have_searchable_atelier_prefix(self):
+        self.assertEqual(len(plugin.NODE_DISPLAY_NAME_MAPPINGS), len(plugin.NODE_CLASS_MAPPINGS))
+        self.assertTrue(all(name.startswith('Prompt Atelier') for name in plugin.NODE_DISPLAY_NAME_MAPPINGS.values()))
+
+    def test_structured_caption_validates_json_and_keeps_literal_trigger(self):
+        value = dict(description='A red coat.', subjects=['A traveler wearing a red coat.'],
+                     environment='A cafe.', lighting='Warm.', composition='Close view.', visible_text=['CAFE'])
+        text, execute, _ = self.run_caption(torch.zeros(1, 16, 16, 3),
+            caption='```json\n' + json.dumps(value) + '\n```', output_format='Structured JSON', character_trigger='my_character')
+        result = json.loads(text)
+        self.assertTrue(result['description'].startswith('my_character, '))
+        self.assertEqual(result['visible_text'], ['CAFE'])
+        self.assertIn('Apply requested replacements consistently', execute.call_args.kwargs['system_prompt'])
+        self.assertIn('\n  "subjects":', text)
+        with self.assertRaisesRegex(ValueError, 'subjects'):
+            self.run_caption(torch.zeros(1, 16, 16, 3), caption=json.dumps({**value, 'subjects': 'invalid'}), output_format='Structured JSON')
+
+    def test_moss_vision_compiles_boxes_on_requested_canvas(self):
+        draft = dict(summary=dict(meta=['photograph'], canvas='single', caption='A red coat.'),
+                     items=[dict(label='object', caption='A red coat.', bbox=[0, 0, 1024, 1024])])
+        text, execute, _ = self.run_caption(torch.zeros(1, 16, 24, 3), caption=json.dumps({'layout_draft': draft}),
+            output_format='MOSS JSON layout', canvas_width=1536, canvas_height=1024, character_trigger='my_character')
+        result = json.loads(text)
+        self.assertEqual(result['items'][0]['bbox'], [-512, -768, 512, 768])
+        self.assertIn('my_character', result['summary']['caption'])
+        self.assertEqual(result['bbox_format'], 'yxyx')
+        self.assertIn('normalized 1024x1024', execute.call_args.kwargs['system_prompt'])
+
+    def test_invalid_vision_json_fails_without_corrupting_output(self):
+        for text in ('{"description":', '[]'):
+            with self.subTest(text=text), self.assertRaises(ValueError):
+                self.run_caption(torch.zeros(1, 16, 16, 3), caption=text, output_format='Structured JSON')
+
+    def test_vision_json_schema_gets_one_bounded_repair(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from dart_plugin.py.dart.vision import caption_image
+        value = dict(description='A red coat.', subjects=['A coat.'], environment='', lighting='', composition='', visible_text=[])
+        execute = Mock(side_effect=[SimpleNamespace(args=('{"description":',)), SimpleNamespace(args=(json.dumps(value),))])
+        with patch.dict(sys.modules, {'comfy_extras.nodes_textgen': SimpleNamespace(TextGenerate=SimpleNamespace(execute=execute))}):
+            text = caption_image(torch.zeros(1,16,16,3), clip='model', output_format='Structured JSON')
+        self.assertEqual(json.loads(text), value)
+        self.assertEqual(execute.call_count, 2)
+        self.assertIn('Validation error', execute.call_args.kwargs['prompt'])
+
     def test_direct_language_reaches_vision_system(self):
         _, execute, _ = self.run_caption(torch.zeros(1, 16, 16, 3), language_style='Direct / explicit')
         self.assertIn('avoid euphemisms', execute.call_args.kwargs['system_prompt'])
@@ -465,7 +556,8 @@ class VisionTests(unittest.TestCase):
         node = plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerImageToText']()
         with patch('dart_plugin.py.nodes.vision.caption_image', return_value='A red coat beside a cafe window.'):
             output = node.describe(torch.zeros(1, 16, 16, 3), instructions='Keep the setting.')
-        self.assertEqual(output['ui']['text'], list(output['result']))
+        self.assertEqual(output['ui']['text'], [output['result'][0]])
+        self.assertEqual(output['result'][1:3], (16, 16))
         for fields in node.INPUT_TYPES().values():
             for spec in fields.values():
                 self.assertTrue(spec[1]['tooltip'])

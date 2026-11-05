@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { connectionsFor, resolveSlot } from "../web/connections.mjs";
 
 const describe = "DanbooruTagsTransformerDescribeImage";
+assert.deepEqual(connectionsFor("DanbooruTagsTransformerImageToText", "width", "INT", true)[0], { type: "EmptySD3LatentImage", slot: "width" });
+assert.deepEqual(connectionsFor("DanbooruTagsTransformerImageToText", "height", "INT", true)[0], { type: "EmptySD3LatentImage", slot: "height" });
+assert.deepEqual(connectionsFor("DanbooruTagsTransformerImageToText", "image", "IMAGE", true)[0], { type: "PreviewImage", slot: "images" });
 assert.deepEqual(connectionsFor("DanbooruTagsTransformerImageToText", "description", "STRING", true)[0], { type: describe, slot: "description" });
 assert.deepEqual(connectionsFor("DanbooruTagsTransformerImageToText", "image", "IMAGE", false)[0], { type: "LoadImage", slot: 0 });
 assert.deepEqual(connectionsFor("DanbooruTagsTransformerGenerate", "STRING", "STRING", true)[0], { type: describe, slot: "source_tags" });

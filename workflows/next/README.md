@@ -9,6 +9,8 @@ These are complete **text-processing graphs** you can drag into ComfyUI. They cr
 | [keywords_to_concept.json](keywords_to_concept.json) | Keywords → Text Assistant → photographic concept | Full instruction Qwen; one assistant pass |
 | [describe_image.json](describe_image.json) | Description → tags + prose + debug preview | Full instruction Qwen; one pass |
 | [image_to_text.json](image_to_text.json) | Load Image → Image to Text caption | Full vision Qwen; one pass |
+| [image_to_structured_json.json](image_to_structured_json.json) | Load Image → structured scene JSON with pixel-budget resize | Full vision Qwen; one pass |
+| [image_to_moss_json_auto.json](image_to_moss_json_auto.json) | Load Image → native MOSS JSON, automatic canvas size + dimension outputs | Full vision Qwen; one pass |
 | [moss_json_layout.json](moss_json_layout.json) | Scene description → native MOSS layout JSON | Full instruction Qwen; layout planning |
 | [dart_v3_tags.json](dart_v3_tags.json) | V3 Composer → DART Generate → tag preview | DART v3 Preview E; no Qwen required |
 | [tags_to_concept.json](tags_to_concept.json) | DART v3 expansion → Text Assistant → prose | DART v3 + instruction Qwen |
@@ -22,6 +24,7 @@ The five combined graphs include a START HERE note on the canvas. A small [neutr
 
 ## Before running
 
+- For the direct vision JSON examples, connect/upload an image and choose a megapixel budget. MOSS defaults to From processed image, so no Get Image Size node is required. Connect width/height to your latent and description to MOSS positive text encoding. The image output is resized RGB, without caption-requested appearance edits. Structured JSON is a general scene record; choose MOSS JSON layout for native MOSS conditioning.
 - Install this pack once. Disable the original ComfyUI-Dart installation; both packs share legacy class IDs.
 - Local text assistance needs recent native Generate Text support and a complete Qwen generation model in text_encoders. Image to Text additionally needs vision weights.
 - In shared-model examples, choose your installed full Qwen checkpoint in **Load CLIP**. Its output overrides both assistants' Automatic selectors. Use a general generation-capable loader type; the examples use stable_diffusion.

@@ -37,7 +37,13 @@ export function connectionsFor(type, name, slotType, isOutput) {
         if (name === "scene_json") return [preview];
         return [encode, preview];
     }
-    if (type === prefix + "ImageToText") return [node("DescribeImage", "description"), encode, preview];
+    if (type === prefix + "ImageToText") {
+        if (name === "width" || name === "height") return [
+            { type: "EmptySD3LatentImage", slot: name }, { type: "EmptyLatentImage", slot: name }, preview,
+        ];
+        if (name === "image") return [{ type: "PreviewImage", slot: "images" }];
+        return [node("DescribeImage", "description"), encode, preview];
+    }
     if (/ComposePrompt/.test(type)) return [...generators("prompt"), preview];
     if (/BanTagsFromRegex/.test(type)) return [...generators("ban_tags"), preview];
     if (slotType === "STRING") return [node("DescribeImage", "source_tags"), encode, preview];

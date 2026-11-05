@@ -114,4 +114,31 @@ describeNode.onSerialize(saved);
 describeNode.widgets.find((w) => w.name === "local_model").value = "shifted value";
 describeNode.onConfigure(saved);
 assert.equal(describeNode.widgets.find((w) => w.name === "local_model").value, "Automatic");
+// The vision node shares JSON preview handling and uses auto/manual canvas controls.
+targetControl.name = "output_format";
+targetControl.value = "MOSS JSON layout";
+describeNode.widgets.push({name: "dimension_source", value: "From processed image"});
+targetControl.callback();
+assert.equal(describeNode.widgets.find((w) => w.name === "canvas_width").hidden, true);
+assert.equal(describeNode.inputs[0].isValidTarget(), false);
+describeNode.widgets.find((w) => w.name === "dimension_source").value = "Manual canvas";
+targetControl.callback();
+assert.equal(describeNode.widgets.find((w) => w.name === "canvas_width").hidden, false);
+previewMode.value = true;
+describeNode.onExecuted({text: ['{"description":"scene"}'], json_preview: [true]});
+assert.equal(previewMessage.text[0], '```json\n{"description":"scene"}\n```');
+class OldVision {
+    constructor() { this.outputs = [{name: "description", type: "STRING", links: [99]}]; this.widgets = []; this.size = [420,500]; }
+    addOutput(name, type) { this.outputs.push({name, type}); }
+    computeSize() { return this.size; }
+    setSize(size) { this.size = size; }
+    setDirtyCanvas() {}
+}
+extension.beforeRegisterNodeDef(OldVision, {name: "DanbooruTagsTransformerImageToText"});
+const oldVision = new OldVision();
+oldVision.onConfigure({});
+assert.deepEqual(oldVision.outputs.map((slot) => slot.name), ["description", "width", "height", "image"]);
+assert.deepEqual(oldVision.outputs[0].links, [99]);
+oldVision.onConfigure({});
+assert.equal(oldVision.outputs.length, 4);
 console.log("Drag menus create and connect the intended node sockets; other plugins retain their menu.");

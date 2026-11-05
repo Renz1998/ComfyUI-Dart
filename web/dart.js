@@ -30,13 +30,17 @@ function updateLayoutSockets(node, layout) {
 
 function updateDescribeControls(node) {
     const server = node.widgets?.find((widget) => widget.name === "backend")?.value === "Chat server";
-    const layout = node.widgets?.find((widget) => widget.name === "target")?.value === "MOSS JSON layout";
+    const layout = node.widgets?.find((widget) => ["target", "output_format"].includes(widget.name))?.value === "MOSS JSON layout";
+    const manual = node.widgets?.find((widget) => widget.name === "dimension_source")?.value;
+    const canvas = layout && (!manual || manual === "Manual canvas");
     for (const widget of node.widgets || []) {
         if (["endpoint", "model", "timeout", "api_key_env"].includes(widget.name)) widget.hidden = !server;
         if (widget.name === "local_model") widget.hidden = server;
-        if (layoutFields.includes(widget.name)) widget.hidden = !layout;
+        if (layoutFields.includes(widget.name)) widget.hidden = !canvas;
+        if (widget.name === "dimension_source") widget.hidden = !layout;
+        if (["resize_mode", "resize_method"].includes(widget.name)) widget.hidden = node.widgets?.find((item) => item.name === "image_megapixels")?.value === 0;
     }
-    updateLayoutSockets(node, layout);
+    updateLayoutSockets(node, canvas);
     updateDesignBackend(node, server);
     const size = node.computeSize();
     node.setSize([Math.max(420, node.size[0], size[0]), size[1]]);
@@ -86,11 +90,11 @@ app.registerExtension({
                 description: "Scene / keywords (optional with source tags)", custom_instructions: "Custom instructions",
                 canvas_width: "MOSS canvas width", canvas_height: "MOSS canvas height", layout_json: "Edit MOSS JSON (optional override)",
                 instructions: "Caption instructions / replacements", character_trigger: "Character trigger", image_index: "Image in batch",
-                prompt_length: "Prompt length", language_style: "Language style", max_tokens: "Generation token limit" };
+                prompt_length: "Prompt length", output_format: "Output format", image_megapixels: "Image megapixel budget", dimension_source: "Layout dimensions", resize_mode: "Resize mode", resize_method: "Resize method", language_style: "Language style", max_tokens: "Generation token limit" };
             for (const widget of this.widgets || []) {
                 if (names[widget.name]) widget.label = names[widget.name];
             }
-            for (const name of ["backend", "target"]) {
+            for (const name of ["backend", "target", "output_format", "dimension_source", "image_megapixels"]) {
                 const control = this.widgets?.find((widget) => widget.name === name);
                 if (!control) continue;
                 const callback = control.callback;
@@ -109,6 +113,11 @@ app.registerExtension({
         const configured = nodeType.prototype.onConfigure;
         nodeType.prototype.onConfigure = function (data) {
             configured?.apply(this, arguments);
+            if (nodeData.name === "DanbooruTagsTransformerImageToText" && this.addOutput) {
+                for (const [name, type] of [["width", "INT"], ["height", "INT"], ["image", "IMAGE"]]) {
+                    if (!this.outputs?.some((slot) => slot.name === name)) this.addOutput(name, type);
+                }
+            }
             // Persist by name so converted inputs and UI-only widgets cannot shift settings.
             const named = data?.dart_widget_values || data?.widgets_values_named;
             if (named) {
@@ -127,7 +136,7 @@ app.registerExtension({
         const executed = nodeType.prototype.onExecuted;
         nodeType.prototype.onExecuted = function (message) {
             executed?.apply(this, arguments);
-            const json = message?.moss_json?.[0] === true;
+            const json = message?.moss_json?.[0] === true || message?.json_preview?.[0] === true;
             const mode = this.widgets?.find((widget) => widget.name === "preview_mode");
             // Markdown is a preview choice only: output wires always contain raw JSON.
             if (json && !this.properties.dart_seen_json_preview && mode) {
@@ -137,7 +146,7 @@ app.registerExtension({
             this.dartPreviewMessage = message;
             const refresh = () => {
                 const current = this.dartPreviewMessage;
-                const formatted = current?.moss_json?.[0] && mode?.value;
+                const formatted = (current?.moss_json?.[0] || current?.json_preview?.[0]) && mode?.value;
                 updateTextPreviewWidgets(this, formatted ? {
                     ...current, text: (current.text || []).map((text) => "```json\n" + text + "\n```"),
                 } : current);

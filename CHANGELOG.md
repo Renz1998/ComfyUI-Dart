@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.1 — Vision JSON and searchable node names
+
+- Image to Text now supports Plain text, Structured JSON and native MOSS JSON layout, with character instructions and formatted previews.
+- MOSS vision layouts expose canvas dimensions, validate boxes and convert to native centered yxyx coordinates. Box placement is model-estimated.
+- All DART display names now start with Prompt Atelier for node search. Persisted class IDs and output socket positions are unchanged.
+- Added an image megapixel budget, downscale-only or upscale-to-budget mode, five interpolation methods, automatic MOSS canvas sizing and width/height/processed-image outputs. Existing description connections keep output index 0.
+
 ## 1.5.0 — Prompt Atelier branding and workflow gallery
 
 - Renamed the pack and assistant display names to Prompt Atelier; preserved legacy class IDs, sockets and the upstream license/history.

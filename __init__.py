@@ -42,21 +42,21 @@ NODE_CLASS_MAPPINGS = {
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "DanbooruTagsTransformerImageToText": "Prompt Atelier · Image to Text",
-    "DanbooruTagsTransformerComposePromptV3": "Dart Compose Prompt V3 (Experimental)",
+    "DanbooruTagsTransformerComposePromptV3": "Prompt Atelier · DART Compose Prompt V3 (Experimental)",
     "DanbooruTagsTransformerDescribeImage": "Prompt Atelier · Text Assistant",
-    "DanbooruTagsTransformerLoader": "Dart Load",
-    "DanbooruTagsTransformerGenerate": "Dart Generate",
-    "DanbooruTagsTransformerComposePrompt": "Dart Compose Prompt",
-    "DanbooruTagsTransformerComposePromptV2": "Dart Compose Prompt V2",
-    "DanbooruTagsTransformerGetAspectRatio": "Dart Get Aspect Ratio",
-    "DanbooruTagsTransformerGenerationConfig": "Dart Generation Config",
-    "DanbooruTagsTransformerBanTagsFromRegex": "Dart Ban Tags From Regex",
+    "DanbooruTagsTransformerLoader": "Prompt Atelier · DART Load",
+    "DanbooruTagsTransformerGenerate": "Prompt Atelier · DART Generate",
+    "DanbooruTagsTransformerComposePrompt": "Prompt Atelier · DART Compose Prompt",
+    "DanbooruTagsTransformerComposePromptV2": "Prompt Atelier · DART Compose Prompt V2",
+    "DanbooruTagsTransformerGetAspectRatio": "Prompt Atelier · DART Get Aspect Ratio",
+    "DanbooruTagsTransformerGenerationConfig": "Prompt Atelier · DART Generation Config",
+    "DanbooruTagsTransformerBanTagsFromRegex": "Prompt Atelier · DART Ban Tags From Regex",
     # Advanced
-    "DanbooruTagsTransformerGenerateAdvanced": "Dart Generate(Advanced)",
-    "DanbooruTagsTransformerDecode": "Dart Decode",
-    "DanbooruTagsTransformerDecodeBySplitedParts": "Dart Decode By Splited Parts",
-    "DanbooruTagsTransformerRearrangedByAnimagine": "Dart Rearranged By Animagine",
-    "DanbooruTagsTransformerRemoveTagToken": "Dart Remove Tag Token",
+    "DanbooruTagsTransformerGenerateAdvanced": "Prompt Atelier · DART Generate(Advanced)",
+    "DanbooruTagsTransformerDecode": "Prompt Atelier · DART Decode",
+    "DanbooruTagsTransformerDecodeBySplitedParts": "Prompt Atelier · DART Decode By Splited Parts",
+    "DanbooruTagsTransformerRearrangedByAnimagine": "Prompt Atelier · DART Rearranged By Animagine",
+    "DanbooruTagsTransformerRemoveTagToken": "Prompt Atelier · DART Remove Tag Token",
 }
 
 attach_help(NODE_CLASS_MAPPINGS)
