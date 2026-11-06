@@ -869,5 +869,186 @@ class VisionTests(unittest.TestCase):
                 self.assertTrue(spec[1]['tooltip'])
 
 
+class SceneComposerTests(unittest.TestCase):
+    def test_structured_model_failure_reports_block_without_data(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        class Blocker:
+            def __init__(self,value):self.value=value
+        execute=Mock(return_value=SimpleNamespace(args=['{"description":"broken']))
+        with patch.dict(sys.modules,{'comfy_extras.nodes_textgen':SimpleNamespace(TextGenerate=SimpleNamespace(execute=execute)),'comfy_execution.graph':SimpleNamespace(ExecutionBlocker=Blocker)}),patch('dart_plugin.py.nodes.tag_composer.load_local_clip',return_value='encoder'):
+            result=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerTagComposer']().generate('',seed=4)
+        self.assertEqual(result['result'][4],'blocked')
+        self.assertIsInstance(result['result'][0],Blocker)
+        self.assertIn('Scene Composer',result['result'][5])
+        self.assertEqual(execute.call_count,2)
+
+    def test_seeded_directions_are_reproducible_and_varied(self):
+        from dart_plugin.py.dart.scene_variation import variation
+        self.assertEqual(variation(7),variation(7))
+        self.assertNotEqual(variation(7),variation(8))
+        self.assertNotIn('setting',variation(7,guided=True))
+        node=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerSceneComposer']
+        self.assertEqual(node.INPUT_TYPES()['required']['seed'][1]['control_after_generate'],'randomize')
+
+    def test_empty_scene_and_appearance_reach_plain_prose_generation(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        cls=plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerSceneComposer']
+        recipe=dict(version=1,enabled=True,subject='Main subject',trigger='hero_token',identity_mode='Keep other appearance details',traits={'hair_color':'Silver'},custom='',strict_wording=True)
+        execute=Mock(return_value=SimpleNamespace(args=['hero_token, an adult woman with silver hair studies a map.']))
+        with patch.dict(sys.modules,{'comfy_extras.nodes_textgen':SimpleNamespace(TextGenerate=SimpleNamespace(execute=execute))}),patch('dart_plugin.py.nodes.scene_composer.load_local_clip',return_value='encoder'):
+            result=cls().generate(concepts='',appearance=recipe,seed=9)
+        self.assertIn('Silver',execute.call_args.kwargs['system_prompt'])
+        self.assertIn('creative_directions',json.loads(execute.call_args.kwargs['prompt']))
+        self.assertIn('single visible frame',execute.call_args.kwargs['system_prompt'])
+        self.assertIn('hand positions',execute.call_args.kwargs['system_prompt'])
+        directions=json.loads(execute.call_args.kwargs['prompt'])['creative_directions']
+        self.assertNotIn('mood',directions)
+        self.assertIn('visible_expression',directions)
+        self.assertEqual(execute.call_args.kwargs['sampling_mode']['seed'],9)
+        self.assertIn('hero_token',result['result'][0])
+        execute.return_value=SimpleNamespace(args=['An adult woman with silver hair studies a map.'])
+        with patch.dict(sys.modules,{'comfy_extras.nodes_textgen':SimpleNamespace(TextGenerate=SimpleNamespace(execute=execute))}),patch('dart_plugin.py.nodes.scene_composer.load_local_clip',return_value='encoder'):
+            result=cls().generate(concepts='',appearance=recipe,seed=9)
+        report=json.loads(result['result'][3])
+        self.assertTrue(report['trigger_added'])
+        self.assertNotIn('hero_token',report['model_output'])
+
+
+class TagComposerTests(unittest.TestCase):
+    def test_long_and_string_concepts_normalize_without_hard_failure(self):
+        from dart_plugin.py.dart.tag_composer import plan_schema
+        text='A detailed visual phrase describing the character and environment. '*9
+        result=plan_schema({'description':'An adult explorer.','concepts':[{'id':'a','text':text,'subject':'s1','invented':True},'red coat']})
+        self.assertTrue(all(len(c['text'])<=160 for c in result['concepts']))
+        self.assertTrue(result['schema_notes'])
+        self.assertIn(text[:100],result['concepts'][0]['context'])
+        self.assertEqual(len({c['id'] for c in result['concepts']}),len(result['concepts']))
+
+    def test_plan_repair_receives_failed_response_and_seed(self):
+        from dart_plugin.py.dart.tag_composer import compose
+        from dart_plugin.py.dart.vocabulary import Vocabulary
+        vocab=Vocabulary({'manifest':{},'tags':[['1girl','general','',10,[]]]})
+        requests=[]
+        def generate(system,payload,stage):
+            p=json.loads(payload);requests.append(p)
+            if stage==1:return '{"description":"broken'
+            if stage==2:
+                self.assertIn('previous_response',p);self.assertIn('validation_error',p)
+                return json.dumps({'description':'One woman.','concepts':['1girl']})
+            return json.dumps({'selections':[{'tag_id':'t0','concept_id':'c1'}]})
+        tags,_,_,report=compose('1girl','Invent','Detailed',17,'','',generate,vocab)
+        self.assertEqual(tags,'1girl')
+        self.assertEqual(requests[0]['seed'],17)
+        self.assertIn('setting',requests[0]['creative_directions'])
+        self.assertEqual(report['attempts'],3)
+
+    def test_count_seed_does_not_offer_unrequested_pose_or_named_outfit(self):
+        from dart_plugin.py.dart.tag_composer import compose
+        from dart_plugin.py.dart.vocabulary import Vocabulary
+        vocab=Vocabulary({'manifest':{},'tags':[['1girl','general','',10,[]],['upright_69','general','',9,[]],['flowing_dress_(dq)','general','',8,[]]]})
+        def generate(system,payload,stage):
+            if stage==1:return json.dumps({'description':'One woman standing in a flowing dress.','concepts':[{'id':'a','text':'upright','subject':'s1','invented':True},{'id':'b','text':'flowing dress','subject':'s1','invented':True}]})
+            self.assertFalse({'t1','t2'} & {row['id'] for row in json.loads(payload)['candidates']})
+            return json.dumps({'selections':[]})
+        tags,_,_,_=compose('1girl','Invent','Balanced',0,'','',generate,vocab)
+        self.assertEqual(tags,'1girl')
+
+    def test_literal_scene_nouns_survive_sparse_model_selection(self):
+        from dart_plugin.py.dart.tag_composer import compose
+        from dart_plugin.py.dart.vocabulary import Vocabulary
+        vocab=Vocabulary({'manifest':{},'tags':[['1girl','general','appearance:demographics',10,[]],['meadow','general','scenery:setting',9,[]],['white_dress','general','clothing:outfit',8,[]],['rolling','general','pose:kinetic',7,[]]]})
+        def generate(system,payload,stage):
+            return json.dumps({'description':'One woman in a meadow wearing a white dress near rolling hills.','concepts':[{'id':'c1','text':'quiet wonder','subject':'s1','invented':True}]}) if stage==1 else json.dumps({'selections':[]})
+        tags,_,_,report=compose('1girl','Invent','Balanced',0,'','',generate,vocab)
+        self.assertEqual(set(tags.split(', ')),{'1girl','meadow','white_dress'})
+        self.assertEqual(len(report['literal_description_matches']),2)
+
+    def test_context_rejects_restraint_for_hair_and_action_for_hills(self):
+        from dart_plugin.py.dart.tag_composer import compose
+        from dart_plugin.py.dart.vocabulary import Vocabulary
+        vocab=Vocabulary({'manifest':{},'tags':[['1girl','general','',10,[]],['tied_up_(nonsexual)','general','',9,[]],['rolling','general','',8,[]],['meadow','general','',7,[]]]})
+        def generate(system,payload,stage):
+            if stage==1:return json.dumps({'description':'A woman in a meadow.','concepts':[{'id':'a','text':'tied up','context':'her hair tied up in a bun','subject':'s1','invented':True},{'id':'b','text':'rolling','context':'rolling hills in the background','subject':'shared','invented':True},{'id':'c','text':'meadow','subject':'shared','invented':True}]})
+            return json.dumps({'selections':[{'tag_id':'t1','concept_id':'a'},{'tag_id':'t2','concept_id':'b'},{'tag_id':'t3','concept_id':'c'}]})
+        tags,_,_,report=compose('1girl','Invent','Balanced',0,'','',generate,vocab)
+        self.assertEqual(tags,'1girl, meadow')
+        self.assertTrue(any('Context changes' in issue for issue in report['issues']))
+
+    def test_meadow_description_recovers_details_not_extra_appearance(self):
+        from dart_plugin.py.dart.tag_composer import description_concepts
+        from dart_plugin.py.dart.vocabulary import vocabulary
+        description='A solitary young woman stands in a sun-drenched meadow, gazing at a floating translucent orb above the grass. Golden hour light, scattered clouds, blue hills, wildflowers, shallow depth of field and warm shadows.'
+        plan={'description':description,'concepts':[{'id':'c1','text':'golden hour','subject':'shared','invented':True}]}
+        recovered=description_concepts(plan,vocabulary(),'Invent')
+        texts={c['text'] for c in recovered}
+        self.assertTrue({'meadow','floating','translucent','orb','grass','clouds','hills','flowers','standing'}.issubset(texts))
+        self.assertFalse(any('hair' in t or 'dress' in t for t in texts))
+        self.assertEqual(description_concepts({'description':description,'concepts':[{'id':str(i),'text':'x'} for i in range(48)]},vocabulary(),'Invent'),[])
+
+    def test_sparse_selector_repairs_description_coverage(self):
+        from dart_plugin.py.dart.tag_composer import compose
+        from dart_plugin.py.dart.vocabulary import Vocabulary
+        vocab=Vocabulary({'manifest':{},'tags':[['1girl','general','',9,[]],['meadow','general','',8,[]],['orb','general','',7,[]],['golden_hour','general','',6,[]],['facial_expression_training','general','',5,[]]]})
+        calls=[]
+        def generate(system,payload,stage):
+            request=json.loads(payload);calls.append(request)
+            if stage==1:return json.dumps({'description':'One woman in a meadow with an orb at golden hour.','concepts':[{'id':'c1','text':'golden hour','subject':'shared','invented':True},{'id':'c2','text':'facial expression','subject':'s1','invented':True}]})
+            if stage==2:return json.dumps({'selections':[{'tag_id':'t3','concept_id':'c1'}]})
+            self.assertTrue(request['uncovered_concept_ids'])
+            self.assertNotIn('t4',{c['id'] for c in request['candidates']})
+            selections=[]
+            for concept in request['plan']['concepts']:
+                for key in vocab.lookup(concept['text']):
+                    if key in request['concept_candidate_ids'][concept['id']]:selections.append({'tag_id':key,'concept_id':concept['id']})
+            return json.dumps({'selections':selections})
+        tags,_,_,report=compose('1girl','Invent','Balanced',0,'','',generate,vocab)
+        self.assertTrue({'1girl','meadow','orb','golden_hour'}.issubset(set(tags.split(', '))))
+        self.assertEqual(report['attempts'],3)
+
+    def test_offline_vocabulary_and_lookup(self):
+        from dart_plugin.py.dart.vocabulary import vocabulary
+        vocab=vocabulary()
+        self.assertEqual(len(vocab.rows),112570)
+        for phrase,expected in [('red hair','red_hair'),('red coat','red_coat'),('rain','rain')]:
+            self.assertIn(expected,[r['tag'] for r in vocab.search(phrase)])
+        from dart_plugin.py.dart.vocabulary import Vocabulary
+        ambiguous=Vocabulary({'manifest':{},'tags':[['a','general','',1,['shared']],['b','general','',1,['shared']]]})
+        self.assertEqual(len(ambiguous.lookup('shared')),2)
+
+    def test_bounded_selection_validation_and_explicit_count(self):
+        from dart_plugin.py.dart.vocabulary import Vocabulary
+        from dart_plugin.py.dart.tag_composer import compose
+        vocab=Vocabulary({'manifest':{},'tags':[['1girl','general','demographics',10,[]],['rain','general','atmosphere',8,[]],['2girls','general','demographics',5,[]]]})
+        calls=[]
+        def generate(system,payload,stage):
+            calls.append(stage)
+            if stage==1:return json.dumps({'description':'One woman in rain.','concepts':[{'id':'c1','text':'rain','subject':'s1','invented':True}]})
+            return json.dumps({'selections':[{'tag_id':'t1','concept_id':'c1'},{'tag_id':'fake','concept_id':'c1'},{'tag_id':'t2','concept_id':'c1'}]})
+        tags,description,scene,report=compose('1girl','Invent','Balanced',0,'','',generate,vocab)
+        self.assertEqual(tags,'1girl, rain')
+        self.assertEqual(len(calls),3)
+        self.assertEqual(report['status'],'warning')
+        self.assertNotIn('fake',tags)
+
+    def test_empty_input_and_sorting(self):
+        from dart_plugin.py.dart.tag_composer import compose
+        from dart_plugin.py.dart.vocabulary import sort_tags
+        with self.assertRaisesRegex(ValueError,'Enter an idea'):compose('','Invent','Balanced',0,'','',None)
+        rows=[dict(tag='rain',category='general'),dict(tag='naruto',category='copyright'),dict(tag='1girl',category='general'),dict(tag='test_character',category='character')]
+        self.assertEqual(sort_tags(rows),['1girl','test_character','naruto','rain'])
+
+    def test_explicit_natural_negative_is_not_returned(self):
+        from dart_plugin.py.dart.vocabulary import Vocabulary
+        from dart_plugin.py.dart.tag_composer import compose
+        vocab=Vocabulary({'manifest':{},'tags':[['1girl','general','',10,[]],['umbrella','general','',8,[]]]})
+        def generate(system,payload,stage):
+            return json.dumps({'description':'One woman, no umbrella.','concepts':[{'id':'c1','text':'umbrella','subject':'s1','invented':False}]}) if stage==1 else json.dumps({'selections':[{'tag_id':'t1','concept_id':'c1'}]})
+        tags,_,_,report=compose('1girl, no umbrella','Faithful','Short',0,'','',generate,vocab)
+        self.assertEqual(tags,'1girl')
+        self.assertEqual(report['status'],'warning')
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -2,7 +2,13 @@
 
 ## Current status
 
-**Version 1.6.0 was uploaded on November 6, 2026**, under [@renz1998](https://registry.comfy.org/publishers/renz1998). Its [publishing workflow](https://github.com/Renz1998/ComfyUI-Prompt-Atelier/actions/runs/42102349356) completed validation and upload successfully, using runtime commit ebfc732c52896b0d825722ad4505cd0ded8f0230. The public CDN archive was downloaded and checked for version 1.6.0 and the Prompt Mage branding and simplified upload runtime. Latest-version visibility on the [Registry detail page](https://registry.comfy.org/nodes/prompt-atelier), separate review/indexing status and Manager search visibility remain unverified.
+The GitHub repository is now [Renz1998/ComfyUI-Prompt-Mage](https://github.com/Renz1998/ComfyUI-Prompt-Mage). The Registry listing displays **Prompt Mage** and links to this repository. Its permanent package ID remains `prompt-atelier`; the official publishing metadata specification marks IDs immutable after creation. Do not create a duplicate package just to change the slug.
+
+Version **1.7.0** prepares Archmage Beta, native thinking, 30 style presets, experimental tagging and deprecated legacy assistant labels. Publication verification is recorded below after the release workflow completes.
+
+### Previous verified publication
+
+**Version 1.6.0 was uploaded on November 6, 2026**, under [@renz1998](https://registry.comfy.org/publishers/renz1998). Its [publishing workflow](https://github.com/Renz1998/ComfyUI-Prompt-Mage/actions/runs/42102349356) completed validation and upload successfully, using runtime commit ebfc732c52896b0d825722ad4505cd0ded8f0230. The public CDN archive was downloaded and checked for version 1.6.0 and the Prompt Mage branding and simplified upload runtime. Latest-version visibility on the [Registry detail page](https://registry.comfy.org/nodes/prompt-atelier), separate review/indexing status and Manager search visibility remain unverified.
 
 ## Registry route
 

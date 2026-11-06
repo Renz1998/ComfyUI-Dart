@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.7.0 — Archmage beta and Prompt Mage repository
+
+- Renamed the GitHub repository to ComfyUI-Prompt-Mage and refreshed setup, navigation, screenshots and guides. Registry display name is Prompt Mage; permanent package ID stays prompt-atelier.
+- Added Archmage Beta: text/reference priority, prose/native MOSS outputs, canvas and aspect presets, appearance recipes, image resizing, status/report and targeted offloading.
+- Added optional native thinking with budget-exhaustion feedback and warnings when thinking is unconfirmed.
+- Added 30 style/theme templates, custom notes, seeded random presets and explicit reference restyling.
+- Scene Composer, Text Assistant and Image to Text are deprecated; IDs and behavior remain available for older workflows and specialized legacy features.
+- Added separate experimental vocabulary-backed Tag Composer; semantic tag coverage remains model-guided.
+
+
 ## 1.6.0 — Prompt Mage and simpler remote uploads
 
 - Rebranded visible node names, categories, guides, documentation and Registry display name to Prompt Mage. Existing class IDs, repository URL and Registry package ID stay compatible.

@@ -68,7 +68,27 @@ NODE_DISPLAY_NAME_MAPPINGS = {
 }
 
 attach_help(NODE_CLASS_MAPPINGS)
+from .py.nodes.tag_composer import PromptMageTagComposer
+NODE_CLASS_MAPPINGS['DanbooruTagsTransformerTagComposer'] = PromptMageTagComposer
+NODE_DISPLAY_NAME_MAPPINGS['DanbooruTagsTransformerTagComposer'] = 'Prompt Mage · Tag Composer (Experimental)'
+from .py.nodes.scene_composer import PromptMageSceneComposer
+NODE_CLASS_MAPPINGS['DanbooruTagsTransformerSceneComposer'] = PromptMageSceneComposer
+NODE_DISPLAY_NAME_MAPPINGS['DanbooruTagsTransformerSceneComposer'] = 'Prompt Mage · Scene Composer'
+PromptMageTagComposer.OUTPUT_TOOLTIPS = ('Vocabulary-checked sorted dataset tags.', 'Validated tags plus an explicitly supplied character trigger, if connected. The trigger is a user literal, not a verified booru tag.', 'Scene prose; semantic accuracy remains model-guided.', 'Structured subject/concept selections.', 'ok, warning or blocked.', 'Vocabulary provenance, additions, omissions and validation notes.')
 
 WEB_DIRECTORY = "./web"
+from .py.nodes.archmage import PromptMageArchmageBeta
+NODE_CLASS_MAPPINGS['DanbooruTagsTransformerArchmageBeta'] = PromptMageArchmageBeta
+NODE_DISPLAY_NAME_MAPPINGS['DanbooruTagsTransformerArchmageBeta'] = 'Prompt Mage · Archmage (Beta)'
+
+# Preserve execution schemas and IDs; guide new workflows toward the unified node.
+for legacy_id in ('DanbooruTagsTransformerDescribeImage', 'DanbooruTagsTransformerImageToText',
+                  'DanbooruTagsTransformerSceneComposer'):
+    legacy = NODE_CLASS_MAPPINGS[legacy_id]
+    legacy.CATEGORY = 'Prompt Mage/Deprecated'
+    legacy.DESCRIPTION = ('Deprecated: use Prompt Mage · Archmage (Beta) for new scene, prose and MOSS workflows. '
+                          'Kept for existing workflows and specialized legacy features. ' + getattr(legacy, 'DESCRIPTION', ''))
+    legacy.DEPRECATED = True
+    NODE_DISPLAY_NAME_MAPPINGS[legacy_id] += ' (Deprecated)'
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]

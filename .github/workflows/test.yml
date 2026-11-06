@@ -15,7 +15,7 @@ jobs:
           python-version: "3.11"
       - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: pip install transformers==${{ matrix.transformers }} Pillow
-      - run: python tests/test_regressions.py
+      - run: python -m unittest discover -s tests -p 'test_*.py'
       - uses: actions/setup-node@v4
         with:
           node-version: "22"

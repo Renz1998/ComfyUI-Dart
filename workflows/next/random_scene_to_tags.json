@@ -1,0 +1,289 @@
+{
+  "last_node_id": 3,
+  "last_link_id": 2,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "DanbooruTagsTransformerAppearanceOverrides",
+      "pos": [
+        20,
+        20
+      ],
+      "size": [
+        520,
+        820
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "appearance",
+          "type": "ATELIER_APPEARANCE",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "instructions",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerAppearanceOverrides"
+      },
+      "widgets_values": [
+        true,
+        "Main subject",
+        "",
+        "my_character",
+        "Keep other appearance details",
+        "Silver",
+        "",
+        "Keep unchanged",
+        "",
+        "Green",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "",
+        true,
+        true
+      ],
+      "dart_widget_values": {
+        "enabled": true,
+        "subject": "Main subject",
+        "subject_custom": "",
+        "trigger": "my_character",
+        "identity_mode": "Keep other appearance details",
+        "hair_color": "Silver",
+        "hair_color_custom": "",
+        "hair_style": "Keep unchanged",
+        "hair_style_custom": "",
+        "eye_color": "Green",
+        "eye_color_custom": "",
+        "breast_size": "Keep unchanged",
+        "breast_size_custom": "",
+        "hair_length": "Keep unchanged",
+        "hair_length_custom": "",
+        "body_type": "Keep unchanged",
+        "body_type_custom": "",
+        "skin_tone": "Keep unchanged",
+        "skin_tone_custom": "",
+        "clothing": "Keep unchanged",
+        "clothing_custom": "",
+        "expression": "Keep unchanged",
+        "expression_custom": "",
+        "custom_overrides": "",
+        "strict_wording": true,
+        "apply_size_wording": true
+      }
+    },
+    {
+      "id": 2,
+      "type": "DanbooruTagsTransformerSceneComposer",
+      "pos": [
+        600,
+        20
+      ],
+      "size": [
+        520,
+        820
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "appearance",
+          "type": "ATELIER_APPEARANCE",
+          "link": 1,
+          "shape": 7
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            2
+          ]
+        },
+        {
+          "name": "creative_directions",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "report",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerSceneComposer"
+      },
+      "widgets_values": [
+        "",
+        "Balanced",
+        11,
+        "randomize",
+        "",
+        "Automatic",
+        1024,
+        false
+      ],
+      "dart_widget_values": {
+        "concepts": "",
+        "length": "Balanced",
+        "seed": 11,
+        "control_after_generate": "randomize",
+        "instructions": "",
+        "local_model": "Automatic",
+        "max_tokens": 1024,
+        "unload_after_generation": false
+      }
+    },
+    {
+      "id": 3,
+      "type": "DanbooruTagsTransformerTagComposer",
+      "pos": [
+        1180,
+        20
+      ],
+      "size": [
+        520,
+        820
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "appearance",
+          "type": "ATELIER_APPEARANCE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "idea",
+          "type": "STRING",
+          "link": 2,
+          "widget": {
+            "name": "idea"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "tags",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "description",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "scene_json",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "report",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerTagComposer"
+      },
+      "widgets_values": [
+        "1girl",
+        "Faithful",
+        "Balanced",
+        0,
+        "fixed",
+        "Automatic",
+        "",
+        "",
+        4096,
+        false
+      ],
+      "dart_widget_values": {
+        "idea": "1girl",
+        "creativity": "Faithful",
+        "length": "Balanced",
+        "seed": 0,
+        "control_after_generate": "fixed",
+        "local_model": "Automatic",
+        "instructions": "",
+        "avoid": "",
+        "max_tokens": 4096,
+        "unload_after_generation": false
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "ATELIER_APPEARANCE"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      2,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}

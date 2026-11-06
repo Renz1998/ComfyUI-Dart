@@ -4,14 +4,16 @@ import { connectionsFor, resolveSlot } from "../web/connections.mjs";
 const describe = "DanbooruTagsTransformerDescribeImage";
 assert.equal(connectionsFor('DanbooruTagsTransformerImageToText','image','IMAGE',false)[1].type,'DanbooruTagsTransformerImageBatchUpload');
 assert.equal(connectionsFor('DanbooruTagsTransformerImageToText','image','IMAGE',false)[2].type,'DanbooruTagsTransformerImageBatchSelector');
-assert.equal(connectionsFor('DanbooruTagsTransformerImageBatchUpload','image','IMAGE',true)[0].type,'DanbooruTagsTransformerImageToText');
-assert.deepEqual(connectionsFor('DanbooruTagsTransformerImageBatchSelector','filename','STRING',true)[0],{type:'DanbooruTagsTransformerImageToText',slot:'source_name'});
+assert.equal(connectionsFor('DanbooruTagsTransformerImageBatchUpload','image','IMAGE',true)[0].type,'DanbooruTagsTransformerArchmageBeta');
+assert.deepEqual(connectionsFor('DanbooruTagsTransformerImageBatchSelector','filename','STRING',true)[0],{type:'DanbooruTagsTransformerArchmageBeta',slot:'source_name'});
 assert.deepEqual(connectionsFor(describe,'report','STRING',true),[{type:'PreviewAny',slot:'source'}]);
 assert.deepEqual(connectionsFor('DanbooruTagsTransformerImageToText','status','STRING',true),[{type:'PreviewAny',slot:'source'}]);
 for (const type of [describe, 'DanbooruTagsTransformerImageToText']) {
     assert.deepEqual(connectionsFor(type, 'appearance', 'ATELIER_APPEARANCE', false), [{type:'DanbooruTagsTransformerAppearanceOverrides',slot:0}]);
 }
-assert.deepEqual(connectionsFor('DanbooruTagsTransformerAppearanceOverrides', 'appearance', 'ATELIER_APPEARANCE', true).map(x => x.slot), ['appearance','appearance']);
+assert.deepEqual(connectionsFor('DanbooruTagsTransformerAppearanceOverrides', 'appearance', 'ATELIER_APPEARANCE', true).map(x => x.slot), ['appearance','appearance','appearance','appearance','appearance']);
+assert.equal(connectionsFor('DanbooruTagsTransformerSceneComposer','appearance','ATELIER_APPEARANCE',false)[0].type,'DanbooruTagsTransformerAppearanceOverrides');
+assert.equal(connectionsFor('DanbooruTagsTransformerTagComposer','appearance','ATELIER_APPEARANCE',false)[0].type,'DanbooruTagsTransformerAppearanceOverrides');
 assert.deepEqual(connectionsFor("DanbooruTagsTransformerImageToText", "width", "INT", true)[0], { type: "EmptySD3LatentImage", slot: "width" });
 assert.deepEqual(connectionsFor("DanbooruTagsTransformerImageToText", "height", "INT", true)[0], { type: "EmptySD3LatentImage", slot: "height" });
 assert.deepEqual(connectionsFor("DanbooruTagsTransformerImageToText", "image", "IMAGE", true)[0], { type: "PreviewImage", slot: "images" });
@@ -31,3 +33,9 @@ assert.equal(resolveSlot(slots, 0).index, 0);
 assert.equal(resolveSlot(slots, slots[1]).index, 1);
 assert.equal(resolveSlot(slots, "tokenizer").index, 1);
 console.log("Connection suggestions passed (including first socket and named inputs).");
+
+const beta='DanbooruTagsTransformerArchmageBeta';
+assert.equal(connectionsFor(beta,'appearance','ATELIER_APPEARANCE',false)[0].type,'DanbooruTagsTransformerAppearanceOverrides');
+assert.equal(connectionsFor(beta,'image','IMAGE',false)[1].type,'DanbooruTagsTransformerImageBatchUpload');
+assert.equal(connectionsFor(beta,'description','STRING',true)[0].slot,'idea');
+assert.equal(connectionsFor(beta,'width','INT',true)[0].slot,'width');

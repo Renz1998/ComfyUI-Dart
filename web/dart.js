@@ -109,12 +109,12 @@ app.registerExtension({
             options.push({ content: this.properties.dart_design === false ? "Enable Mage design" : "Disable Mage design", callback: () => toggleDesign(this) });
             options.push({ content: this.properties.atelier_theme === "studio" ? "Use Ember theme (fire while running)" : "Use Studio theme", callback: () => { toggleTheme(this); refreshUploadWidget(this); } });
         };
-        if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerAppearanceOverrides", "DanbooruTagsTransformerImageBatchSelector", "DanbooruTagsTransformerImageBatchUpload"].includes(nodeData.name)) return;
+        if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerAppearanceOverrides", "DanbooruTagsTransformerImageBatchSelector", "DanbooruTagsTransformerImageBatchUpload", "DanbooruTagsTransformerTagComposer", "DanbooruTagsTransformerSceneComposer", "DanbooruTagsTransformerArchmageBeta"].includes(nodeData.name)) return;
         const created = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {
             created?.apply(this, arguments);
             if (nodeData.name.endsWith("ImageBatchUpload")) installUploadWidget(this, api);
-            if (["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText"].includes(nodeData.name)) installStatusWidget(this);
+            if (["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerTagComposer", "DanbooruTagsTransformerSceneComposer", "DanbooruTagsTransformerArchmageBeta"].includes(nodeData.name)) installStatusWidget(this);
             addTextPreviewWidgets(this);
             const preview = this.widgets?.find((widget) => widget.name === "preview_text");
             if (preview) preview.options.getMinHeight = () => 120;
@@ -123,9 +123,13 @@ app.registerExtension({
                 description: "Scene / keywords (optional with source tags)", custom_instructions: "Custom instructions",
                 canvas_width: "MOSS canvas width", canvas_height: "MOSS canvas height", layout_json: "Edit MOSS JSON (optional override)",
                 instructions: "Caption instructions / replacements", character_trigger: "Character trigger", image_index: "Image in batch",
-                prompt_length: "Prompt length", output_format: "Output format", image_megapixels: "Image megapixel budget", dimension_source: "Layout dimensions", resize_mode: "Resize mode", resize_method: "Resize method", language_style: "Language style", max_tokens: "Generation token limit", unload_after_generation: "Unload assistant model after generation", trigger: "Character trigger", identity_mode: "Identity wording", custom_overrides: "Extra appearance replacements" };
+                style_preset: "Style / theme", style_notes: "Custom style notes", reference_style: "Reference style", thinking: "Thinking mode", prompt_length: "Prompt length", output_format: "Output format", image_megapixels: "Image megapixel budget", dimension_source: "Layout dimensions", resize_mode: "Resize mode", resize_method: "Resize method", language_style: "Language style", max_tokens: "Generation token limit", unload_after_generation: "Unload assistant model after generation", trigger: "Character trigger", identity_mode: "Identity wording", custom_overrides: "Extra appearance replacements" };
             for (const widget of this.widgets || []) {
-                if (widget.name === "apply_size_wording") widget.label = "Apply exact breast-size wording";
+                if (/(SceneComposer|ArchmageBeta)$/.test(nodeData.name) && widget.name==='concepts') widget.label='Concepts (blank = surprise me)';
+                else if (/(SceneComposer|ArchmageBeta)$/.test(nodeData.name) && widget.name==='instructions') widget.label='Scene instructions';
+                else if (/Composer$/.test(nodeData.name) && widget.name==='seed') widget.label='Variation seed';
+                else if (nodeData.name.endsWith('TagComposer') && widget.name==='idea') widget.label='Idea / seed tags (blank = random)';
+                else if (widget.name === "apply_size_wording") widget.label = "Apply exact breast-size wording";
                 else if (widget.name === "on_override_mismatch") widget.label = "On override mismatch";
                 else if (widget.name === "strict_wording") widget.label = "Strict trait wording";
                 else if (names[widget.name]) widget.label = names[widget.name];
@@ -181,6 +185,14 @@ app.registerExtension({
         const executed = nodeType.prototype.onExecuted;
         nodeType.prototype.onExecuted = function (message) {
             executed?.apply(this, arguments);
+            if (message?.mage_report?.[0]) {
+                const r=message.mage_report[0];
+                const beta=(this.comfyClass || this.type || '').endsWith('ArchmageBeta');
+                const scene=beta || (this.comfyClass || this.type || '').endsWith('SceneComposer');
+                const edits=scene && r.post_edits?.length ? '\nSelected size wording was post-edited by Prompt Mage; original model text is retained in the report.' : '';
+                updateStatusWidget(this,{...r,has_appearance:true,title:beta ? (r.status==='ok'?'Archmage: ready':r.status==='blocked'?'Archmage: output blocked':'Archmage: review notes') : scene ? (r.status==='ok'?'Scene generated':'Scene Composer: review notes') : (r.status==='ok'?'Tags vocabulary-checked':'Tag Composer: review notes'),message:(r.issues.join('\n') || (scene ? r.note : 'Dataset tag membership checked; semantic correctness remains model-guided.'))+edits,issues:[]});
+                setDesignState(this, finishedState(this));
+            }
             if (message?.atelier_report?.[0]) {
                 updateStatusWidget(this, combineReports(message.atelier_report));
                 setDesignState(this, finishedState(this));
@@ -217,7 +229,7 @@ app.registerExtension({
             if (activeNode) {
                 setDesignState(activeNode, "running");
                 if (activeNode.atelierLastReport?.has_appearance) updateStatusWidget(activeNode, {
-                    status: "running", has_appearance: true, message: "Generating text and checking the selected appearance wording.", issues: [],
+                    status: "running", has_appearance: true, message: /Composer$/.test(activeNode.comfyClass || activeNode.type || "") ? "Generating a new scene and checking the output." : "Generating text and checking the selected appearance wording.", issues: [],
                 });
             }
         });
@@ -261,14 +273,14 @@ app.registerExtension({
                         }
                         if (isOutput) {
                             source.connect(index, next, targetIndex);
-                            if (/ImageBatch(Selector|Upload)$/.test(source.comfyClass || source.type) && slot.name === "image" && type === "DanbooruTagsTransformerImageToText") {
+                            if (/ImageBatch(Selector|Upload)$/.test(source.comfyClass || source.type) && slot.name === "image" && ["DanbooruTagsTransformerImageToText","DanbooruTagsTransformerArchmageBeta"].includes(type)) {
                                 const nameSlot = next.findInputSlot("source_name");
                                 if (nameSlot >= 0) source.connect(1, next, nameSlot);
                             }
                         }
                         else {
                             next.connect(targetIndex, source, index);
-                            if (/ImageBatch(Selector|Upload)$/.test(type) && slot.name === "image" && (source.comfyClass || source.type) === "DanbooruTagsTransformerImageToText") {
+                            if (/ImageBatch(Selector|Upload)$/.test(type) && slot.name === "image" && ["DanbooruTagsTransformerImageToText","DanbooruTagsTransformerArchmageBeta"].includes(source.comfyClass || source.type)) {
                                 const nameSlot = source.findInputSlot("source_name");
                                 if (nameSlot >= 0) next.connect(1, source, nameSlot);
                             }

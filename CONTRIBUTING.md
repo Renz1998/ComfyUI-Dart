@@ -5,7 +5,7 @@ Keep the original authors and model provenance visible. Do not change persisted 
 ## Checks
 
 ```bash
-python tests/test_regressions.py
+python -m unittest discover -s tests -p 'test_*.py'
 node tests/test_connections.mjs
 node tests/test_menu.mjs
 ```

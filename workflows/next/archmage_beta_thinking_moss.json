@@ -1,0 +1,136 @@
+{
+  "last_node_id": 1,
+  "last_link_id": 0,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "DanbooruTagsTransformerArchmageBeta",
+      "pos": [
+        20,
+        20
+      ],
+      "size": [
+        520,
+        820
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "appearance",
+          "type": "ATELIER_APPEARANCE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "description",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "moss_json",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "report",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerArchmageBeta"
+      },
+      "widgets_values": [
+        "A red cube on the left and a blue sphere on the right, both on a studio tabletop. Soft light from upper left, white backdrop. No writing. No people, only the two geometric objects and tabletop.",
+        "Balanced",
+        42,
+        "randomize",
+        "MOSS JSON layout",
+        "16:9",
+        1024,
+        1024,
+        "From image when connected",
+        "",
+        "qwen3.5_9b_ultra_uncensored_heretic_int8_convrot.safetensors",
+        8192,
+        false,
+        0,
+        1.0,
+        "Downscale only",
+        "lanczos",
+        "Default",
+        "",
+        true
+      ],
+      "dart_widget_values": {
+        "concepts": "A red cube on the left and a blue sphere on the right, both on a studio tabletop. Soft light from upper left, white backdrop. No writing. No people, only the two geometric objects and tabletop.",
+        "length": "Balanced",
+        "seed": 42,
+        "control_after_generate": "randomize",
+        "output_format": "MOSS JSON layout",
+        "aspect_ratio": "16:9",
+        "width": 1024,
+        "height": 1024,
+        "canvas_source": "From image when connected",
+        "instructions": "",
+        "local_model": "qwen3.5_9b_ultra_uncensored_heretic_int8_convrot.safetensors",
+        "max_tokens": 8192,
+        "unload_after_generation": false,
+        "image_index": 0,
+        "image_megapixels": 1.0,
+        "resize_mode": "Downscale only",
+        "resize_method": "lanczos",
+        "language_style": "Default",
+        "source_name": "",
+        "thinking": true
+      },
+      "title": "Archmage Beta \u00b7 Thinking layout test"
+    }
+  ],
+  "links": [],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}

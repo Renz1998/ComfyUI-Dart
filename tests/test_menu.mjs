@@ -29,12 +29,15 @@ const context = {
             DanbooruTagsTransformerDescribeImage: { title: "Dart Describe Image" },
             DanbooruTagsTransformerAppearanceOverrides: { title: "Prompt Mage · Appearance Overrides" },
             DanbooruTagsTransformerImageToText: {title:"Prompt Mage · Image to Text"},
+            DanbooruTagsTransformerArchmageBeta: {title:"Prompt Mage · Archmage (Beta)"},
+            DanbooruTagsTransformerSceneComposer: {title:"Prompt Mage · Scene Composer"},
+            DanbooruTagsTransformerTagComposer: {title:"Prompt Mage · Tag Composer (Experimental)"},
             DanbooruTagsTransformerImageBatchSelector: {title:"Prompt Mage · Server Folder (Advanced)"},
             DanbooruTagsTransformerImageBatchUpload: {title:"Prompt Mage · Upload Images"},
         },
         ContextMenu: class { constructor(entries) { menu = entries; } },
         createNode(type) {
-            return { type, inputs: type === 'DanbooruTagsTransformerImageToText' ? [{name:'image'},{name:'source_name'}] : [{ name: "text" }, { name: "general" }, { name: "source_tags" }],
+            return { type, inputs: ['DanbooruTagsTransformerImageToText','DanbooruTagsTransformerArchmageBeta'].includes(type) ? [{name:'image'},{name:'source_name'}] : [{ name: "text" }, { name: "general" }, { name: "source_tags" }],
                 findInputSlot(name) { return this.inputs.findIndex((slot) => slot.name === name); },
                 connect(...args) { connections.push({ from: type, args }); } };
         },
@@ -186,3 +189,27 @@ canvas.showConnectionMenu({nodeTo:captionTarget,slotTo:0,e:{}});
 const uploadChoice=menu.find(entry=>entry?.content==='Prompt Mage · Upload Images');assert.ok(uploadChoice);uploadChoice.callback();
 assert.equal(connections.at(-2).args[0],0);assert.equal(connections.at(-2).args[2],0);
 assert.equal(connections.at(-1).args[0],1);assert.equal(connections.at(-1).args[2],1);
+canvas.showConnectionMenu({nodeTo:{type:'DanbooruTagsTransformerSceneComposer',graph,inputs:[{name:'appearance',type:'ATELIER_APPEARANCE'}]},slotTo:0,e:{}});
+assert.ok(menu[0].content.includes('Appearance'));menu[0].callback();
+assert.equal(connections.at(-1).from,'DanbooruTagsTransformerAppearanceOverrides');
+assert.equal(connections.at(-1).args[0],0);assert.equal(connections.at(-1).args[2],0);
+
+// Beta retains canvas context widgets and sockets in both output formats.
+class Beta {
+    constructor(){
+        this.type='DanbooruTagsTransformerArchmageBeta';this.size=[420,600];this.properties={};
+        this.widgets=[{name:'output_format',value:'Prose'},{name:'width',value:768},{name:'height',value:1024},{name:'canvas_source',value:'Manual'}];
+        this.inputs=[{name:'width',type:'INT',link:123}];
+    }
+    setSize(size){this.size=size;} computeSize(){return [420,600];} setDirtyCanvas(){}
+}
+extension.beforeRegisterNodeDef(Beta,{name:'DanbooruTagsTransformerArchmageBeta'});
+const betaNode=new Beta();betaNode.onNodeCreated();
+for(const mode of ['MOSS JSON layout','Prose']){
+    betaNode.widgets[0].value=mode;betaNode.widgets[0].callback();
+    assert.notEqual(betaNode.widgets[1].hidden,true);assert.notEqual(betaNode.widgets[2].hidden,true);
+    assert.notEqual(betaNode.inputs[0].dartInactive,true);assert.equal(betaNode.inputs[0].link,123);
+}
+betaNode.onExecuted({text:['Schema error'],mage_report:[{status:'blocked',issues:['Schema error'],post_edits:[]}]});
+assert.equal(betaNode.atelierLastReport.title,'Archmage: output blocked');
+assert.equal(betaNode.atelierLastReport.message,'Schema error');

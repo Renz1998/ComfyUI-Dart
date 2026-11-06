@@ -1,7 +1,7 @@
 [project]
 name = "prompt-atelier"
-description = "Build image prompts from words, DART tags and photos: local vision captions, custom instructions, character triggers and native MOSS layouts."
-version = "1.6.0"
+description = "Prompt Mage turns words and photos into image prompts: Archmage with style presets and optional thinking, local vision captions, appearance overrides, DART expansion, and native MOSS JSON layouts."
+version = "1.7.0"
 requires-python = ">=3.10"
 dependencies = ["transformers>=4.46,<6", "torch>=2.4"]
 license = { file = "LICENSE" }
@@ -9,11 +9,11 @@ readme = "README.md"
 keywords = ["comfyui", "prompt", "dart", "qwen", "vision", "moss", "caption"]
 
 [project.urls]
-Repository = "https://github.com/Renz1998/ComfyUI-Prompt-Atelier"
-Documentation = "https://github.com/Renz1998/ComfyUI-Prompt-Atelier/blob/main/QUICKSTART.md"
+Repository = "https://github.com/Renz1998/ComfyUI-Prompt-Mage"
+Documentation = "https://github.com/Renz1998/ComfyUI-Prompt-Mage/blob/main/QUICKSTART.md"
 
 [tool.comfy]
 DisplayName = "Prompt Mage"
-Icon = "https://raw.githubusercontent.com/Renz1998/ComfyUI-Prompt-Atelier/main/assets/icon.svg"
-Banner = "https://raw.githubusercontent.com/Renz1998/ComfyUI-Prompt-Atelier/main/assets/banner.svg"
+Icon = "https://raw.githubusercontent.com/Renz1998/ComfyUI-Prompt-Mage/main/assets/icon.svg"
+Banner = "https://raw.githubusercontent.com/Renz1998/ComfyUI-Prompt-Mage/main/assets/banner.svg"
 PublisherId = "renz1998"

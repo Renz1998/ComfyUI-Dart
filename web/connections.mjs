@@ -6,10 +6,19 @@ const composers = (slot) => [node("ComposePromptV3", slot), node("ComposePromptV
 const generators = (slot) => [node("Generate", slot), node("GenerateAdvanced", slot)];
 
 export function connectionsFor(type, name, slotType, isOutput) {
+    if (type === prefix + 'ArchmageBeta' && isOutput) {
+        if (name === 'width' || name === 'height') return [{type:'EmptySD3LatentImage',slot:name},{type:'EmptyLatentImage',slot:name},preview];
+        if (name === 'image') return [{type:'PreviewImage',slot:'images'}];
+        if (name === 'description') return [node('TagComposer','idea'),encode,preview];
+        if (name === 'prompt' || name === 'moss_json') return [encode,preview];
+        return [preview];
+    }
+    if (type === prefix + 'TagComposer' && isOutput) return name === 'tags' || name === 'prompt' ? [encode,preview] : [preview];
+    if (type === prefix + 'SceneComposer' && isOutput) return name === 'prompt' ? [encode,node('TagComposer','idea'),preview] : [preview];
     if (!type?.startsWith(prefix)) return [];
     if (!isOutput) {
-        if (type === prefix + "ImageToText" && name === "image") return [{type:"LoadImage",slot:0},node("ImageBatchUpload",0),node("ImageBatchSelector",0)];
-        if (name === "appearance" && [prefix + "ImageToText", prefix + "DescribeImage"].includes(type)) return [node("AppearanceOverrides", 0)];
+        if ([prefix + 'ArchmageBeta',prefix + 'ImageToText'].includes(type) && name === "image") return [{type:"LoadImage",slot:0},node("ImageBatchUpload",0),node("ImageBatchSelector",0)];
+        if (name === "appearance" && [prefix + "ImageToText", prefix + "DescribeImage",prefix+'TagComposer',prefix+'SceneComposer',prefix+'ArchmageBeta'].includes(type)) return [node("AppearanceOverrides", 0)];
         if (name === "image") return [{ type: "LoadImage", slot: 0 }];
         if (type === prefix + "DescribeImage" && name === "description") return [node("ImageToText", 0)];
         if (name === "model") return [node("Loader", 0)];
@@ -24,11 +33,11 @@ export function connectionsFor(type, name, slotType, isOutput) {
         return [];
     }
     if ([prefix + "ImageBatchSelector", prefix + "ImageBatchUpload"].includes(type)) {
-        if (name === "image") return [node("ImageToText","image"), {type:"PreviewImage",slot:"images"}];
-        if (name === "filename") return [node("ImageToText","source_name"),preview];
+        if (name === "image") return [node('ArchmageBeta','image'), node("ImageToText","image"), {type:"PreviewImage",slot:"images"}];
+        if (name === "filename") return [node("ArchmageBeta","source_name"),node("ImageToText","source_name"),preview];
         return [preview];
     }
-    if (slotType === "ATELIER_APPEARANCE") return [node("ImageToText", "appearance"), node("DescribeImage", "appearance")];
+    if (slotType === "ATELIER_APPEARANCE") return [node('ArchmageBeta','appearance'),node('TagComposer','appearance'),node("ImageToText", "appearance"), node("DescribeImage", "appearance"),node('SceneComposer','appearance')];
     if (type === prefix + "AppearanceOverrides") return [preview];
     if (slotType === "DART_MODEL") return generators("model");
     if (slotType === "DART_TOKENIZER") return [

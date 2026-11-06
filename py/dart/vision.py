@@ -10,6 +10,7 @@ from .moss import compile_layout, layout_instruction, canvas_size
 from .memory import offload_after
 from .appearance import AppearanceMismatch, check_appearance_wording, check_layout_appearance
 from .size_edit import edit_text, edit_layout, edit_structured
+from .text_output import final_text
 
 VISION_FORMATS = ["Plain text", "Structured JSON", "MOSS JSON layout"]
 RESIZE_METHODS = ["lanczos", "bicubic", "bilinear", "area", "nearest-exact"]
@@ -118,7 +119,7 @@ def extract_vision_layout(value, width, height):
 def caption_image(image, instructions="", character_trigger="", detail="Detailed", image_index=0,
                   max_tokens=1024, model_name="Automatic", clip=None, language_style="Default",
                   output_format="Plain text", canvas_width=1024, canvas_height=1024, unload_after_generation=False,
-                  appearance=None, diagnostics=None):
+                  appearance=None, diagnostics=None, thinking=False):
     import torch
     if not isinstance(image, torch.Tensor) or image.ndim != 4 or image.shape[-1] not in (3, 4) or min(image.shape[:3]) < 1:
         raise ValueError("Connect an IMAGE from Load Image: expected a nonempty batch of RGB/RGBA images.")
@@ -168,9 +169,9 @@ def caption_image(image, instructions="", character_trigger="", detail="Detailed
             output = TextGenerate.execute(
                 clip=model, prompt=prompt, image=image[image_index:image_index + 1, :, :, :3],
                 max_length=max_tokens, sampling_mode={"sampling_mode": "off"},
-                thinking=False, system_prompt=system, mtp="off",
+                thinking=thinking, system_prompt=system, mtp="off",
             )
-            caption = re.sub(r"<think>.*?</think>", "", output.args[0], flags=re.S).strip()
+            caption = re.sub(r"<think>.*?</think>", "", final_text(output, thinking, diagnostics), flags=re.S).strip()
             candidate = None
             try:
                 if not caption:

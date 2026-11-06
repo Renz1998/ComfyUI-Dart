@@ -66,7 +66,7 @@ export function installUploadWidget(node, api) {
         const names = readCollection(manifest.value);
         root.dataset.theme = node.properties?.atelier_theme === "studio" ? "studio" : "ember";
         list.replaceChildren();
-        status.textContent = names.length ? `${names.length} ${names.length === 1 ? "image" : "images"} · list order is processing order` : "Select several files or drop images here. Then connect image → Image to Text.";
+        status.textContent = names.length ? `${names.length} ${names.length === 1 ? "image" : "images"} · list order is processing order` : "Select several files or drop images here. Then connect image → Archmage.";
         clear.disabled = busy || !names.length;
         add.disabled = busy;
         folder.disabled = dropzone.disabled = busy;

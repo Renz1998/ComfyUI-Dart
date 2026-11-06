@@ -4,8 +4,17 @@ These are complete **text-processing graphs** you can drag into ComfyUI. They cr
 
 ## Choose a starting point
 
+Start with an Archmage example. Other assistant examples are retained as legacy workflows: Scene Composer, Text Assistant and Image to Text are deprecated but remain compatible. Upload and DART tools are active.
+
+
 | Example | Pipeline | Models / cost |
 | --- | --- | --- |
+| [archmage_beta_compare.json](archmage_beta_compare.json) | Shared Appearance Overrides → Scene Composer beside Archmage Beta | Full local Qwen; compare prose with added canvas context |
+| [archmage_beta_thinking_moss.json](archmage_beta_thinking_moss.json) | Thinking-enabled landscape layout example | Compatible full Qwen; 8192 tokens per stage, slower |
+| [archmage_beta_text_moss.json](archmage_beta_text_moss.json) | Text concepts → Archmage Beta → native MOSS JSON | Full local Qwen; scene pass plus layout conversion |
+| [archmage_beta_reference_moss.json](archmage_beta_reference_moss.json) | Upload Images → Archmage Beta reference layout | Full vision Qwen; upload your images first |
+| [random_character_scenes.json](random_character_scenes.json) | Appearance Overrides → Scene Composer; empty concepts invents a scene | Full local Qwen; one prose pass |
+| [random_scene_to_tags.json](random_scene_to_tags.json) | Character scene → experimental vocabulary tags in Faithful mode | Full local Qwen; inspect tag diagnostics |
 | [keywords_to_concept.json](keywords_to_concept.json) | Keywords → Text Assistant → photographic concept | Full instruction Qwen; one assistant pass |
 | [describe_image.json](describe_image.json) | Description → tags + prose + debug preview | Full instruction Qwen; one pass |
 | [upload_images_to_captions.json](upload_images_to_captions.json) | Upload multiple files → thumbnails → sequential captions or one per queue | Full vision model; upload images before running |

@@ -1,91 +1,87 @@
-<p align="center"><img src="assets/banner.svg" alt="Prompt Mage — words, tags and images into your next scene" /></p>
+![Prompt Mage — words, tags and images into your next scene](assets/banner.svg)
 
-# ComfyUI Prompt Mage
+# Prompt Mage for ComfyUI
 
-Formerly **Prompt Atelier**. Search **Prompt Mage** in ComfyUI for every node. Existing workflow class IDs, the GitHub URL and Registry package ID `prompt-atelier` are retained for updates and compatibility.
+Turn a rough idea or reference image into a usable image prompt. **Archmage** brings scene writing, vision captioning, appearance instructions, style presets and native MOSS JSON layouts into one node.
 
-**Build image prompts from words, DART tags, or a reference image.** Use a local vision model to caption a photo, change character descriptions with your own instructions, develop tag lists into concepts, and output prose or native MOSS layout JSON.
+[Quickstart](QUICKSTART.md) · [Workflows](workflows/next/README.md) · [Archmage guide](docs/ARCHMAGE_BETA.md) · [Registry](https://registry.comfy.org/nodes/prompt-atelier) · [Credits](CREDITS.md)
 
-An expanded fork of [nkchocoai/ComfyUI-Dart](https://github.com/nkchocoai/ComfyUI-Dart), using [p1atdev's DART models](https://huggingface.co/p1atdev) and installed Qwen language/vision models. [Full creator and model credits →](CREDITS.md)
+## Start with Archmage
 
-[Quickstart](QUICKSTART.md) · [Workflow gallery](workflows/next/README.md) · [Publishing status](PUBLISHING.md) · [License](LICENSE)
+- **Write an idea**, or leave Concepts blank for a seeded scene.
+- **Connect an image** to make it the primary reference. Add instructions for requested changes.
+- Choose **Prose** or **MOSS JSON layout**, with canvas/aspect-ratio context in either mode.
+- Pick from **30 style templates**: amateur Instagram, phone snapshots, studio photography, sci-fi anime, manga, watercolor and more. Random and Custom are available too.
+- Connect **Appearance Overrides** for a character trigger and selected traits. This edits the description, not the source image.
+- Optionally enable **Thinking mode** with a compatible model. It can take longer; it does not guarantee better results.
 
-## What you can build
+**Archmage is beta.** Reports distinguish valid output, appearance warnings, unsupported/unconfirmed thinking and blocked layouts. Inspect important results before using them downstream.
 
-| Start with | Make | Tools |
-| --- | --- | --- |
-| A sentence | Tags, natural-language prompts, or a new scene concept | Text Assistant + custom instructions |
-| A few keywords | Expanded visual tags, then a photographic concept | DART Composer → Generate → Text Assistant |
-| A photo | A detailed caption, optionally with a character trigger and requested appearance changes | Image to Text |
-| A photo or description | Native MOSS layout JSON with text/object placement | Image to Text → Text Assistant |
-| A description | DART v1/v2/v3 expansion with retained tags and sampling controls | Text Assistant → matching DART Composer → Generate |
+![Archmage with a shared Appearance Overrides recipe](assets/screenshots/archmage-appearance.jpg)
 
-All 18 nodes include hover help and role-colored guides. Assistants show their result directly. Ember theme adds animated flames and embers while a node runs, a RUNNING badge and a glowing outline. Animations respect reduced motion. Right-click for Studio theme or to disable designs.
-
-## Control prompt detail and wording
-
-**Prompt Mage · Upload Images:** click the large drop area to select files, drop images anywhere on the node, or use Choose folder to upload images from a folder on your computer (including subfolders). This opens your local file/folder picker even when ComfyUI runs on RunPod. Files upload to the ComfyUI server, including RunPod. Reorder using arrows; remove/clear changes this node's list without deleting server files. Connect image to Image to Text and filename to source_name. The drag-create shortcut wires both. Choose All selected images as list for sequential captions in one run, or One image per queued run with increment to advance through the list. Wait until uploads finish before queuing. Workflow files save image paths, so upload again when moving a workflow to another server. Images keep their separate dimensions; use Image in batch = 0 on Image to Text. Max images limits CPU memory in list mode.
-
-**Server Folder (Advanced):** choose an input subfolder or a custom folder on the computer running ComfyUI. One image per queued run uses Index and the native increment control; queue multiple runs to advance through files. All selected images as list sends separate images through Image to Text sequentially in one run, preserving their different resolutions. Set its Image in batch to 0. Max images defaults to 16 to bound CPU memory; use queue mode for large folders. Connect filename to source_name to label reports (the drag-create shortcut wires both). Batch feedback summarizes per-file results and flags only blocked items.
-
-**Apply exact breast-size wording** on Appearance Overrides is an explicit post-edit option, enabled by default for newly built recipes when a breast size is selected. It replaces a weaker phrase or adds the selected size in an identifiable subject's caption. For example, large bust can become gigantic breasts. Unrelated objects and visible text items are left alone; ambiguous multi-person targets may still require a unique trigger or model correction. Feedback says size-edited, with original model text in report.model_output and the applied changes in post_edits. This edits captions only: it does not unlock model policies, change pixels, or guarantee a diffusion model will render the requested anatomy. Turn it off to evaluate the model's own wording.
-
-**Strict trait wording** on Appearance Overrides is enabled by default. Missing or conflicting selected phrases request a correction. If the model still does not comply, the assistant now defaults to **On override mismatch → Warn and continue**: an expanded amber panel names the missing phrases, conflicting wording and affected captions, and the generated output continues downstream unchanged. This is an unconfirmed result, not a successful replacement. Choose **Block downstream** on that assistant when matching is required: dependent data outputs are blocked, while the actual model output stays available in the preview/report. Appearance mismatches no longer need to throw a confusing traceback. Invalid JSON, model failures and invalid inputs remain execution errors.
-
-Both assistants append **status** and **report** outputs; earlier socket positions are preserved. Status is ok, corrected, edited, warning, blocked or unchecked. Report is JSON containing issues, attempts, policy, original model wording and the actual output. The feedback panel works even when Mage branding is disabled; prompt wires contain clean prose/JSON without warning text. Disable strict wording on Appearance Overrides to allow paraphrasing. These checks do not prove image accuracy, multi-person identity assignment or free-form instruction compliance.
-
-**Appearance Overrides:** drag from either assistant's **appearance** input and choose **Prompt Mage · Appearance Overrides**. Connect one recipe to either or both assistants. Dropdowns cover hair color/style/length, eyes, breast size, body type, skin tone, clothing and expression. Keep unchanged leaves a trait alone; Custom reveals a free-text value. Set an optional exact character trigger, choose who receives changes, and add extra replacement directions. The on/off switch bypasses the recipe. Selected traits replace conflicting source traits in prose, tags and JSON; interpretation is model-guided. Keep exact tags still appends literal text. Manual MOSS layout overrides bypass generation, so clear them before applying a recipe. These controls edit generated descriptions, not image pixels.
-
-**Unload assistant model after generation:** enable when the assistant encoder differs from your image encoder. ComfyUI offloads this encoder and its clones/related models after generation (including errors), while preserving unrelated loaded models. Weights are not deleted. A shared encoder may reload later, so leave this off when reuse is more valuable than freeing VRAM. Chat-server inference is external and unaffected; cached nodes do not run cleanup again.
-
-**Image to Text → Output format** offers Plain text, Structured JSON, and MOSS JSON layout. Structured JSON contains description, subjects, environment, lighting, composition and visible_text; use the MOSS choice for its native summary/items format. Instructions and character triggers work in every format. JSON is validated, indented and previewed as Markdown; the description output always carries raw text/JSON.
-
-Set **Image megapixel budget** to the desired total pixels (1.0 = 1,000,000), then choose **Downscale only** or **Resize to budget** and a resize method. Lanczos/bicubic/bilinear/area/nearest-exact are interpolation choices, with no extra model download. A zero budget keeps original size subject to an 8192-pixel side limit. **Layout dimensions → From processed image** sets the MOSS canvas automatically, aligned to multiples of 16; width/height outputs can drive your latent. Manual canvas allows a separate output resolution. The image output is the selected resized RGB image; caption replacement instructions do not alter its depicted content. Layout boxes are model estimates, not measured segmentation.
-
-Text Assistant offers **Brief**, **Balanced**, **Detailed**, and **Extensive** prompt lengths. These are approximate detail targets. **Generation token limit** separately caps the entire response, including internal JSON and tags. Start with Detailed and 4096 tokens; try 8192 for Extensive layouts. Preserve prioritizes fidelity over word count; Expand and Concept allow creative additions.
-
-MOSS JSON is indented on its output wire and displayed in a fenced JSON block in Markdown preview. Switch the preview to Plain text to copy raw JSON. Feed **prompt** directly to MOSS conditioning: Markdown fences never go over that wire. Canvas controls and sockets are inactive outside JSON mode; existing connections are retained for switching back.
-
-Both assistants offer **Language style → Direct / explicit**, requesting precise terminology without euphemisms or masked words. It preserves supplied wording without introducing unrequested sexual details. The selected model's own capabilities and policies still determine its response. Custom instructions allow finer writing directions.
+*Actual ComfyUI node setup with a neutral example. Screenshots show prompt tools, not a generated image or a quality benchmark.*
 
 ## Install
 
-This is a **replacement fork** of ComfyUI-Dart. Disable or remove the original installation before installing Prompt Mage: legacy node IDs are retained so existing workflows load, and the two packs must not register them together. Keep a backup of your workflows.
+Use one installation of this pack. It replaces the original ComfyUI-Dart and retains legacy node IDs; do not install both together.
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/Renz1998/ComfyUI-Prompt-Atelier.git prompt-atelier
-# Use the Python environment that runs your ComfyUI:
-python -m pip install -r prompt-atelier/requirements.txt
+git clone https://github.com/Renz1998/ComfyUI-Prompt-Mage.git prompt-mage
+# Use the Python environment that runs ComfyUI:
+python -m pip install -r prompt-mage/requirements.txt
 ```
 
-Restart ComfyUI. Search **Prompt Mage** to find all nodes, including **Prompt Mage · DART Generate**, **DART Load**, and the composers. Categories are **Prompt Mage / Assistants**, **Vision**, and **DART**. Existing workflow class IDs and socket positions are unchanged. An existing installed folder can stay named ComfyUI-Dart; folder names are not used for imports.
+Restart ComfyUI, refresh the browser, then search **Prompt Mage** or **Archmage**.
 
-**Registry:** [Prompt Mage](https://registry.comfy.org/nodes/prompt-atelier) is published under @renz1998. Version 1.6.0 upload and its CDN archive are verified. Latest-version detail-page and Manager indexing remain unverified. Git installation receives the latest source. See [PUBLISHING.md](PUBLISHING.md).
+**Comfy Registry:** the display name is [Prompt Mage](https://registry.comfy.org/nodes/prompt-atelier). Its permanent package ID remains `prompt-atelier`, so existing installs can continue updating. If you already have a working installation, update it in place rather than cloning a second copy. See [publishing status](PUBLISHING.md) for the available Registry version.
+
+## Pick the right tool
+
+| Node | Use it for |
+| --- | --- |
+| **Archmage (Beta)** | Text/reference → prose or native MOSS layout JSON; the recommended starting point |
+| **Upload Images** | Local file picker, folder picker and drag-and-drop, including when ComfyUI runs on RunPod |
+| **Appearance Overrides** | Reusable character trigger, appearance dropdowns and custom replacements |
+| **Tag Composer (Experimental)** | Separate vocabulary-backed Danbooru conversion; review coverage and semantic warnings |
+| **DART tools** | Tag expansion using matching DART v1/v2/v3 composers and models |
+| **Server Folder (Advanced)** | Read image folders on the computer running ComfyUI |
+
+**Deprecated:** Scene Composer, Text Assistant and Image to Text remain executable for older workflows. Use Archmage for new scene/prose/MOSS workflows. External chat servers, DART/Anima formatting and general Structured JSON captions remain documented in [legacy controls](docs/LEGACY_ASSISTANTS.md). Deprecated does not mean removed, and there is no automatic graph conversion.
 
 ## Try a workflow
 
-1. Start with [keywords to concept](workflows/next/keywords_to_concept.json) if an instruction-capable Qwen model is installed.
-2. Try [image to text](workflows/next/image_to_text.json), uploading your own image with Load Image.
-3. Combine tools with [photo to MOSS layout](workflows/next/photo_to_moss_layout.json) or [description to DART v3](workflows/next/description_to_dart_v3.json).
+| Start here | Example |
+| --- | --- |
+| Invent a character scene | [Archmage beside legacy Scene Composer](workflows/next/archmage_beta_compare.json) |
+| Compose a landscape layout | [Text → MOSS JSON](workflows/next/archmage_beta_text_moss.json) |
+| Describe uploaded images | [Upload Images → Archmage MOSS](workflows/next/archmage_beta_reference_moss.json) |
+| Try native thinking | [Thinking-enabled MOSS example](workflows/next/archmage_beta_thinking_moss.json) |
 
-[Browse every example and its model requirements →](workflows/next/README.md)
+[Browse the full gallery →](workflows/next/README.md)
 
-The examples produce text and conditioning inputs for your existing image workflow. They do not bundle diffusion checkpoints or automatically generate/save pictures. Local assistance needs recent ComfyUI native Generate Text support and a full generation-capable Qwen checkpoint in text_encoders; photo captioning also needs its vision weights. No assistant weights are downloaded automatically. The optional Chat server backend sends text to the endpoint you configure.
+## Upload from your computer, even on RunPod
 
-[Caption model choices and the limits of uncensored labels →](docs/MODEL_CHOICES.md)
+Click the drop area, drop files onto the node, or choose a local folder. Files upload to the ComfyUI server. Choose a sequential image list or one image per queued run, then connect **image → Archmage.image** and **filename → source_name**. The drag-create shortcut wires both. Keep Image index at 0 for lists. Wait for uploads to finish before queuing.
 
-## Model support and limits
+<img src="assets/screenshots/upload-images.jpg" alt="Prompt Mage Upload Images node with local file and folder buttons" width="510">
 
-- DART v1-sft and v2-sft use their matching composers; v3 Preview E uses the experimental V3 composer. V2-MoE is available but has not had a real-model smoke test here.
-- Local text/vision assistance was tested with a full Qwen3-VL 4B checkpoint. Other checkpoints depend on native ComfyUI support and their capabilities.
-- MOSS JSON uses the [official experimental layout format](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md). Match canvas dimensions to your image generation dimensions. Valid boxes do not guarantee exact image placement.
-- Character replacement instructions edit the caption, not image pixels. Their interpretation is model-guided. Character triggers do not load LoRAs.
+Workflow files store server-relative image paths. Upload again when moving to another server. Removing a file from the list does not delete it from the server.
 
-## Credits and development
+## Models and practical limits
 
-Original ComfyUI node foundation: **nkchocoai and contributors**. DART models: **p1atdev**. Language/vision models: **Qwen team** and checkpoint conversion authors. MOSS model/layout format: **OpenMOSS team**. Native runtime/frontend: **ComfyUI contributors**. See [CREDITS.md](CREDITS.md).
+- Install a **full generation-capable Qwen encoder** in `models/text_encoders`, or connect a compatible CLIP loader. Image inputs require vision weights. No weights are downloaded automatically.
+- Local checks used Qwen3-VL 4B and Qwen3.5 9B. Native thinking was detected with Qwen3.5 9B; the tested Qwen3-VL 4B did not return a separate thinking segment. Try 8192 tokens for thinking, up to 16384 for complex requests.
+- Templates are text instructions, not LoRAs. Use **Reference style → Apply selected style** to restyle a reference caption; the default preserves its style.
+- MOSS JSON is validated and converted to native centered-pixel coordinates. Connect width/height to your latent to match the actual image size. Valid boxes do not guarantee precise diffusion placement.
+- These nodes produce **text and conditioning inputs**, not finished images. Appearance instructions do not edit pixels or load character LoRAs. Vocabulary membership does not prove a tag accurately describes the scene.
 
-The original GPL-3.0 source license and upstream history are retained. No model weights are bundled or claimed as our own. Each model retains its own license and access terms.
+[Model choices](docs/MODEL_CHOICES.md) · [Archmage controls](docs/ARCHMAGE_BETA.md) · [DART and legacy setup](docs/DART_AND_LEGACY_SETUP.md)
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for tests and useful bug reports. If the pack helps your workflow, a GitHub star helps other users find it; reproducible bug reports and example improvements are welcome too.
+Hover controls and sockets for help. Ember adds animated flames while running; Studio offers a quieter theme. Both respect reduced-motion settings. Right-click for theme/design options.
+
+## Built on the original creators’ work
+
+Original node foundation: **[nkchocoai and contributors](https://github.com/nkchocoai/ComfyUI-Dart)**. DART models: **[p1atdev](https://huggingface.co/p1atdev)**. Language/vision models: **Qwen team and checkpoint authors**. MOSS format/model: **OpenMOSS**. Runtime/frontend: **ComfyUI contributors**.
+
+[Full credits and model links](CREDITS.md) · [GPL-3.0 license](LICENSE) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
