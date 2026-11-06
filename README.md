@@ -4,7 +4,7 @@
 
 Turn a rough idea or reference image into a usable image prompt. **Archmage** brings scene writing, vision captioning, appearance instructions, style presets and native MOSS JSON layouts into one node.
 
-[Quickstart](QUICKSTART.md) · [Workflows](workflows/next/README.md) · [Archmage guide](docs/ARCHMAGE_BETA.md) · [Registry](https://registry.comfy.org/nodes/prompt-atelier) · [Credits](CREDITS.md)
+[Quickstart](QUICKSTART.md) · [Workflows](workflows/next/README.md) · [Archmage guide](docs/ARCHMAGE_BETA.md) · [Registry](https://registry.comfy.org/nodes/prompt-mage) · [Credits](CREDITS.md)
 
 ## Start with Archmage
 
@@ -34,7 +34,7 @@ python -m pip install -r prompt-mage/requirements.txt
 
 Restart ComfyUI, refresh the browser, then search **Prompt Mage** or **Archmage**.
 
-**Comfy Registry:** the display name is [Prompt Mage](https://registry.comfy.org/nodes/prompt-atelier). Its permanent package ID remains `prompt-atelier`, so existing installs can continue updating. If you already have a working installation, update it in place rather than cloning a second copy. See [publishing status](PUBLISHING.md) for the available Registry version.
+**Comfy Registry:** the new package ID and display name are **prompt-mage / Prompt Mage**. After Registry approval, the install command is `comfy node install prompt-mage`. This replaces the legacy `prompt-atelier` distribution; **do not install both** because they register the same node IDs. Existing users should follow the [migration guide](docs/REGISTRY_MIGRATION.md). A successful upload is not the same as Registry review approval or Manager discovery; see [current publishing status](PUBLISHING.md).
 
 ## Pick the right tool
 

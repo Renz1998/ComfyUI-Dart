@@ -40,7 +40,7 @@ assert.equal(elements.find(el=>el.tag==='input'&&'webkitdirectory' in el.attribu
 assert.equal(node.onDragOver({dataTransfer:{types:['Files']}}),true);
 assert.equal(node.onDragOver({dataTransfer:{types:['text/plain']}}),false);
 assert.equal(await node.onDragDrop({dataTransfer:{files:[file]}}),true);
-assert.equal(calls,1);assert.equal(JSON.parse(manifest.value).length,1);
+assert.equal(calls,1);assert.equal(JSON.parse(manifest.value).length,1);assert.ok(JSON.parse(manifest.value)[0].startsWith('prompt-mage/'));
 assert.equal(await node.onDragDrop({dataTransfer:{files:[{name:'workflow.json'}]}}),false);
 assert.equal(unrelatedDrops,1);
 console.log('Large drop area, local-folder picker, whole-node image drops and non-HTTPS upload IDs passed.');

@@ -1,4 +1,4 @@
-import {installBatchRunner} from './batch_runner.mjs?v=1.8.0-batch2';
+import {installBatchRunner} from './batch_runner.mjs?v=1.8.1';
 const collections = new WeakMap();
 const supported = /\.(png|jpe?g|webp|bmp|tiff?|gif)$/i;
 
@@ -101,7 +101,7 @@ export function installUploadWidget(node, api, app) {
         if (pending.length < accepted.length) errors.push("Collection limit is 512 images. Remaining files were skipped.");
         busy = true; render();
         // Separate upload sessions avoid overwriting an existing node's files.
-        const subfolder = "prompt-atelier/" + uploadSessionName();
+        const subfolder = "prompt-mage/" + uploadSessionName();
         try {
             for (const [index,file] of pending.entries()) {
                 status.textContent = `Uploading ${index+1}/${pending.length}: ${file.name}. Wait for completion before queuing.`;

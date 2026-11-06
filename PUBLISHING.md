@@ -1,6 +1,16 @@
 # Publishing Prompt Mage
 
-## Verified release: 1.8.0
+## Registry migration and review state — November 7, 2026
+
+The distribution is moving to **prompt-mage**, version **1.8.1**, at the user's request for a matching install command. See the [migration guide](docs/REGISTRY_MIGRATION.md). The old listing will be retained with a notice; existing users must not install both copies.
+
+The public Registry API reports legacy prompt-atelier versions 1.5.0–1.7.0 as **NodeVersionStatusFlagged** and 1.8.0 as **NodeVersionStatusPending**. Its latest_version field still points to flagged 1.7.0. Neither the publisher detail UI nor public version responses exposed a scan reason. The local Manager cache contains the legacy Registry record, so the record is not simply absent from all Registry data.
+
+**Correction to earlier release verification:** successful GitHub publishing, an available CDN ZIP, and a version-history entry prove artifact upload, not Registry approval or Manager discovery. No legacy version has an Active status in the queried version list. The new ID will require its own normal review; the migration is not a workaround for the existing review flags. Current states will be recorded after the new upload.
+
+Do not weaken Manager security settings, spoof Active status or alter local cache entries to make an unapproved release look approved. Manager channels, caches and review status must be checked separately. A manual review request can ask the Registry maintainers for the actual findings and next steps.
+
+## Verified artifact upload: legacy 1.8.0
 
 **Prompt Mage 1.8.0 was published on November 7, 2026**, from runtime commit `59eab927414d261eabaaa4510d562709b58fc448`.
 
@@ -9,7 +19,7 @@
 - Native checks used five synthetic images: five sequential complete workflows saved one output each; repeating the run saved five fresh outputs; list mode saved five outputs in one workflow. The actual UI button also passed both modes. Planning checks cover 20, 100 and 512 entries: five is an example, not a batch limit.
 - See the [batch runner guide](docs/BATCH_RUNNER.md). All uploaded images are included when using the node's Run all button. The global Run button retains its manual behavior.
 
-The display name remains Prompt Mage and the permanent Registry ID remains `prompt-atelier`. Manager indexing/default-version selection may be separate from a verified upload.
+At that upload the display name was Prompt Mage and the package ID was `prompt-atelier`. It is now the legacy distribution; the new canonical ID is `prompt-mage`. Registry approval and Manager discovery are separate from upload success.
 
 ## Prior release: 1.7.0
 
@@ -20,7 +30,7 @@ The display name remains Prompt Mage and the permanent Registry ID remains `prom
 - [Publish workflow](https://github.com/Renz1998/ComfyUI-Prompt-Mage/actions/runs/42204872962): validation and upload completed successfully, including all **102 Python tests** and four JavaScript suites.
 - [Version 1.7.0 CDN archive](https://cdn.comfy.org/renz1998/prompt-atelier/1.7.0/node.zip): downloaded and checked for metadata, Archmage, native thinking, style presets, the offline tag vocabulary and legacy deprecation markers.
 
-The Registry package ID stays **prompt-atelier**. [Official publishing metadata](https://docs.comfy.org/registry/publishing) marks package IDs immutable after creation; display names can change. Keeping the ID preserves the existing update route. A separate duplicate package is unnecessary. Manager search/index timing is independent of a verified upload.
+That release retained the package ID **prompt-atelier**. [Official publishing metadata](https://docs.comfy.org/registry/publishing) marks package IDs immutable after creation, which is why the requested `prompt-mage` ID now requires an explicit new distribution and migration.
 
 Archmage remains labeled **Beta**; Tag Composer remains **Experimental**. Deprecated assistants retain their class IDs, socket order and execution behavior. Their labels/categories guide new users toward Archmage without deleting older graphs or specialized legacy features.
 

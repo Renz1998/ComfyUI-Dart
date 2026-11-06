@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.8.1 — Registry ID migration
+
+- Moves the distribution from prompt-atelier to prompt-mage with unchanged runtime node IDs and sockets. Existing Registry installations require an explicit package migration; Git installations can update in place.
+- Documents legacy package review statuses separately from upload success and Manager discovery. Renaming does not bypass Registry review.
+- New uploads use the prompt-mage input subfolder; old uploaded paths remain valid.
+
+
 ## 1.8.0 — Run every uploaded image
 
 - Upload Images adds a Batch mode switch and Run all images from first button. Off appends a complete workflow per uploaded image; on submits one native list run containing the entire collection.

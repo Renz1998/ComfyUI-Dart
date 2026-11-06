@@ -3,9 +3,9 @@ import { api } from "../../scripts/api.js";
 import { convertToInput } from "../../extensions/core/widgetInputs.js";
 import { addTextPreviewWidgets, updateTextPreviewWidgets } from "../../extensions/core/textPreviewWidgets.js";
 import { connectionsFor, resolveSlot } from "./connections.mjs";
-import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.8.0-batch2";
+import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.8.1";
 import { installStatusWidget, updateStatusWidget, finishedState, combineReports } from "./status.mjs";
-import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.8.0-batch2";
+import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.8.1";
 
 const labels = new Map();
 const layoutFields = ["canvas_width", "canvas_height", "layout_json"];

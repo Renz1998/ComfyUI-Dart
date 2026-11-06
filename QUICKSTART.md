@@ -2,7 +2,7 @@
 
 ## 1. Install once
 
-Follow [README installation](README.md#install), restart ComfyUI and refresh your browser. Search **Prompt Mage · Archmage (Beta)**. Disable the original ComfyUI-Dart if it is also installed; the packs share legacy IDs.
+Follow [README installation](README.md#install), restart ComfyUI and refresh your browser. Search **Prompt Mage · Archmage (Beta)**. Disable the original ComfyUI-Dart or legacy prompt-atelier distribution if also installed; these packs share node IDs. Read the [Registry migration guide](docs/REGISTRY_MIGRATION.md) before switching an existing installation.
 
 ## 2. Pick a model
 
