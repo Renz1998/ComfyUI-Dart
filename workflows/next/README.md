@@ -9,6 +9,7 @@ Start with an Archmage example. Other assistant examples are retained as legacy 
 
 | Example | Pipeline | Models / cost |
 | --- | --- | --- |
+| [archmage_character_scene.json](archmage_character_scene.json) | Appearance Overrides → Archmage; everyday-photo style | Full local Qwen; one scene pass |
 | [archmage_beta_compare.json](archmage_beta_compare.json) | Shared Appearance Overrides → Scene Composer beside Archmage Beta | Full local Qwen; compare prose with added canvas context |
 | [archmage_beta_thinking_moss.json](archmage_beta_thinking_moss.json) | Thinking-enabled landscape layout example | Compatible full Qwen; 8192 tokens per stage, slower |
 | [archmage_beta_text_moss.json](archmage_beta_text_moss.json) | Text concepts → Archmage Beta → native MOSS JSON | Full local Qwen; scene pass plus layout conversion |

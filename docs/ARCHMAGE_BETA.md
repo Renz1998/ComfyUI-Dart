@@ -1,6 +1,6 @@
 # Prompt Mage · Archmage (Beta)
 
-A separate comparison node. Scene Composer, Text Assistant and Image to Text are deprecated but retain their existing IDs and behavior. Tag Composer remains a separate experimental tagging tool. Search **Prompt Mage** or **Archmage** after restarting ComfyUI and refreshing the browser. Archmage remains labeled Beta within the Prompt Mage pack; see [publishing status](../PUBLISHING.md) for the available Registry version.
+The recommended unified assistant for new Prompt Mage scene, prose and MOSS workflows. Scene Composer, Text Assistant and Image to Text are deprecated but retain their existing IDs and behavior. Tag Composer remains a separate experimental tagging tool. Search **Prompt Mage** or **Archmage** after restarting ComfyUI and refreshing the browser. Archmage remains labeled Beta within the Prompt Mage pack; see [publishing status](../PUBLISHING.md) for the available Registry version.
 
 ## Start here
 

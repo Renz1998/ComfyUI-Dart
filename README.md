@@ -53,7 +53,7 @@ Restart ComfyUI, refresh the browser, then search **Prompt Mage** or **Archmage*
 
 | Start here | Example |
 | --- | --- |
-| Invent a character scene | [Archmage beside legacy Scene Composer](workflows/next/archmage_beta_compare.json) |
+| Invent a character scene | [Appearance Overrides → Archmage](workflows/next/archmage_character_scene.json) |
 | Compose a landscape layout | [Text → MOSS JSON](workflows/next/archmage_beta_text_moss.json) |
 | Describe uploaded images | [Upload Images → Archmage MOSS](workflows/next/archmage_beta_reference_moss.json) |
 | Try native thinking | [Thinking-enabled MOSS example](workflows/next/archmage_beta_thinking_moss.json) |

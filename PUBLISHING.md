@@ -1,41 +1,34 @@
 # Publishing Prompt Mage
 
-## Current status
+## Verified release: 1.7.0
 
-The GitHub repository is now [Renz1998/ComfyUI-Prompt-Mage](https://github.com/Renz1998/ComfyUI-Prompt-Mage). The Registry listing displays **Prompt Mage** and links to this repository. Its permanent package ID remains `prompt-atelier`; the official publishing metadata specification marks IDs immutable after creation. Do not create a duplicate package just to change the slug.
+**Prompt Mage 1.7.0 was published on November 6, 2026**, under [@renz1998](https://registry.comfy.org/publishers/renz1998), from runtime commit `de78851ba9d01ea493b31e727c81b54124280d70`.
 
-Version **1.7.0** prepares Archmage Beta, native thinking, 30 style presets, experimental tagging and deprecated legacy assistant labels. Publication verification is recorded below after the release workflow completes.
+- [GitHub repository](https://github.com/Renz1998/ComfyUI-Prompt-Mage): renamed to **ComfyUI-Prompt-Mage**, with updated docs and actual neutral node screenshots.
+- [Registry listing](https://registry.comfy.org/nodes/prompt-atelier): display name **Prompt Mage**, with the renamed repository link.
+- [Publish workflow](https://github.com/Renz1998/ComfyUI-Prompt-Mage/actions/runs/42204872962): validation and upload completed successfully, including all **102 Python tests** and four JavaScript suites.
+- [Version 1.7.0 CDN archive](https://cdn.comfy.org/renz1998/prompt-atelier/1.7.0/node.zip): downloaded and checked for metadata, Archmage, native thinking, style presets, the offline tag vocabulary and legacy deprecation markers.
 
-### Previous verified publication
+The Registry package ID stays **prompt-atelier**. [Official publishing metadata](https://docs.comfy.org/registry/publishing) marks package IDs immutable after creation; display names can change. Keeping the ID preserves the existing update route. A separate duplicate package is unnecessary. Manager search/index timing is independent of a verified upload.
 
-**Version 1.6.0 was uploaded on November 6, 2026**, under [@renz1998](https://registry.comfy.org/publishers/renz1998). Its [publishing workflow](https://github.com/Renz1998/ComfyUI-Prompt-Mage/actions/runs/42102349356) completed validation and upload successfully, using runtime commit ebfc732c52896b0d825722ad4505cd0ded8f0230. The public CDN archive was downloaded and checked for version 1.6.0 and the Prompt Mage branding and simplified upload runtime. Latest-version visibility on the [Registry detail page](https://registry.comfy.org/nodes/prompt-atelier), separate review/indexing status and Manager search visibility remain unverified.
+Archmage remains labeled **Beta**; Tag Composer remains **Experimental**. Deprecated assistants retain their class IDs, socket order and execution behavior. Their labels/categories guide new users toward Archmage without deleting older graphs or specialized legacy features.
 
-## Registry route
+## Publish another version
 
-Follow the [official publishing guide](https://docs.comfy.org/registry/publishing) and [metadata specification](https://docs.comfy.org/registry/specifications):
+1. Increment the version in pyproject.toml and update CHANGELOG.md.
+2. Verify docs, public asset URLs, workflows and tests. Use neutral screenshots with no private prompts, images or credentials.
+3. Commit to main, then run **Publish Prompt Mage** manually from GitHub Actions.
+4. The existing `REGISTRY_ACCESS_TOKEN` secret supplies the publisher key. Never put its value in source, issues or chat. No new key is needed for a repository rename.
+5. Verify validation/upload results, the CDN package metadata, the Registry detail page and any separate Manager indexing status.
 
-1. Completed: publisher `renz1998` is registered at registry.comfy.org. Its publisher ID is permanent.
-2. Completed: `PublisherId = "renz1998"` is set under `[tool.comfy]` in pyproject.toml. The published package ID is `prompt-atelier`.
-3. Completed: the publisher key is saved in GitHub Actions Secrets as `REGISTRY_ACCESS_TOKEN`. Never put its value in source, workflow examples, issues or chat.
-4. Ensure the public default branch is `main` and includes this implementation, not the untouched upstream branch. Repository, icon and banner URLs must resolve publicly.
-5. Completed for 1.6.0: **Publish Prompt Mage** ran on main and passed metadata validation, all 70 Python tests and four JavaScript suites before upload.
-6. The 1.6.0 CDN archive is verified. Latest-version visibility on the detail page and Manager search remains to be checked; upload, scanning and indexing can be separate steps.
+The workflow is manual-only; documentation changes do not automatically republish a version. Refer to the [publishing guide](https://docs.comfy.org/registry/publishing) and [metadata specification](https://docs.comfy.org/registry/specifications).
 
-The action is manual-only; changing documentation or branding does not automatically publish a package. Increment the version for each subsequent Registry release.
+## Compatibility and credits
 
-## Legacy Manager catalogue
+Prompt Mage replaces the original ComfyUI-Dart installation and keeps its DanbooruTagsTransformer IDs. Do not install both copies together. The original GPL-3.0 license and upstream/model credits remain in LICENSE and CREDITS.md.
 
-The [Manager registration guide](https://github.com/Comfy-Org/ComfyUI-Manager#how-to-register-your-custom-node-into-comfyui-manager) also documents a PR adding an entry to custom-node-list.json. A candidate entry is in docs/manager-entry.json. Validate it against the live catalogue and verify the default branch before submitting it. A prepared entry is not an accepted listing.
+The legacy Manager catalogue candidate in docs/manager-entry.json points to the renamed repository. It is prepared material, not a claim of an accepted catalogue PR. Follow the [Manager registration guide](https://github.com/Comfy-Org/ComfyUI-Manager#how-to-register-your-custom-node-into-comfyui-manager) if a separate catalogue contribution is needed.
 
-Prompt Mage retains the old DanbooruTagsTransformer class IDs for workflow compatibility. State clearly that it replaces ComfyUI-Dart and cannot be installed alongside it; catalogue conflict detection may report these shared IDs. Do not hide the inherited IDs or claim the original nodes as new model work.
+## Earlier release
 
-## Release material
-
-- README.md: feature summary, installation and model requirements.
-- CREDITS.md + unchanged LICENSE: source/model attribution.
-- workflows/next/README.md: runnable text workflows and combined examples.
-- assets/icon.svg and banner.svg: Registry/GitHub branding.
-- CHANGELOG.md: user-visible release notes.
-- .comfyignore: excludes tests/CI from the Registry runtime archive.
-
-Screenshots should use neutral examples, name the tested model/settings and distinguish prompt output from image generation. Do not promise traffic, stars, Registry approval or image quality.
+Version 1.6.0 was also verified through its [workflow](https://github.com/Renz1998/ComfyUI-Prompt-Mage/actions/runs/42102349356) and CDN archive. The 1.7.0 release adds the unified beta assistant, styles/thinking, experimental tagging and migration guidance on top of that version.
