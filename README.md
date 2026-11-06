@@ -4,14 +4,14 @@
 
 Turn a rough idea or reference image into a usable image prompt. **Archmage** brings scene writing, vision captioning, appearance instructions, style presets and native MOSS JSON layouts into one node.
 
-[Quickstart](QUICKSTART.md) · [Workflows](workflows/next/README.md) · [Archmage guide](docs/ARCHMAGE_BETA.md) · [Registry](https://registry.comfy.org/nodes/prompt-mage) · [Credits](CREDITS.md)
+[Quickstart](QUICKSTART.md) · [Workflows](workflows/start-here/README.md) · [Archmage guide](docs/ARCHMAGE_USABILITY.md) · [Registry](https://registry.comfy.org/nodes/prompt-mage) · [Credits](CREDITS.md)
 
 ## Start with Archmage
 
 - **Write an idea**, or leave Concepts blank for a seeded scene.
 - **Connect an image** to make it the primary reference. Add instructions for requested changes.
 - Choose **Prose** or **MOSS JSON layout**, with canvas/aspect-ratio context in either mode.
-- Pick from **30 style templates**: amateur Instagram, phone snapshots, studio photography, sci-fi anime, manga, watercolor and more. Random and Custom are available too.
+- Pick from **31 style templates**: amateur Instagram, phone snapshots, studio photography, sci-fi anime, manga, watercolor and more. Random and Custom are available too.
 - Connect **Appearance Overrides** for a character trigger and selected traits. This edits the description, not the source image.
 - Optionally enable **Thinking mode** with a compatible model. It can take longer; it does not guarantee better results.
 

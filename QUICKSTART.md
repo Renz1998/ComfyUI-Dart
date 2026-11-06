@@ -6,29 +6,29 @@ Follow [README installation](README.md#install), restart ComfyUI and refresh you
 
 ## 2. Pick a model
 
-Install a full generation-capable Qwen checkpoint in `ComfyUI/models/text_encoders`. Choose it in Local model, or connect CLIP from a compatible loader. Reference images require vision weights. Automatic prefers a small general model; choose a compatible Qwen3.5 explicitly when testing Thinking mode. No weights are bundled or automatically downloaded.
+Connect CLIP from the same compatible Qwen loader used by MOSS, or leave Local model on Automatic. In the browser it reuses an unambiguous compatible downstream encoder; otherwise it chooses the smallest installed Qwen. With none installed, Archmage downloads a pinned official Qwen3.5 2B once. Reference images require vision weights. [Details](docs/ARCHMAGE_USABILITY.md#automatic-encoder-and-memory).
 
 ## 3. Write or connect your idea
 
-- Enter Concepts such as `an adult explorer reading a map in a small workshop`, or leave blank for a seeded scene.
+- **Scene idea / WHAT:** enter `an adult explorer reading a map in a small workshop`, or leave blank for a seeded scene. **Writing rules / HOW:** add constraints such as `sharp focus throughout; no extra people`.
 - Connect an image to prioritize a reference. Instructions and Appearance Overrides request changes to its generated description.
-- Choose Style / theme, for example **Photo · Amateur Instagram** or **Anime · Sci-fi**. Custom style notes refine any preset. Reference images retain their style unless Reference style is set to Apply selected style.
-- Choose an aspect ratio or custom width/height. From image when connected uses processed reference dimensions; Manual uses your canvas choice.
+- Style is first. The default **Photo · Bright lifestyle** favors crisp detail and clean light. Choose another preset or add style notes. With a reference, Image treatment must be Apply selected style to restyle its caption.
+- Add **Prompt Mage · Resolution** and connect its width/height to both Archmage and your latent. Without an image, Archmage uses connected/manual dimensions. With an image, choose processed-image size or Manual.
 
 ## 4. Choose and connect the output
 
 Use **prompt** for your positive text encoder. Prose produces plain text; MOSS JSON layout produces validated native JSON. **description** stays prose for a separate tagger. **moss_json** is inactive in Prose mode. **width/height** can drive your latent. Without a reference the image output is inactive rather than a fake blank image.
 
-Start with Balanced length, 4096 tokens and Thinking mode off. With a compatible model, enable thinking and try 8192 tokens. Thinking shares the per-stage ceiling with the final answer and can take much longer. Missing final answers or invalid layouts show an actionable blocked report; review appearance warnings separately.
+New nodes default to Detailed, MOSS JSON layout, 4096 tokens and Thinking on, matching the working setup. For a faster first try choose Prose and turn Thinking off. If thinking runs out of tokens, try 8192. The token ceiling includes reasoning and the final answer per stage. Read the visible status if a final answer or layout is blocked.
 
 ## 5. Add a reusable character or image list
 
-Connect **Appearance Overrides → appearance**. Choose a trigger and only the traits you want replaced. Keep unchanged leaves other traits alone. Custom reveals a free-text option. These instructions edit text, not pixels.
+Connect **Appearance Overrides → appearance**. Gender defaults to Female on new nodes; choose Keep unchanged when describing an existing subject faithfully. Choose a trigger and only the traits you want replaced. Custom reveals a free-text option. These instructions edit text, not pixels.
 
 For local/RunPod uploads, connect **Upload Images.image → Archmage.image** and **filename → source_name**. Wait for uploads, then use **Run all images from first** on the node. With Batch mode off, five images queue five complete workflow runs. With it on, one workflow processes the native list. No manual indexing is required. [Batch guide](docs/BATCH_RUNNER.md).
 
 ## Examples and deeper help
 
-[Workflow gallery](workflows/next/README.md) · [Archmage controls](docs/ARCHMAGE_BETA.md) · [Model choices](docs/MODEL_CHOICES.md) · [DART/legacy setup](docs/DART_AND_LEGACY_SETUP.md)
+[Three starter workflows](workflows/start-here/README.md) · [Archmage controls](docs/ARCHMAGE_USABILITY.md) · [Model choices](docs/MODEL_CHOICES.md) · [Older examples](workflows/next/README.md)
 
 Scene Composer, Text Assistant and Image to Text are deprecated but remain under Prompt Mage/Deprecated. Their IDs and sockets are retained. General Structured JSON captions and external chat-server features remain available in the legacy nodes; Archmage currently focuses on prose and native MOSS layouts.

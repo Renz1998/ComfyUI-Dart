@@ -33,6 +33,6 @@ Existing class IDs and socket order remain intact. Uploaded paths under `input/p
 
 The naming migration and Registry review are separate. On November 7, 2026 the public API reported legacy versions 1.5.0–1.7.0 as **Flagged** and 1.8.0 as **Pending**. The Registry UI and public version responses did not expose a reason. We cannot assert that these are false positives or that the rename resolves them.
 
-The new listing goes through the same Registry review. An uploaded/downloadable ZIP does **not** prove that a version is Active, searchable/installable through every Manager view, or approved by security review. See [publishing status](../PUBLISHING.md) for the actual current states.
+The new 1.8.1 archive exists and is Pending as of November 7, 2026. [Public review request #325](https://github.com/Comfy-Org/registry-backend/issues/325) has been submitted with user approval. The new listing goes through the same Registry review. An uploaded/downloadable ZIP does **not** prove that a version is Active, searchable/installable through every Manager view, or approved by security review. See [publishing status](../PUBLISHING.md) for the actual current states.
 
 Use Manager's default channel and refresh its database when a new listing becomes available; other channels or stale local caches can omit Registry-only packages. The legacy Manager catalogue is a separate registration route. No review bypass or security-setting change is part of this migration.

@@ -2,13 +2,24 @@
 
 ## Registry migration and review state — November 7, 2026
 
-The distribution is moving to **prompt-mage**, version **1.8.1**, at the user's request for a matching install command. See the [migration guide](docs/REGISTRY_MIGRATION.md). The old listing will be retained with a notice; existing users must not install both copies.
+The **prompt-mage 1.8.1** distribution was uploaded successfully with the requested matching install command. The 1.9.0 usability update is available on GitHub and installed locally; it has not been uploaded to Registry yet. See the [migration guide](docs/REGISTRY_MIGRATION.md). The old listing will be retained with a notice; existing users must not install both copies.
 
 The public Registry API reports legacy prompt-atelier versions 1.5.0–1.7.0 as **NodeVersionStatusFlagged** and 1.8.0 as **NodeVersionStatusPending**. Its latest_version field still points to flagged 1.7.0. Neither the publisher detail UI nor public version responses exposed a scan reason. The local Manager cache contains the legacy Registry record, so the record is not simply absent from all Registry data.
 
-**Correction to earlier release verification:** successful GitHub publishing, an available CDN ZIP, and a version-history entry prove artifact upload, not Registry approval or Manager discovery. No legacy version has an Active status in the queried version list. The new ID will require its own normal review; the migration is not a workaround for the existing review flags. Current states will be recorded after the new upload.
+**Correction to earlier release verification:** successful GitHub publishing, an available CDN ZIP, and a version-history entry prove artifact upload, not Registry approval or Manager discovery. No legacy version has an Active status in the queried version list. The new ID will require its own normal review; the migration is not a workaround for the existing review flags. The new `prompt-mage` 1.8.1 version is **NodeVersionStatusPending**, with no Active `latest_version` on the new record. The normal publishing retry succeeded after associating the legacy listing with its existing old GitHub redirect; the backend did not expose a definitive failure cause.
 
-Do not weaken Manager security settings, spoof Active status or alter local cache entries to make an unapproved release look approved. Manager channels, caches and review status must be checked separately. A manual review request can ask the Registry maintainers for the actual findings and next steps.
+Do not weaken Manager security settings, spoof Active status or alter local cache entries to make an unapproved release look approved. Manager channels, caches and review status must be checked separately. The explicitly approved [public review request #325](https://github.com/Comfy-Org/registry-backend/issues/325) asks maintainers for findings, supported migration steps and normal review. Manager visibility remains unconfirmed.
+
+## Current source: 1.9.0
+
+[Source update](https://github.com/Renz1998/ComfyUI-Prompt-Mage/commit/bbeb7abd97ce079943b1ad96e3458f5108236134) adds grouped controls, Bright lifestyle defaults, Resolution, gender, model sharing and interruption cleanup. Local and [GitHub CI verification](https://github.com/Renz1998/ComfyUI-Prompt-Mage/actions/runs/42289258676) passed **110 Python tests**, **six JavaScript suites** (CI on Transformers 4.46.3 and 5.17.0), workflow link/paired-comparison checks, and a native MOSS Qwen text-to-JSON run (144.7 seconds, 816×1232 canvas, thinking detected, valid JSON). The live result still contained an awkward mirror-phone placement; the final source strengthens that instruction. These checks do not establish image-quality or tokens/second improvements. Browser visual QA was blocked by a test-tab HTTP 403 while backend requests worked.
+
+## Verified new-ID artifact upload: 1.8.1
+
+- [Successful publishing run](https://github.com/Renz1998/ComfyUI-Prompt-Mage/actions/runs/42279385881).
+- [CDN ZIP](https://cdn.comfy.org/renz1998/prompt-mage/1.8.1/node.zip), 3,242,543 bytes, verified name/version.
+- SHA-256: `f9a801840f55cbae768b2918a236e3ab02ef9a89e10094058e120664cd814a63`.
+- Version ID: `9c0b25fa-8157-4055-bce2-030778e684a7`. Public status rechecked November 7: **Pending**, not approved.
 
 ## Verified artifact upload: legacy 1.8.0
 
