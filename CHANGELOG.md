@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.1 — Section overlap hotfix
+
+- Replaces floating section-header DOM overlays with fixed-height native canvas widgets so headings and controls occupy separate rows at every zoom.
+- Restores defaults for newly added controls when loading named settings from older graphs, fixing the blank Memory mode selector without overwriting saved choices.
+- Cache-busts the updated Archmage UI module. Frontend-only fix; refresh the browser to apply.
+
+
 ## 1.9.0 — Clearer canvas, style and model controls
 
 - Archmage groups style first, then scene, canvas, reference and performance. Clear WHAT/HOW labels distinguish scene ideas from writing rules. Unused reference controls are hidden.

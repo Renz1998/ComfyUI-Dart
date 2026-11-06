@@ -18,10 +18,16 @@ bindWorkflowEncoders(snapshot);assert.equal(snapshot.output[1].inputs.clip,undef
 snapshot={output:{1:mage(),2:{...loader,inputs:{clip_name:'clip_l.safetensors'}},3:encode}};
 bindWorkflowEncoders(snapshot);assert.equal(snapshot.output[1].inputs.clip,undefined);
 // Visual reordering does not drop controls or produce duplicate sections on configure.
-globalThis.document={createElement(){return {};}};
 const node={type:'DanbooruTagsTransformerArchmageBeta',widgets:[{name:'concepts'},{name:'style_preset'},{name:'width'}],
- addDOMWidget(name,type,el,opts){const widget={name,serialize:opts.serialize};this.widgets.push(widget);return widget;}};
+ addCustomWidget(widget){this.widgets.push(widget);return widget;}};
 arrangeArchmage(node); arrangeArchmage(node);
 assert.equal(node.widgets[1].name,'style_preset');
 assert.equal(new Set(node.widgets).size,node.widgets.length);
+assert.equal(node.widgets[0].serialize,false);
+assert.deepEqual(node.widgets[0].computeSize(),[0,30]);
+const painted=[];
+const ctx={save(){},restore(){},fillRect(...args){painted.push(args);},fillText(text,x,y){painted.push([text,x,y]);}};
+node.widgets[0].draw(ctx,node,420,200,30);
+assert.ok(painted.filter(x=>typeof x[0]==='number').every(([x,y,w,h])=>y>=200 && y+h<=230));
+assert.equal(painted.at(-1)[2],215);
 console.log('Automatic encoder sharing, ambiguity, cycle prevention and grouped controls passed.');

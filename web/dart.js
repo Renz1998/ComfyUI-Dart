@@ -6,7 +6,7 @@ import { connectionsFor, resolveSlot } from "./connections.mjs";
 import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.9.0";
 import { installStatusWidget, updateStatusWidget, finishedState, combineReports } from "./status.mjs";
 import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.9.0";
-import { arrangeArchmage, updateArchmageControls, bindWorkflowEncoders } from "./archmage_ui.mjs?v=1.9.0";
+import { arrangeArchmage, updateArchmageControls, bindWorkflowEncoders } from "./archmage_ui.mjs?v=1.9.1";
 
 const labels = new Map();
 const layoutFields = ["canvas_width", "canvas_height", "layout_json"];
@@ -165,6 +165,7 @@ app.registerExtension({
                 };
             }
             this.mageCanonicalWidgets = (this.widgets || []).filter(widget => widget.serialize !== false);
+            this.mageWidgetDefaults = new Map(this.mageCanonicalWidgets.map(widget => [widget.name, widget.value]));
             arrangeArchmage(this);
             if (nodeData.name.endsWith('AppearanceOverrides')) {
                 const gender = this.widgets.filter(widget => ['gender', 'gender_custom'].includes(widget.name));
@@ -197,12 +198,16 @@ app.registerExtension({
             const named = data?.dart_widget_values || data?.widgets_values_named;
             if (named) {
                 for (const widget of this.widgets || []) {
-                    if (widget.serialize !== false && Object.hasOwn(named, widget.name)) widget.value = named[widget.name];
+                    if (widget.serialize !== false) {
+                        if (Object.hasOwn(named, widget.name)) widget.value = named[widget.name];
+                        else if (this.mageWidgetDefaults?.has(widget.name)) widget.value = this.mageWidgetDefaults.get(widget.name);
+                    }
                 }
             }
             else if (this.mageCanonicalWidgets && Array.isArray(data?.widgets_values)) {
                 this.mageCanonicalWidgets.forEach((widget, i) => {
                     if (i < data.widgets_values.length) widget.value = data.widgets_values[i];
+                    else widget.value = this.mageWidgetDefaults.get(widget.name);
                 });
             }
             if (nodeData.name.endsWith('AppearanceOverrides') && !Object.hasOwn(named || {}, 'gender') &&

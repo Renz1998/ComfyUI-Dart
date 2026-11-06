@@ -50,11 +50,25 @@ export function arrangeArchmage(node) {
     if (!(node.comfyClass || node.type || '').endsWith('ArchmageBeta')) return;
     if (!node.mageSectionWidgets) {
         node.mageSectionWidgets = GROUPS.map(([title]) => {
-            const el = document.createElement('div'); el.className = 'mage-section'; el.textContent = title;
-            const widget = node.addDOMWidget(`mage_section_${title}`, 'MAGE_SECTION', el,
-                {serialize: false, hideOnZoom: true, getMinHeight: () => 26, getMaxHeight: () => 26});
-            widget.serialize = false;
-            return widget;
+            // A native fixed-height widget participates in the canvas layout. DOM
+            // overlays can retain stale positions after mixed-widget reordering.
+            return node.addCustomWidget({
+                name: `mage_section_${title}`, type: 'custom', value: '',
+                serialize: false, options: {serialize: false},
+                computeSize: () => [0, 30],
+                draw(ctx, node, width, y, height) {
+                    if (this.hidden) return;
+                    ctx.save();
+                    ctx.fillStyle = '#ffb56b18';
+                    ctx.fillRect(10, y + 4, width - 20, height - 8);
+                    ctx.fillStyle = '#ffb56b';
+                    ctx.fillRect(10, y + 4, 2, height - 8);
+                    ctx.font = 'bold 10px sans-serif';
+                    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                    ctx.fillText(title, 20, y + height / 2);
+                    ctx.restore();
+                },
+            });
         });
     }
     const old = [...node.widgets];

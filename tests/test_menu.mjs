@@ -203,7 +203,7 @@ class Beta {
         this.inputs=[{name:'width',type:'INT',link:123}];
     }
     setSize(size){this.size=size;} computeSize(){return [420,600];} setDirtyCanvas(){}
-    addDOMWidget(name,type,element,options){const widget={name,serialize:options.serialize};this.widgets.push(widget);return widget;}
+    addCustomWidget(widget){this.widgets.push(widget);return widget;}
 }
 globalThis.document = {createElement(){return {};}};
 extension.beforeRegisterNodeDef(Beta,{name:'DanbooruTagsTransformerArchmageBeta'});
@@ -219,6 +219,11 @@ betaNode.onConfigure({widgets_values:['MOSS JSON layout',1568,2368,'Manual']});
 assert.equal(betaNode.widgets.find(w=>w.name==='width').value,1568);
 betaNode.onConfigure({dart_widget_values:savedBeta.dart_widget_values});
 assert.equal(betaNode.widgets.find(w=>w.name==='width').value,768);
+// A newly introduced control must not inherit a positional preview value from an old graph.
+betaNode.mageWidgetDefaults.set('memory_mode','Automatic');
+betaNode.widgets.push({name:'memory_mode',value:false});
+betaNode.onConfigure({dart_widget_values:savedBeta.dart_widget_values});
+assert.equal(betaNode.widgets.find(w=>w.name==='memory_mode').value,'Automatic');
 betaNode.onExecuted({text:['Schema error'],mage_report:[{status:'blocked',issues:['Schema error'],post_edits:[]}]});
 assert.equal(betaNode.atelierLastReport.title,'Archmage: output blocked');
 assert.equal(betaNode.atelierLastReport.message,'Schema error');
