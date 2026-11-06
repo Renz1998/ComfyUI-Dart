@@ -213,3 +213,16 @@ for(const mode of ['MOSS JSON layout','Prose']){
 betaNode.onExecuted({text:['Schema error'],mage_report:[{status:'blocked',issues:['Schema error'],post_edits:[]}]});
 assert.equal(betaNode.atelierLastReport.title,'Archmage: output blocked');
 assert.equal(betaNode.atelierLastReport.message,'Schema error');
+
+class UploadControls {
+    constructor(){this.type='DanbooruTagsTransformerImageBatchUpload';this.properties={};this.size=[420,600];this.inputs=[];
+        this.widgets=[{name:'batch_mode',value:'One image per queued run'},{name:'index',value:99},{name:'wrap_index',value:true},{name:'max_images',value:16},{name:'control_after_generate',value:'increment'},{name:'batch_run_id',value:''}];}
+    setSize(size){this.size=size;} computeSize(){return [420,600];} setDirtyCanvas(){}
+}
+extension.beforeRegisterNodeDef(UploadControls,{name:'DanbooruTagsTransformerImageBatchUpload'});
+const uploadControls=new UploadControls();uploadControls.onNodeCreated();
+assert.ok(uploadControls.widgets.every(w=>w.hidden));
+const uploadOptions=[];uploadControls.getExtraMenuOptions(null,uploadOptions);
+uploadOptions.find(o=>o.content==='Show advanced manual image controls').callback();
+assert.equal(uploadControls.widgets[0].hidden,false);assert.equal(uploadControls.widgets[1].hidden,false);
+assert.equal(uploadControls.widgets[5].hidden,true);

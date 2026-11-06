@@ -23,3 +23,4 @@ jobs:
       - run: node tests/test_menu.mjs
       - run: node tests/test_status.mjs
       - run: node tests/test_upload.mjs
+      - run: node tests/test_batch_runner.mjs

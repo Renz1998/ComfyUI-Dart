@@ -62,7 +62,9 @@ Restart ComfyUI, refresh the browser, then search **Prompt Mage** or **Archmage*
 
 ## Upload from your computer, even on RunPod
 
-Click the drop area, drop files onto the node, or choose a local folder. Files upload to the ComfyUI server. Choose a sequential image list or one image per queued run, then connect **image → Archmage.image** and **filename → source_name**. The drag-create shortcut wires both. Keep Image index at 0 for lists. Wait for uploads to finish before queuing.
+Click the drop area, drop files onto the node, or choose a local folder. Files upload to the ComfyUI server. Connect **image → Archmage.image** and **filename → source_name**; the drag-create shortcut wires both. Wait for uploads, then click **Run all images from first** on Upload Images.
+
+**Batch mode off:** five images queue five complete workflow runs, starting from the first. **Batch mode on:** one workflow receives all five through native list handling. Manual indices and limits do not affect this button. The global Run button retains its manual behavior. [Batch runner guide →](docs/BATCH_RUNNER.md)
 
 <img src="assets/screenshots/upload-images.jpg" alt="Prompt Mage Upload Images node with local file and folder buttons" width="510">
 

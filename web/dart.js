@@ -3,9 +3,9 @@ import { api } from "../../scripts/api.js";
 import { convertToInput } from "../../extensions/core/widgetInputs.js";
 import { addTextPreviewWidgets, updateTextPreviewWidgets } from "../../extensions/core/textPreviewWidgets.js";
 import { connectionsFor, resolveSlot } from "./connections.mjs";
-import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs";
+import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.8.0-batch2";
 import { installStatusWidget, updateStatusWidget, finishedState, combineReports } from "./status.mjs";
-import { installUploadWidget, refreshUploadWidget } from "./upload.mjs";
+import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.8.0-batch2";
 
 const labels = new Map();
 const layoutFields = ["canvas_width", "canvas_height", "layout_json"];
@@ -68,6 +68,14 @@ function updateDescribeControls(node) {
         if (widget.name === "dimension_source") widget.hidden = !layout;
         if (["resize_mode", "resize_method"].includes(widget.name)) widget.hidden = node.widgets?.find((item) => item.name === "image_megapixels")?.value === 0;
     }
+    if ((node.comfyClass || node.type || '').endsWith('ImageBatchUpload')) {
+        const manual = node.properties?.mage_manual_upload_controls === true;
+        for (const widget of node.widgets || []) {
+            if (widget.name === 'batch_mode') widget.hidden = !manual;
+            if (['batch_mode','index','wrap_index','max_images','control_after_generate'].includes(widget.name) && !manual) widget.hidden = true;
+            if (widget.name === 'batch_run_id') widget.hidden = true;
+        }
+    }
     updateLayoutSockets(node, canvas);
     updateDesignBackend(node, server);
     const size = node.computeSize();
@@ -108,12 +116,13 @@ app.registerExtension({
             baseMenu?.apply(this, arguments);
             options.push({ content: this.properties.dart_design === false ? "Enable Mage design" : "Disable Mage design", callback: () => toggleDesign(this) });
             options.push({ content: this.properties.atelier_theme === "studio" ? "Use Ember theme (fire while running)" : "Use Studio theme", callback: () => { toggleTheme(this); refreshUploadWidget(this); } });
+            if (nodeData.name.endsWith('ImageBatchUpload')) options.push({content: this.properties.mage_manual_upload_controls ? 'Hide advanced manual image controls' : 'Show advanced manual image controls', callback: () => {this.properties.mage_manual_upload_controls = !this.properties.mage_manual_upload_controls; updateDescribeControls(this);}});
         };
         if (!["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerAppearanceOverrides", "DanbooruTagsTransformerImageBatchSelector", "DanbooruTagsTransformerImageBatchUpload", "DanbooruTagsTransformerTagComposer", "DanbooruTagsTransformerSceneComposer", "DanbooruTagsTransformerArchmageBeta"].includes(nodeData.name)) return;
         const created = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {
             created?.apply(this, arguments);
-            if (nodeData.name.endsWith("ImageBatchUpload")) installUploadWidget(this, api);
+            if (nodeData.name.endsWith("ImageBatchUpload")) installUploadWidget(this, api, app);
             if (["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerTagComposer", "DanbooruTagsTransformerSceneComposer", "DanbooruTagsTransformerArchmageBeta"].includes(nodeData.name)) installStatusWidget(this);
             addTextPreviewWidgets(this);
             const preview = this.widgets?.find((widget) => widget.name === "preview_text");

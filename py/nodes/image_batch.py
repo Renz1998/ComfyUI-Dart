@@ -145,19 +145,23 @@ def select_uploads(images, batch_mode, index, wrap_index, max_images):
 
 
 class DanbooruTagsTransformerImageBatchUpload(DanbooruTagsTransformerImageBatchSelector):
+    DESCRIPTION = ('Upload or drop local images, then use Run all images from first. Batch mode off queues the entire workflow once per image; '
+                   'on submits one workflow with a native image list. Manual indices do not affect this button. Global Run retains its manual behavior. '
+                   'Right-click to show advanced manual controls.')
     @classmethod
     def INPUT_TYPES(cls):
         fields = DanbooruTagsTransformerImageBatchSelector.INPUT_TYPES()["required"]
         fields = {name: value for name, value in fields.items() if name in ("batch_mode", "index", "wrap_index", "max_images")}
         fields["batch_mode"] = (MODES, {**fields["batch_mode"][1], "default": MODES[1]})
         fields["index"] = ("INT", {**fields["index"][1], "tooltip": "First uploaded image is 0, following the visible list order. Use increment to advance between queued runs."})
-        return {"required": {"images": ("STRING", {"default": "[]", "multiline": True, "tooltip": "Saved uploaded image collection. Use Upload images to add files, thumbnails to check them, and arrow/remove buttons to edit the list. Workflows save paths, not image bytes."}), **fields}}
+        return {"required": {"images": ("STRING", {"default": "[]", "multiline": True, "tooltip": "Saved uploaded image collection. Use Upload images to add files, thumbnails to check them, and arrow/remove buttons to edit the list. Workflows save paths, not image bytes."}), **fields},
+                "optional": {"batch_run_id": ("STRING", {"default": "", "tooltip": "Internal Run all request ID. Distinguishes repeated list runs in ComfyUI's execution cache."})}}
 
-    def load(self, images="[]", batch_mode=MODES[1], index=0, wrap_index=True, max_images=16):
+    def load(self, images="[]", batch_mode=MODES[1], index=0, wrap_index=True, max_images=16, batch_run_id=""):
         return decode_selection(*select_uploads(images, batch_mode, index, wrap_index, max_images), batch_mode)
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
+    def IS_CHANGED(cls, batch_run_id="", **kwargs):
         root, files, selected = select_uploads(**kwargs)
         return json.dumps([(str(path), path.stat().st_size, path.stat().st_mtime_ns) for path in files] +
-                          [(str(path.relative_to(root)),) for path in selected])
+                          [(str(path.relative_to(root)),) for path in selected] + [("run", batch_run_id)])

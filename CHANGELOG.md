@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.0 — Run every uploaded image
+
+- Upload Images adds a Batch mode switch and Run all images from first button. Off appends a complete workflow per uploaded image; on submits one native list run containing the entire collection.
+- Automatic runs ignore manual indices, limits and global Batch Count; related captioners start at image index 0. The editor stays unchanged and settings/seeds are captured once.
+- Fresh request IDs rerun downstream nodes on repeat. Sequential queue submissions, stop-adding control and no automatic retries protect against accidental duplicate jobs.
+- Advanced manual controls remain available from the node menu, with unchanged global Run behavior. Versioned frontend imports avoid stale upload controls after updating.
+
+
 ## 1.7.0 — Archmage beta and Prompt Mage repository
 
 - Renamed the GitHub repository to ComfyUI-Prompt-Mage and refreshed setup, navigation, screenshots and guides. Registry display name is Prompt Mage; permanent package ID stays prompt-atelier.

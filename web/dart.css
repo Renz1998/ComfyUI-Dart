@@ -103,3 +103,9 @@
 .atelier-upload[data-theme="ember"] button:hover:enabled {background:#805334}
 .atelier-upload[data-theme="ember"] .atelier-upload-row {background:#3a2d28}
 .atelier-upload[data-theme="ember"] .atelier-upload-status {color:#d9bda8}
+.mage-batch-runner {box-sizing:border-box;display:flex;flex-direction:column;gap:9px;padding:13px;border:1px solid #94704d;border-radius:10px;background:#211e24;color:#f5e6d6;font:12px/1.4 system-ui;overflow:auto}
+.mage-batch-runner label {display:flex;align-items:center;gap:9px;cursor:pointer}
+.mage-batch-runner input[type="checkbox"] {accent-color:#ffbb77;width:18px;height:18px;flex-shrink:0}
+.mage-batch-runner button {cursor:pointer;padding:8px 10px;border:1px solid #b18457;border-radius:6px;background:#573e2c;color:#fff1e1;font:inherit}
+.mage-batch-runner button:disabled {opacity:.5;cursor:default}
+.mage-batch-runner .mage-batch-help {color:#d5c8bd}

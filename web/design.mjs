@@ -1,11 +1,11 @@
 const stylesheet = document.createElement("link");
 stylesheet.rel = "stylesheet";
-stylesheet.href = new URL("./dart.css", import.meta.url).href;
+stylesheet.href = new URL("./dart.css?v=1.8.0-batch2", import.meta.url).href;
 document.head.append(stylesheet);
 
 const designs = new WeakMap();
 const profiles = {
-    upload: { title: "UPLOAD IMAGES", subtitle: "UPLOAD IMAGES → QUEUED CAPTIONS / LIST", color: "#233c49", accent: "#a2d6f4", text: "Click the drop area to browse local files, drop images onto the node, or use Choose folder for local image folders, including on RunPod. Reorder with arrows; remove/clear changes this list and keeps server files. Connect image to Archmage and filename to source_name. All selected images as list captions sequentially. Queue mode uses Index and increment. Wait until uploads finish before queuing." },
+    upload: { title: "UPLOAD IMAGES", subtitle: "UPLOAD IMAGES → QUEUED CAPTIONS / LIST", color: "#233c49", accent: "#a2d6f4", text: "Click the drop area to browse local files, drop images onto the node, or use Choose folder for local image folders, including on RunPod. Reorder with arrows; remove/clear changes this list and keeps server files. Connect image to Archmage and filename to source_name. Use Run all images from first: Batch mode off queues the whole workflow per image; on submits one list run. Manual index controls are available from the right-click menu." },
     batch: { title: "SERVER FOLDER · ADVANCED", subtitle: "FOLDER → QUEUED IMAGE / SEQUENTIAL LIST", color: "#233c49", accent: "#a2d6f4", text: "Choose a folder on the computer running ComfyUI. One image per queued run uses Index plus the native increment control. List mode maps Archmage sequentially over separate images. Keep its Image in batch at 0. Max images limits CPU memory in list mode; use queue mode for large folders." },
     appearance: { title: "APPEARANCE OVERRIDES", subtitle: "ONE RECIPE → YOUR ASSISTANTS", color: "#423044", accent: "#efb4df", text: "Connect appearance to Archmage. Keep unchanged leaves a trait alone. Custom reveals a free-text value. Choose the subject, optional character trigger and replacements. Changes apply to generated text in every format; source image pixels stay unchanged." },
     vision: { title: "VISION CAPTIONER", subtitle: "IMAGE → DETAILED TEXT", color: "#183d49", accent: "#79d9ee", text: "Connect an image, then Run for a detailed caption. Instructions can replace appearance while keeping pose, clothing and scene details. Character trigger inserts your exact training token. This creates text; it does not edit image pixels." },

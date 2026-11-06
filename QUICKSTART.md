@@ -25,7 +25,7 @@ Start with Balanced length, 4096 tokens and Thinking mode off. With a compatible
 
 Connect **Appearance Overrides → appearance**. Choose a trigger and only the traits you want replaced. Keep unchanged leaves other traits alone. Custom reveals a free-text option. These instructions edit text, not pixels.
 
-For local/RunPod uploads, connect **Upload Images.image → Archmage.image** and **filename → source_name**. Choose a sequential list or one image per queued run; keep Image index at 0 for lists. The image drag-create shortcut suggests Archmage and wires filenames too. Wait for uploads to complete.
+For local/RunPod uploads, connect **Upload Images.image → Archmage.image** and **filename → source_name**. Wait for uploads, then use **Run all images from first** on the node. With Batch mode off, five images queue five complete workflow runs. With it on, one workflow processes the native list. No manual indexing is required. [Batch guide](docs/BATCH_RUNNER.md).
 
 ## Examples and deeper help
 

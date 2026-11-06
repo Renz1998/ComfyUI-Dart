@@ -1,3 +1,4 @@
+import {installBatchRunner} from './batch_runner.mjs?v=1.8.0-batch2';
 const collections = new WeakMap();
 const supported = /\.(png|jpe?g|webp|bmp|tiff?|gif)$/i;
 
@@ -28,7 +29,7 @@ export async function uploadImage(file, api, subfolder) {
     return [result.subfolder, result.name].filter(Boolean).join("/");
 }
 
-export function installUploadWidget(node, api) {
+export function installUploadWidget(node, api, app) {
     if (collections.has(node)) return;
     const manifest = node.widgets.find(widget => widget.name === "images");
     if (!manifest) return;
@@ -54,7 +55,7 @@ export function installUploadWidget(node, api) {
     status.setAttribute("role", "status"); status.setAttribute("aria-live", "polite");
     const list = document.createElement("div"); list.className = "atelier-upload-list";
     toolbar.append(add, folder, clear); root.append(dropzone, toolbar, picker, folderPicker, status, list);
-    let busy = false;
+    let busy = false, runner;
     const changed = names => {
         manifest.value = JSON.stringify(names);
         manifest.callback?.(manifest.value);
@@ -63,33 +64,35 @@ export function installUploadWidget(node, api) {
         node.setDirtyCanvas?.(true, true);
     };
     const render = () => {
+        const locked = busy || runner?.isQueuing;
         const names = readCollection(manifest.value);
         root.dataset.theme = node.properties?.atelier_theme === "studio" ? "studio" : "ember";
         list.replaceChildren();
         status.textContent = names.length ? `${names.length} ${names.length === 1 ? "image" : "images"} · list order is processing order` : "Select several files or drop images here. Then connect image → Archmage.";
-        clear.disabled = busy || !names.length;
-        add.disabled = busy;
-        folder.disabled = dropzone.disabled = busy;
+        clear.disabled = locked || !names.length;
+        add.disabled = locked;
+        folder.disabled = dropzone.disabled = locked;
         for (const [index, name] of names.entries()) {
             const row = document.createElement("div"); row.className = "atelier-upload-row";
             const image = document.createElement("img"); image.loading = "lazy"; image.alt = name.split("/").pop();
             const parts = name.split("/"); const filename = parts.pop();
             image.src = api.apiURL("/view?" + new URLSearchParams({filename,subfolder:parts.join("/"),type:"input"}));
-            const label = document.createElement("span"); label.textContent = `${index}: ${filename}`; label.title = name;
+            const label = document.createElement("span"); label.textContent = `${index+1}. ${filename}`; label.title = name;
             const controls = document.createElement("div"); controls.className = "atelier-upload-actions";
             for (const [text, title, action, disabled] of [
                 ["↑", `Move image ${index} up`, () => { [names[index-1],names[index]] = [names[index],names[index-1]]; changed(names); }, index === 0],
                 ["↓", `Move image ${index} down`, () => { [names[index+1],names[index]] = [names[index],names[index+1]]; changed(names); }, index === names.length-1],
                 ["×", `Remove image ${index} from list; keep server file`, () => changed(names.filter((_,i) => i !== index)), false],
             ]) {
-                const button = document.createElement("button"); button.type = "button"; button.textContent = text; button.title = title; button.setAttribute("aria-label",title); button.disabled = busy || disabled;
+                const button = document.createElement("button"); button.type = "button"; button.textContent = text; button.title = title; button.setAttribute("aria-label",title); button.disabled = locked || disabled;
                 button.addEventListener("click", action); controls.append(button);
             }
             row.append(image,label,controls); list.append(row);
         }
+        runner?.refresh();
     };
     const upload = async files => {
-        if (busy) { status.textContent = "Upload in progress. Wait for completion before adding more files."; return; }
+        if (busy || runner?.isQueuing) { status.textContent = "Upload or queue submission in progress. Wait before adding more files."; return; }
         if (!files.length) return;
         const names = readCollection(manifest.value);
         const accepted = [...files].filter(file => supported.test(file.name));
@@ -137,6 +140,7 @@ export function installUploadWidget(node, api) {
     root.addEventListener("wheel", event => event.stopPropagation());
     const widget = node.addDOMWidget("atelier_upload", "ATELIER_UPLOAD", root, {serialize:false,getMinHeight:()=>360,getMaxHeight:()=>360});
     widget.serialize = false;
+    if (app) runner = installBatchRunner(node, api, app, {isUploading: () => busy, onStateChange: render});
     collections.set(node,{render});
     render();
 }
