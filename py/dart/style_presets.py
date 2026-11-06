@@ -2,6 +2,14 @@
 import random
 
 STYLES = {
+    'Photo · Bright lifestyle': ('A crisp, polished lifestyle photograph suitable for an Instagram travel or fashion post. '
+        'Keep the subject sharply resolved, with fine hair strands, natural skin texture, distinct garment weave and readable accessories. '
+        'Use clean directional daylight when plausible, rich natural colors, controlled highlights and clear local contrast. '
+        'For interiors use plausible window light or clean practical lighting rather than automatically moving outdoors. '
+        'Specify concrete clothing construction, material reflections, hand placement, viewpoint and environmental detail. '
+        'Keep background detail readable unless the user requests shallow focus. No haze, diffusion filters, motion blur, '
+        'waxy smoothing or automatic cinematic grading. Do not change the requested location, pose, subject count or identity. '
+        'This treatment does not require a beach, bikini, sunlight indoors, or revealing clothing.', 'everyday'),
     'Photo · Amateur Instagram': ('An ordinary personal Instagram photo taken by a friend on a phone: casual everyday framing, available light, believable skin texture, everyday surroundings, slight handheld imperfections. No cinematic grading, dramatic rim lighting, professional retouching or exaggerated background blur.', 'everyday'),
     'Photo · Casual phone snapshot': ('A quick handheld smartphone snapshot, ordinary exposure and natural colors, informal composition, modest depth of field, believable everyday detail. Avoid staged cinematic lighting and film-poster framing.', 'everyday'),
     'Photo · Selfie': ('An informal front-camera phone selfie with plausible arm reach, close perspective and available light. Keep anatomy and camera placement consistent. No beauty-filter skin or cinematic grading.', 'everyday'),

@@ -174,7 +174,7 @@ def override_instructions(settings):
     if not settings["enabled"]:
         return "", ""
     traits = settings.get("traits")
-    if not isinstance(traits, dict) or any(key not in TRAITS or not isinstance(value, str) for key, value in traits.items()):
+    if not isinstance(traits, dict) or any((key not in TRAITS and key != 'gender') or not isinstance(value, str) for key, value in traits.items()):
         raise ValueError("Appearance overrides contain unsupported traits.")
     for field in ("subject", "trigger", "identity_mode", "custom"):
         if not isinstance(settings.get(field), str):

@@ -70,6 +70,23 @@ def read_layout(text, width, height):
     return compile_layout(layout, width, height)
 
 
+def layout_diagnostics(layout, width, height):
+    """Report actual box coverage, not an invented requirement to fill every pixel."""
+    boxes = [item['bbox'] for item in layout['items']]
+    xs = sorted({x for y1, x1, y2, x2 in boxes for x in (x1, x2)})
+    area = 0
+    for left, right in zip(xs, xs[1:]):
+        intervals = sorted((y1, y2) for y1, x1, y2, x2 in boxes if x1 <= left and x2 >= right)
+        end = -height / 2
+        for start, stop in intervals:
+            area += (right - left) * max(0, stop - max(start, end))
+            end = max(end, stop)
+    return {'canvas': [width, height], 'native_x_range': [-width / 2, width / 2],
+            'native_y_range': [-height / 2, height / 2], 'item_count': len(boxes),
+            'box_union_fraction': round(area / (width * height), 4),
+            'note': 'Summary describes the whole canvas. Boxes locate subjects, not a crop or pixel mask. Unboxed background is valid. Match these dimensions to the latent; diffusion placement is approximate.'}
+
+
 def layout_instruction(width, height):
     canvas_size(width, height)
     return f"""
@@ -87,6 +104,12 @@ Only create text items when the user explicitly requests visible words in the im
 Never turn the scene description, source tags or writing instructions into a text item.
 When no visible wording is requested, use object items only. This need not be a poster.
 Object items do not need text. Avoid prohibited concepts. Keep required concepts in summary.caption.
+For a continuous photograph, describe the complete scene in summary.caption, including camera viewpoint,
+focus, light direction, materials and background. Do not turn it into a collage, poster or panel layout.
+Use one box per major subject, not separate boxes for their face, hair, breasts, hands or clothing.
+Place the subject box around their actual visible silhouette including raised arms; do not stretch them
+across the entire canvas unless the framing truly fills it. The background may extend across the full canvas.
+Preserve requested sharp focus/no-blur instructions. A phone photo need not be blurry or low resolution.
 Do not output centered coordinates: the application converts the draft into MOSS coordinates.
 The exact layout_draft structure is:
 {{"summary":{{"meta":["requested medium/style"],"canvas":"single","caption":"Write the full overall scene here"}},"items":[

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.9.0 — Clearer canvas, style and model controls
+
+- Archmage groups style first, then scene, canvas, reference and performance. Clear WHAT/HOW labels distinguish scene ideas from writing rules. Unused reference controls are hidden.
+- New nodes default to Detailed MOSS JSON, thinking enabled, a 4096-token ceiling and 3.7 MP reference processing, matching the supplied working setup. Bright lifestyle becomes the requested photo default; saved workflows retain their choices.
+- Adds Prompt Mage · Resolution: aspect ratio, total megapixels, aligned dimensions and custom sizing, with drag suggestions for Archmage and latent inputs.
+- Appearance Overrides adds gender, default Female for new nodes. Older saved recipes keep unselected gender unchanged.
+- Connected dimensions override aspect presets. JSON conversion retains the full completed scene, adds stronger single-photograph/mirror geometry guidance and reports actual canvas/box coverage.
+- Browser Automatic shares an unambiguous compatible downstream CLIPTextEncode encoder; explicit CLIP/model choices win. Otherwise the smallest installed Qwen is used. With none installed, Archmage downloads a pinned official Qwen3.5 2B checkpoint from Hugging Face once.
+- Automatic memory preparation requests native offloading of competing weights and 2 GB generation headroom. Cancellation/error cleanup releases the assistant even with normal post-run unloading disabled. This mitigates VRAM pressure; it does not promise a particular speed.
+- Simplifies the workflow gallery into a few starters, with archived examples retained for compatibility. Adds full MOSS generation and same-scene prose/JSON comparison examples.
+
 ## 1.8.1 — Registry ID migration
 
 - Moves the distribution from prompt-atelier to prompt-mage with unchanged runtime node IDs and sockets. Existing Registry installations require an explicit package migration; Git installations can update in place.

@@ -20,6 +20,9 @@ class DanbooruTagsTransformerAppearanceOverrides(BaseNode):
         fields["custom_overrides"] = ("STRING", {"default": "", "multiline": True, "tooltip": "Extra appearance replacements, accessories, makeup, clothing or other directions. Selected dropdown traits win if they conflict. Existing assistant writing instructions remain available."})
         fields["strict_wording"] = ("BOOLEAN", {"default": True, "tooltip": "Check selected trait phrases and request a correction when missing or weakened. The assistant's On override mismatch setting controls whether a persistent mismatch warns or blocks downstream. Disable to allow paraphrasing. Wording checks do not verify visual/semantic accuracy or free-form extra instructions."})
         fields["apply_size_wording"] = ("BOOLEAN", {"default": True, "tooltip": "Explicit caption edit: apply your selected breast-size phrase after generation for an identifiable target, replacing weaker size phrases or adding the selected attribute. Reported as an Atelier text edit, not model compliance. Does not alter source images, model policies or unrelated object captions. Ambiguous subjects remain unconfirmed."})
+        # Append to preserve positional settings in existing saved workflows.
+        fields["gender"] = (["Female", "Male", "Nonbinary", KEEP, "Custom"], {"default": "Female", "tooltip": "Requested gender of the selected adult subject. Keep unchanged preserves the reference. Does not imply clothing, anatomy or pose."})
+        fields["gender_custom"] = ("STRING", {"default": "", "tooltip": "Your gender wording when Gender is Custom."})
         return {"required": fields}
 
     RETURN_TYPES = ("ATELIER_APPEARANCE", "STRING")
@@ -38,6 +41,15 @@ class DanbooruTagsTransformerAppearanceOverrides(BaseNode):
         if enabled and identity_mode == "Trigger replaces identity details" and not trigger.strip():
             raise ValueError("Enter a trigger for Trigger replaces identity details.")
         traits = {}
+        gender = values.get('gender', KEEP)
+        if gender not in ('Female', 'Male', 'Nonbinary', KEEP, 'Custom'):
+            raise ValueError('Choose a supported gender.')
+        if gender == 'Custom':
+            gender = values.get('gender_custom', '').strip()
+            if enabled and not gender:
+                raise ValueError('Enter a custom gender value.')
+        if gender != KEEP and gender:
+            traits['gender'] = {'Female': 'woman', 'Male': 'man', 'Nonbinary': 'nonbinary adult'}.get(gender, gender)
         for name, choices in TRAITS.items():
             choice = values.get(name, KEEP)
             if choice not in [KEEP] + choices + ["Custom"]:

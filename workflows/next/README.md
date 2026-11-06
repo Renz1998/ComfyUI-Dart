@@ -1,8 +1,13 @@
-# Prompt Mage workflow gallery
+# Specialized and older examples
+
+**New users: [start with these three workflows](../start-here/README.md).** This folder is retained so existing links and workflows keep working.
 
 These are complete **text-processing graphs** you can drag into ComfyUI. They create prompts for an existing image-generation workflow; diffusion checkpoints, samplers and image saving are deliberately left to that workflow. Existing DanbooruTagsTransformer node IDs remain compatible.
 
-## Choose a starting point
+<details>
+<summary>Browse specialized examples and legacy workflows</summary>
+
+## Full archive
 
 Start with an Archmage example. Other assistant examples are retained as legacy workflows: Scene Composer, Text Assistant and Image to Text are deprecated but remain compatible. Upload and DART tools are active.
 
@@ -61,3 +66,5 @@ The five combined graphs include a START HERE note on the canvas. A small [neutr
 ## Validation
 
 Graph links, socket names, node availability and cycles are checked during development. The neutral image-to-text, keyword concept and MOSS layout paths have real local Qwen checks. The shared photo-to-layout graph is checked separately in the release validation. DART v1/v2/v3 have earlier CPU smoke checks. No gallery example claims a benchmark of final image quality or perfect semantic preservation.
+
+</details>

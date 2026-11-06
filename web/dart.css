@@ -109,3 +109,14 @@
 .mage-batch-runner button {cursor:pointer;padding:8px 10px;border:1px solid #b18457;border-radius:6px;background:#573e2c;color:#fff1e1;font:inherit}
 .mage-batch-runner button:disabled {opacity:.5;cursor:default}
 .mage-batch-runner .mage-batch-help {color:#d5c8bd}
+.mage-section {
+    box-sizing: border-box;
+    padding: 6px 10px;
+    margin: 2px 0;
+    border-left: 3px solid #ffb56b;
+    border-bottom: 1px solid #ffb56b35;
+    color: #ffce9e;
+    background: linear-gradient(90deg, #ffad5219, transparent);
+    font: 700 10px/14px system-ui, sans-serif;
+    letter-spacing: 1.4px;
+}

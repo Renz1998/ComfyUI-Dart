@@ -6,6 +6,10 @@ const composers = (slot) => [node("ComposePromptV3", slot), node("ComposePromptV
 const generators = (slot) => [node("Generate", slot), node("GenerateAdvanced", slot)];
 
 export function connectionsFor(type, name, slotType, isOutput) {
+    if (type === prefix + 'Resolution' && isOutput && ['width', 'height'].includes(name))
+        return [node('ArchmageBeta',name), {type:'EmptyFlux2LatentImage',slot:name}, {type:'EmptySD3LatentImage',slot:name}];
+    if (type === prefix + 'ArchmageBeta' && !isOutput && ['width', 'height'].includes(name))
+        return [node('Resolution',name)];
     if (type === prefix + 'ArchmageBeta' && isOutput) {
         if (name === 'width' || name === 'height') return [{type:'EmptySD3LatentImage',slot:name},{type:'EmptyLatentImage',slot:name},preview];
         if (name === 'image') return [{type:'PreviewImage',slot:'images'}];

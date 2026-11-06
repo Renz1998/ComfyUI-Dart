@@ -1,0 +1,231 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "type": "DanbooruTagsTransformerImageBatchUpload",
+      "pos": [
+        20,
+        20
+      ],
+      "size": [
+        510,
+        500
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "filename",
+          "type": "STRING",
+          "links": [
+            2
+          ]
+        },
+        {
+          "name": "count",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "selection",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerImageBatchUpload"
+      },
+      "widgets_values": [
+        "[]",
+        "All selected images as list",
+        0,
+        "increment",
+        true,
+        16,
+        ""
+      ],
+      "dart_widget_values": {
+        "images": "[]",
+        "batch_mode": "All selected images as list",
+        "index": 0,
+        "control_after_generate": "increment",
+        "wrap_index": true,
+        "max_images": 16,
+        "batch_run_id": ""
+      }
+    },
+    {
+      "id": 2,
+      "type": "DanbooruTagsTransformerArchmageBeta",
+      "pos": [
+        590,
+        20
+      ],
+      "size": [
+        510,
+        880
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "appearance",
+          "type": "ATELIER_APPEARANCE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 1,
+          "shape": 7
+        },
+        {
+          "name": "source_name",
+          "type": "STRING",
+          "widget": {
+            "name": "source_name"
+          },
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "description",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "moss_json",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "report",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerArchmageBeta"
+      },
+      "widgets_values": [
+        "",
+        "Detailed",
+        0,
+        "randomize",
+        "MOSS JSON layout",
+        "Custom",
+        1024,
+        1024,
+        "From image when connected",
+        "",
+        "Automatic",
+        4096,
+        false,
+        0,
+        3.7,
+        "Downscale only",
+        "lanczos",
+        "Default",
+        "",
+        true,
+        "Photo · Bright lifestyle",
+        "",
+        "Preserve reference style",
+        "Automatic"
+      ],
+      "dart_widget_values": {
+        "concepts": "",
+        "length": "Detailed",
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "output_format": "MOSS JSON layout",
+        "aspect_ratio": "Custom",
+        "width": 1024,
+        "height": 1024,
+        "canvas_source": "From image when connected",
+        "instructions": "",
+        "local_model": "Automatic",
+        "max_tokens": 4096,
+        "unload_after_generation": false,
+        "image_index": 0,
+        "image_megapixels": 3.7,
+        "resize_mode": "Downscale only",
+        "resize_method": "lanczos",
+        "language_style": "Default",
+        "source_name": "",
+        "thinking": true,
+        "style_preset": "Photo · Bright lifestyle",
+        "style_notes": "",
+        "reference_style": "Preserve reference style",
+        "memory_mode": "Automatic"
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      2,
+      "IMAGE"
+    ],
+    [
+      2,
+      1,
+      1,
+      2,
+      3,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4,
+  "last_node_id": 2,
+  "last_link_id": 2
+}

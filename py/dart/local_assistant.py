@@ -1,6 +1,8 @@
 """Use ComfyUI's model loader, text generation and offloading for local assistance."""
 
 import json
+import logging
+import re
 
 from .assistant import scene_request, parse_scene
 from .memory import offload_after
@@ -20,17 +22,44 @@ def select_model(names):
         raise ValueError("No local assistant model found. Add a full Qwen3-VL or Qwen3.5 model to text_encoders, or connect a generation-capable CLIP loader.")
     # Prefer a small general instruction model over an image-specific upsampler.
     return min(names, key=lambda name: (
+        float(match.group(1)) if (match := re.search(r'(\d+(?:\.\d+)?)b(?:[^a-z]|$)', name.lower())) else 999,
         any(word in name.lower() for word in ("upsampler", "heretic", "moss", "minimax")),
-        "4b" not in name.lower(), "8b" not in name.lower(), name,
+        name,
     ))
 
 
-def load_local_clip(model_name="Automatic", clip=None):
+FALLBACK_REPO = 'Comfy-Org/Qwen3.5'
+FALLBACK_REVISION = '5d50a2252bf1bcd49e5fee9b5f296986d442682b'
+FALLBACK_FILE = 'text_encoders/qwen3.5_2b_bf16.safetensors'
+
+
+def download_fallback():
+    """One pinned official checkpoint, cached by HF; interrupted downloads can resume."""
+    import folder_paths
+    from huggingface_hub import hf_hub_download
+    from pathlib import Path
+    folders = folder_paths.get_folder_paths('text_encoders')
+    target = Path(folders[0]) / 'prompt-mage'
+    target.mkdir(parents=True, exist_ok=True)
+    logging.warning('Prompt Mage: no compatible encoder installed. Downloading official Qwen3.5 2B (~4 GB) from Hugging Face. This first run may take several minutes.')
+    path = hf_hub_download(repo_id=FALLBACK_REPO, filename=FALLBACK_FILE,
+                           revision=FALLBACK_REVISION, local_dir=str(target))
+    return str(Path(path).relative_to(Path(folders[0])))
+
+
+def load_local_clip(model_name="Automatic", clip=None, auto_download=False):
     if clip is not None:
         return clip
     from nodes import CLIPLoader
     if model_name == "Automatic":
-        model_name = select_model(local_models())
+        names = local_models()
+        if names:
+            model_name = select_model(names)
+        elif auto_download:
+            model_name = download_fallback()
+        else:
+            model_name = select_model(names)
+    logging.info('Prompt Mage assistant encoder: %s', model_name)
     return CLIPLoader().load_clip(model_name, type="stable_diffusion")[0]
 
 

@@ -5,7 +5,7 @@ import re
 from .base import BaseNode
 from .scene_composer import PromptMageSceneComposer, VISIBLE_EXPRESSIONS
 from ..dart.local_assistant import load_local_clip, local_models
-from ..dart.memory import offload_after
+from ..dart.memory import offload_after, prepare_assistant_memory
 from ..dart.scene_variation import variation
 from ..dart.assistant import language_guidance, LANGUAGE_STYLES
 from ..dart.appearance import override_instructions, check_layout_appearance, AppearanceMismatch
@@ -30,7 +30,7 @@ def resolve_canvas(width, height, aspect_ratio='Custom'):
     return width, height
 
 
-def text_layout(encoder, description, width, height, max_tokens, seed, appearance, report, thinking=False, style_guidance=''):
+def text_layout(encoder, description, width, height, max_tokens, seed, appearance, report, thinking=False, style_guidance='', constraints=''):
     """Convert a finished scene, with one bounded schema correction attempt."""
     from comfy_extras.nodes_textgen import TextGenerate
     replacements, trigger = override_instructions(appearance)
@@ -39,7 +39,9 @@ def text_layout(encoder, description, width, height, max_tokens, seed, appearanc
               layout_instruction(width, height) +
               'The draft may also be the root object with summary/items and no bbox metadata; '
               'that root draft MUST use the same top-left pixel xyxy coordinates. '
-              'Native centered coordinates require both explicit bbox_coord_space and bbox_format metadata. ' + replacements + '\n' + style_guidance)
+              'Native centered coordinates require both explicit bbox_coord_space and bbox_format metadata. '
+              'Retain the exact character trigger in every caption depicting that character. Do not weaken focus, camera or clothing constraints. '
+              + replacements + '\n' + style_guidance + '\nUser constraints to preserve: ' + constraints)
     prompt = description
     for attempt in range(2):
         output = TextGenerate.execute(clip=encoder, prompt=prompt, system_prompt=system,
@@ -61,6 +63,8 @@ def text_layout(encoder, description, width, height, max_tokens, seed, appearanc
                 report['layout_input_schema'] = 'root pixel xyxy draft'
             else:
                 layout = compile_layout(value, width, height)
+            # Conversion plans space; it must not replace a rich finished scene with a lossy summary.
+            layout['summary']['caption'] = description
             if trigger and trigger not in layout['summary']['caption']:
                 layout['summary']['caption'] = trigger + ', ' + layout['summary']['caption']
             layout, edits = edit_layout(layout, appearance)
@@ -84,8 +88,10 @@ class PromptMageArchmageBeta(BaseNode):
     @classmethod
     def INPUT_TYPES(cls):
         required = dict(PromptMageSceneComposer.INPUT_TYPES()['required'])
+        required['length'][1]['default'] = 'Detailed'
+        required['concepts'][1]['tooltip'] = 'WHAT to depict: a subject, place or action. Example: a mage in a red cloak taking a mirror selfie in a hotel. Blank invents a scene. An image supplies the starting scene when connected.'
         required.update({
-            'output_format': (['Prose', 'MOSS JSON layout'], {'default': 'Prose', 'tooltip': 'Prose uses one text generation. MOSS produces validated spatial JSON; text-only scenes need a second conversion stage.'}),
+            'output_format': (['Prose', 'MOSS JSON layout'], {'default': 'MOSS JSON layout', 'tooltip': 'Prose uses one text generation. MOSS retains that full description plus validated spatial boxes. Layout is experimental; compare Prose on the same scene using the description output.'}),
             'aspect_ratio': (['Custom'] + list(PRESETS), {'default': 'Custom', 'tooltip': 'Preset canvas dimensions. Custom uses width and height. An image takes precedence when canvas source is From image.'}),
             'width': ('INT', {'default': 1024, 'min': 16, 'max': 8192, 'step': 16, 'tooltip': 'Manual canvas width, also used as composition context for prose. Connect width/height outputs to your latent node to set generation size.'}),
             'height': ('INT', {'default': 1024, 'min': 16, 'max': 8192, 'step': 16, 'tooltip': 'Manual canvas height. Dimensions must be multiples of 16.'}),
@@ -93,20 +99,23 @@ class PromptMageArchmageBeta(BaseNode):
         })
         optional = dict(PromptMageSceneComposer.INPUT_TYPES()['optional'])
         optional.update({
+            'instructions': ('STRING', {'default': '', 'multiline': True, 'tooltip': 'HOW to write or change it: constraints and rules. Example: keep all clothing, sharp focus throughout, no extra people. Concepts supplies the scene; instructions controls its treatment. Both are optional.'}),
             'image': ('IMAGE', {'tooltip': 'Optional reference, prioritized over random scene suggestions. Concepts and instructions explicitly guide changes to this reference.'}),
             'image_index': ('INT', {'default': 0, 'min': 0, 'tooltip': 'Select one image in an IMAGE batch. List inputs from Batch Upload run individually using ComfyUI list mapping.'}),
-            'image_megapixels': ('FLOAT', {'default': 1.0, 'min': 0, 'max': 16, 'step': 0.1, 'tooltip': 'Reference image processing budget. Zero keeps original dimensions up to the 8192-pixel safety cap.'}),
+            'image_megapixels': ('FLOAT', {'default': 3.7, 'min': 0, 'max': 16, 'step': 0.1, 'tooltip': 'Reference image processing budget, not output resolution. Zero keeps original dimensions up to the 8192-pixel safety cap.'}),
             'resize_mode': (['Downscale only', 'Resize to budget'], {'tooltip': 'Downscale only preserves small references. Resize to budget can enlarge them; it cannot restore missing details.'}),
             'resize_method': (RESIZE_METHODS, {'default': 'lanczos', 'tooltip': 'Image interpolation method used before vision inference.'}),
             'language_style': (LANGUAGE_STYLES, {'default': 'Default', 'tooltip': 'Direct / explicit requests precise supplied terminology. Model behavior still depends on its training.'}),
             'max_tokens': ('INT', {'default': 4096, 'min': 128, 'max': 16384, 'step': 128, 'tooltip': 'Token ceiling per generation stage, including thinking and final answer. With Thinking mode try 8192–16384. Larger budgets can take longer; they do not force longer prompts.'}),
             'source_name': ('STRING', {'default': '', 'tooltip': 'Optional batch filename for diagnostics; never treated as a scene instruction.'}),
-            'thinking': ('BOOLEAN', {'default': False, 'tooltip': 'Enable native model thinking for scene, vision and layout stages when supported. May help spatial consistency and composition; slower and not guaranteed better. Try 8192–16384 tokens. Thinking stays separate from prompt outputs. Off preserves the previous beta behavior.'}),
-            'style_preset': (STYLE_OPTIONS, {'default': 'None (model choice)', 'tooltip': 'Visual treatment and genre template. Amateur Instagram uses ordinary phone-photo cues instead of cinematic lighting. Random preset is repeatable for a fixed seed. Your scene instructions and appearance overrides take priority.'}),
+            'thinking': ('BOOLEAN', {'default': True, 'tooltip': 'Ask a compatible model to plan before answering. Slower; try 8192 tokens if the current 4096 budget runs out. Reasoning stays separate from prompt outputs.'}),
+            'style_preset': (STYLE_OPTIONS, {'default': 'Photo · Bright lifestyle', 'tooltip': 'Visual treatment, not scene content. Bright lifestyle favors crisp detail and clean light like the beach example, while keeping your chosen location. Explicit instructions take priority.'}),
             'style_notes': ('STRING', {'default': '', 'multiline': True, 'tooltip': 'Refine any preset or write your own style. Required for Custom. Examples: cheap phone camera, flat afternoon light, no color grading. These guide generated text, not model weights or image pixels.'}),
             'reference_style': (['Preserve reference style', 'Apply selected style'], {'default': 'Preserve reference style', 'tooltip': 'With an image, preserve its visible medium and camera treatment by default. Apply selected style explicitly restyles the caption while retaining subjects and spatial details unless your instructions change them.'}),
+            'memory_mode': (['Automatic', 'Native ComfyUI'], {'default': 'Automatic', 'tooltip': 'Automatic asks ComfyUI to offload competing models and reserve 2 GB for generation before each run. Interrupted runs release this assistant. Does not clear all models. Native leaves preparation to ComfyUI.'}),
         })
-        return {'required': required, 'optional': optional}
+        optional['local_model'][1]['tooltip'] = 'A connected CLIP wins. Automatic in the browser reuses a compatible downstream text encoder when unambiguous; otherwise uses a small installed Qwen. If none exists, downloads the official Qwen3.5 2B fallback once.'
+        return {'required': required, 'optional': optional, 'hidden': {'prompt': 'PROMPT', 'unique_id': 'UNIQUE_ID'}}
 
     RETURN_TYPES = ('STRING', 'STRING', 'STRING', 'INT', 'INT', 'IMAGE', 'STRING', 'STRING')
     RETURN_NAMES = ('prompt', 'description', 'moss_json', 'width', 'height', 'image', 'status', 'report')
@@ -121,13 +130,18 @@ class PromptMageArchmageBeta(BaseNode):
                  instructions='', local_model='Automatic', clip=None, max_tokens=4096, unload_after_generation=False,
                  image=None, image_index=0, image_megapixels=1.0, resize_mode='Downscale only',
                  resize_method='lanczos', language_style='Default', source_name='', thinking=False,
-                 style_preset='None (model choice)', style_notes='', reference_style='Preserve reference style'):
+                 style_preset='None (model choice)', style_notes='', reference_style='Preserve reference style',
+                 memory_mode='Automatic', prompt=None, unique_id=None):
         from comfy_execution.graph import ExecutionBlocker
         if output_format not in ('Prose', 'MOSS JSON layout') or length not in ('Short', 'Balanced', 'Detailed'):
             raise ValueError('Choose a supported output format and length.')
         if canvas_source not in ('From image when connected', 'Manual'):
             raise ValueError('Choose a supported canvas source.')
-        width, height = resolve_canvas(width, height, aspect_ratio)
+        if memory_mode not in ('Automatic', 'Native ComfyUI'):
+            raise ValueError('Choose a supported memory mode.')
+        inputs = (prompt or {}).get(str(unique_id), {}).get('inputs', {})
+        wired_size = any(isinstance(inputs.get(key), list) for key in ('width', 'height'))
+        width, height = resolve_canvas(width, height, 'Custom' if wired_size else aspect_ratio)
         replacements, trigger = override_instructions(appearance)
         wording = language_guidance(language_style)
         resolved_style, style_guidance = resolve_style(style_preset, style_notes, seed)
@@ -148,6 +162,14 @@ class PromptMageArchmageBeta(BaseNode):
         context = (f'Compose for a {width}x{height} {shape} canvas (aspect ratio {width / height:.3f}). '
                    'Use this framing context even for prose; do not render resolution numbers as visible writing. '
                    'Describe concrete visible details, not feelings, metaphors or narrative. ')
+        context += ('Preserve all explicit scene constraints, including sharp focus and no blur. For a mirror selfie, '
+                    'describe one reflected person holding one visible phone toward the mirror, with plausible hand grip, '
+                    'reflected gaze toward the phone screen and coherent mirror/environment geometry. The camera view is '
+                    'the mirror reflection: hold the phone between person and mirror at normal arm distance, rear cameras '
+                    'facing the mirror, never pressed against the mirror glass. Do not add a second real person or extra phone. '
+                    'Do not change clothing into nudity simply because a body-size trait was selected. '
+                    'Spend detail on fabric construction, accessories, pose, camera distance, directional lighting, '
+                    'surface texture and readable setting, rather than generic quality slogans. ')
         if thinking:
             context += ('Plan a readable focal hierarchy, balanced visual weight, useful negative space, consistent perspective, '
                         'subject scale, lighting and spatial relationships before answering. Check left/right, overlaps and occlusion. '
@@ -157,13 +179,17 @@ class PromptMageArchmageBeta(BaseNode):
         report = dict(status='ok', issues=[], seed=seed, source='image' if prepared is not None else 'text',
                       source_name=source_name, canvas=[width, height], processed_image=processed_size,
                       output_format=output_format, thinking_requested=thinking, max_tokens_per_stage=max_tokens, post_edits=[],
+                      canvas_resolved_from='processed image' if prepared is not None and canvas_source == 'From image when connected' else 'connected dimensions' if wired_size else 'manual / preset',
+                      memory_mode=memory_mode, encoder_source='connected / workflow encoder' if clip is not None else local_model,
                       style=dict(selected=style_preset, resolved=resolved_style, notes=style_notes,
                                  applied=style_applied, reference_mode=reference_style),
                       note='Beta: compare with Scene Composer. Canvas outputs set generation size only when connected to your latent node. Appearance semantics remain model-guided.')
-        encoder = load_local_clip(local_model, clip)
+        encoder = load_local_clip(local_model, clip, auto_download=True)
         description = ''
         moss = None
-        with offload_after(encoder, unload_after_generation):
+        with offload_after(encoder, unload_after_generation, release_on_error=True):
+            if memory_mode == 'Automatic':
+                prepare_assistant_memory(encoder)
             if prepared is not None:
                 target = {'Short': '40–70', 'Balanced': '80–130', 'Detailed': '140–220'}[length]
                 vision_instructions = context + f'Aim for {target} useful words, without padding. ' + replacements + '\n' + instructions
@@ -209,7 +235,7 @@ class PromptMageArchmageBeta(BaseNode):
                 if output_format == 'MOSS JSON layout' and report['status'] != 'blocked':
                     try:
                         moss = text_layout(encoder, description, width, height, max_tokens, seed, appearance, report,
-                                           thinking=thinking, style_guidance=style_guidance)
+                                           thinking=thinking, style_guidance=style_guidance, constraints=concepts + '\n' + instructions)
                     except ThinkingBudgetError as error:
                         report['status'] = 'blocked'
                         report['issues'].append(str(error))
@@ -226,6 +252,9 @@ class PromptMageArchmageBeta(BaseNode):
                                         'The selected model/loader may not support this switch. The final answer is available; thinking is unconfirmed.')
         if report['issues'] and report['status'] != 'blocked':
             report['status'] = 'warning'
+        if moss:
+            from ..dart.moss import layout_diagnostics
+            report['layout'] = layout_diagnostics(json.loads(moss), width, height)
         selected = moss if output_format == 'MOSS JSON layout' else description
         prompt = selected if report['status'] != 'blocked' else ExecutionBlocker(None)
         values = (prompt, description or ExecutionBlocker(None), moss if moss is not None else ExecutionBlocker(None),

@@ -1,3 +1,5 @@
+> **Current controls and defaults:** [Archmage usability guide](ARCHMAGE_USABILITY.md). The historical notes below describe earlier beta defaults; saved workflows retain them.
+
 # Prompt Mage · Archmage (Beta)
 
 The recommended unified assistant for new Prompt Mage scene, prose and MOSS workflows. Scene Composer, Text Assistant and Image to Text are deprecated but retain their existing IDs and behavior. Tag Composer remains a separate experimental tagging tool. Search **Prompt Mage** or **Archmage** after restarting ComfyUI and refreshing the browser. Archmage remains labeled Beta within the Prompt Mage pack; see [publishing status](../PUBLISHING.md) for the available Registry version.
@@ -58,7 +60,7 @@ Native thinking output is kept separate from final text. Prompt, description, JS
 
 ## Style / theme templates
 
-Choose **Style / theme** to guide the visual treatment instead of relying on the model's cinematic defaults. The 30 presets include amateur Instagram, casual phone snapshots, selfies, mirror selfies, direct flash, disposable/instant film, documentary, street/travel photography, studio portrait, editorial fashion, product, food, interiors, cinematic film still, everyday anime, anime key visual, sci-fi/fantasy anime, monochrome manga, sci-fi concept art, cyberpunk, fantasy painting, watercolor, oil painting, storybook, stylized 3D, pixel art and graphic poster.
+Choose **Style / theme** to guide the visual treatment instead of relying on the model's cinematic defaults. The 31 presets include amateur Instagram, casual phone snapshots, selfies, mirror selfies, direct flash, disposable/instant film, documentary, street/travel photography, studio portrait, editorial fashion, product, food, interiors, cinematic film still, everyday anime, anime key visual, sci-fi/fantasy anime, monochrome manga, sci-fi concept art, cyberpunk, fantasy painting, watercolor, oil painting, storybook, stylized 3D, pixel art and graphic poster.
 
 **None (model choice)** preserves previous behavior. **Random preset** chooses deterministically from the presets using the seed; randomize the seed to choose again. **Custom** requires Custom style notes. You can also use those notes to refine any preset, for example `cheap phone camera, flat afternoon light, no color grading`.
 

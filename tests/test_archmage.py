@@ -101,6 +101,19 @@ class ArchmageTests(unittest.TestCase):
         result = self.run_node(['A red cube.', json.dumps(draft), json.dumps(draft)], output_format='MOSS JSON layout')
         self.assertEqual(result['result'][-2], 'blocked')
 
+    def test_connected_dimensions_override_aspect_and_full_prose_survives_layout(self):
+        prose = 'A red-cloaked mage holds a phone toward a hotel mirror. Sharp focus throughout, no blur.'
+        draft = {'summary': {'caption': 'A woman.'}, 'items': [
+            {'label': 'object', 'caption': 'A mage in a red cloak.', 'bbox': [0, 0, 1568, 2368]}]}
+        result = self.run_node([prose, json.dumps(draft)], output_format='MOSS JSON layout',
+            width=1568, height=2368, aspect_ratio='1:1', unique_id='42',
+            prompt={'42': {'inputs': {'width': ['8', 0], 'height': ['8', 1]}}})
+        layout = json.loads(result['result'][2])
+        self.assertEqual(layout['summary']['caption'], prose)
+        self.assertEqual(result['result'][3:5], (1568, 2368))
+        self.assertEqual(layout['items'][0]['bbox'], [-1184, -784, 1184, 784])
+        self.assertEqual(json.loads(result['result'][-1])['layout']['box_union_fraction'], 1)
+
     def test_runtime_failure_propagates_and_offloads(self):
         with patch('dart_plugin.py.nodes.scene_composer.PromptMageSceneComposer.generate', side_effect=RuntimeError('out of memory')):
             with self.assertRaisesRegex(RuntimeError, 'out of memory'):
@@ -177,7 +190,7 @@ class ArchmageTests(unittest.TestCase):
 
     def test_random_style_is_seeded_and_custom_validated(self):
         from dart_plugin.py.dart.style_presets import resolve_style, STYLE_OPTIONS, STYLES
-        self.assertEqual(len(STYLES), 30)
+        self.assertEqual(len(STYLES), 31)
         self.assertEqual(resolve_style('Random preset', '', 17), resolve_style('Random preset', '', 17))
         self.assertGreater(len({resolve_style('Random preset', '', seed)[0] for seed in range(20)}), 5)
         self.assertIn('pastel ink', resolve_style('Custom', 'pastel ink', 1)[1])

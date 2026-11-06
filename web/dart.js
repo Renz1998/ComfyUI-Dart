@@ -3,9 +3,10 @@ import { api } from "../../scripts/api.js";
 import { convertToInput } from "../../extensions/core/widgetInputs.js";
 import { addTextPreviewWidgets, updateTextPreviewWidgets } from "../../extensions/core/textPreviewWidgets.js";
 import { connectionsFor, resolveSlot } from "./connections.mjs";
-import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.8.1";
+import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.9.0";
 import { installStatusWidget, updateStatusWidget, finishedState, combineReports } from "./status.mjs";
-import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.8.1";
+import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.9.0";
+import { arrangeArchmage, updateArchmageControls, bindWorkflowEncoders } from "./archmage_ui.mjs?v=1.9.0";
 
 const labels = new Map();
 const layoutFields = ["canvas_width", "canvas_height", "layout_json"];
@@ -77,6 +78,7 @@ function updateDescribeControls(node) {
         }
     }
     updateLayoutSockets(node, canvas);
+    updateArchmageControls(node);
     updateDesignBackend(node, server);
     const size = node.computeSize();
     node.setSize([Math.max(420, node.size[0], size[0]), size[1]]);
@@ -100,11 +102,19 @@ app.registerExtension({
                     ? "increment selects the next image for the next queued run; fixed repeats the index. Wrap index controls what happens at the end of the folder."
                     : "fixed keeps the seed; increment/decrement changes it by one; randomize picks a new seed for the next run. Deterministic modes may still produce the same text.";
             }
+            if (nodeData.name.endsWith('Resolution')) {
+                for (const name of ['aspect_ratio']) {
+                    const widget = this.widgets?.find(item => item.name === name);
+                    if (widget) { const callback = widget.callback; widget.callback = (...args) => {callback?.apply(widget, args); updateDescribeControls(this);}; }
+                }
+                updateDescribeControls(this);
+            }
         };
         const baseConfigured = nodeType.prototype.onConfigure;
         nodeType.prototype.onConfigure = function () {
             baseConfigured?.apply(this, arguments);
             configureDesign(this);
+            if (nodeData.name.endsWith('Resolution')) updateDescribeControls(this);
         };
         const baseExecuted = nodeType.prototype.onExecuted;
         nodeType.prototype.onExecuted = function () {
@@ -145,7 +155,7 @@ app.registerExtension({
                 else if (nodeData.name.endsWith("AppearanceOverrides")) widget.label = widget.name.replaceAll("_", " ");
             }
             const appearanceSelectors = nodeData.name.endsWith("AppearanceOverrides") ? (this.widgets || []).filter((widget) => widget.type === "combo").map((widget) => widget.name) : [];
-            for (const name of ["backend", "target", "output_format", "dimension_source", "image_megapixels", "folder", "batch_mode", ...appearanceSelectors]) {
+            for (const name of ["backend", "target", "output_format", "dimension_source", "image_megapixels", "folder", "batch_mode", "canvas_source", "aspect_ratio", ...appearanceSelectors]) {
                 const control = this.widgets?.find((widget) => widget.name === name);
                 if (!control) continue;
                 const callback = control.callback;
@@ -153,6 +163,14 @@ app.registerExtension({
                     callback?.apply(control, args);
                     updateDescribeControls(this);
                 };
+            }
+            this.mageCanonicalWidgets = (this.widgets || []).filter(widget => widget.serialize !== false);
+            arrangeArchmage(this);
+            if (nodeData.name.endsWith('AppearanceOverrides')) {
+                const gender = this.widgets.filter(widget => ['gender', 'gender_custom'].includes(widget.name));
+                this.widgets = this.widgets.filter(widget => !gender.includes(widget));
+                const index = this.widgets.findIndex(widget => widget.name === 'identity_mode');
+                this.widgets.splice(index + 1, 0, ...gender);
             }
             updateDescribeControls(this);
             refreshUploadWidget(this);
@@ -182,6 +200,16 @@ app.registerExtension({
                     if (widget.serialize !== false && Object.hasOwn(named, widget.name)) widget.value = named[widget.name];
                 }
             }
+            else if (this.mageCanonicalWidgets && Array.isArray(data?.widgets_values)) {
+                this.mageCanonicalWidgets.forEach((widget, i) => {
+                    if (i < data.widgets_values.length) widget.value = data.widgets_values[i];
+                });
+            }
+            if (nodeData.name.endsWith('AppearanceOverrides') && !Object.hasOwn(named || {}, 'gender') &&
+                (named || (data?.widgets_values?.length || 0) < this.mageCanonicalWidgets?.length)) {
+                const gender = this.widgets.find(widget => widget.name === 'gender');
+                if (gender) gender.value = 'Keep unchanged';
+            }
             updateDescribeControls(this);
             refreshUploadWidget(this);
         };
@@ -190,6 +218,12 @@ app.registerExtension({
             serialized?.apply(this, arguments);
             data.dart_widget_values = Object.fromEntries((this.widgets || [])
                 .filter((widget) => widget.serialize !== false).map((widget) => [widget.name, widget.value]));
+            if (this.mageCanonicalWidgets) data.widgets_values = this.mageCanonicalWidgets.map(widget => widget.value);
+        };
+        const connectionsChanged = nodeType.prototype.onConnectionsChange;
+        nodeType.prototype.onConnectionsChange = function () {
+            connectionsChanged?.apply(this, arguments);
+            updateDescribeControls(this);
         };
         const executed = nodeType.prototype.onExecuted;
         nodeType.prototype.onExecuted = function (message) {
@@ -230,6 +264,12 @@ app.registerExtension({
         };
     },
     setup() {
+        if (app.graphToPrompt) {
+            const originalPrompt = app.graphToPrompt;
+            app.graphToPrompt = async function (...args) {
+                return bindWorkflowEncoders(await originalPrompt.apply(this, args));
+            };
+        }
         let activeNode;
         api.addEventListener("executing", ({ detail }) => {
             if (activeNode) setDesignState(activeNode, finishedState(activeNode));

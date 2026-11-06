@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { connectionsFor, resolveSlot } from "../web/connections.mjs";
+import { arrangeArchmage, updateArchmageControls, bindWorkflowEncoders } from "../web/archmage_ui.mjs";
 import { combineReports } from "../web/status.mjs";
 
 let extension, menu, previewMessage;
@@ -17,7 +18,7 @@ const context = {
     api: { addEventListener() {} },
     installDesign() {}, configureDesign() {}, toggleDesign() {}, toggleTheme() {}, setDesignState() {}, updateDesignBackend() {},
     installStatusWidget() {}, updateStatusWidget(node, report) {node.atelierLastReport=report;}, finishedState(node) {return node.atelierLastReport?.status || 'done';},
-    combineReports,
+    combineReports, arrangeArchmage, updateArchmageControls, bindWorkflowEncoders,
     installUploadWidget() {}, refreshUploadWidget() {},
     connectionsFor, resolveSlot, LGraphCanvas: Canvas,
     addTextPreviewWidgets() {}, updateTextPreviewWidgets(node, message) { previewMessage = message; }, convertToInput() {},
@@ -202,14 +203,22 @@ class Beta {
         this.inputs=[{name:'width',type:'INT',link:123}];
     }
     setSize(size){this.size=size;} computeSize(){return [420,600];} setDirtyCanvas(){}
+    addDOMWidget(name,type,element,options){const widget={name,serialize:options.serialize};this.widgets.push(widget);return widget;}
 }
+globalThis.document = {createElement(){return {};}};
 extension.beforeRegisterNodeDef(Beta,{name:'DanbooruTagsTransformerArchmageBeta'});
 const betaNode=new Beta();betaNode.onNodeCreated();
 for(const mode of ['MOSS JSON layout','Prose']){
-    betaNode.widgets[0].value=mode;betaNode.widgets[0].callback();
-    assert.notEqual(betaNode.widgets[1].hidden,true);assert.notEqual(betaNode.widgets[2].hidden,true);
+    const format=betaNode.widgets.find(w=>w.name==='output_format');format.value=mode;format.callback();
+    assert.notEqual(betaNode.widgets.find(w=>w.name==='width').hidden,true);assert.notEqual(betaNode.widgets.find(w=>w.name==='height').hidden,true);
     assert.notEqual(betaNode.inputs[0].dartInactive,true);assert.equal(betaNode.inputs[0].link,123);
 }
+const savedBeta={};betaNode.onSerialize(savedBeta);
+assert.deepEqual(Array.from(savedBeta.widgets_values),['Prose',768,1024,'Manual']);
+betaNode.onConfigure({widgets_values:['MOSS JSON layout',1568,2368,'Manual']});
+assert.equal(betaNode.widgets.find(w=>w.name==='width').value,1568);
+betaNode.onConfigure({dart_widget_values:savedBeta.dart_widget_values});
+assert.equal(betaNode.widgets.find(w=>w.name==='width').value,768);
 betaNode.onExecuted({text:['Schema error'],mage_report:[{status:'blocked',issues:['Schema error'],post_edits:[]}]});
 assert.equal(betaNode.atelierLastReport.title,'Archmage: output blocked');
 assert.equal(betaNode.atelierLastReport.message,'Schema error');

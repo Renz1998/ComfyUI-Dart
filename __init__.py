@@ -77,6 +77,9 @@ NODE_DISPLAY_NAME_MAPPINGS['DanbooruTagsTransformerSceneComposer'] = 'Prompt Mag
 PromptMageTagComposer.OUTPUT_TOOLTIPS = ('Vocabulary-checked sorted dataset tags.', 'Validated tags plus an explicitly supplied character trigger, if connected. The trigger is a user literal, not a verified booru tag.', 'Scene prose; semantic accuracy remains model-guided.', 'Structured subject/concept selections.', 'ok, warning or blocked.', 'Vocabulary provenance, additions, omissions and validation notes.')
 
 WEB_DIRECTORY = "./web"
+from .py.nodes.resolution import PromptMageResolution
+NODE_CLASS_MAPPINGS['DanbooruTagsTransformerResolution'] = PromptMageResolution
+NODE_DISPLAY_NAME_MAPPINGS['DanbooruTagsTransformerResolution'] = 'Prompt Mage · Resolution'
 from .py.nodes.archmage import PromptMageArchmageBeta
 NODE_CLASS_MAPPINGS['DanbooruTagsTransformerArchmageBeta'] = PromptMageArchmageBeta
 NODE_DISPLAY_NAME_MAPPINGS['DanbooruTagsTransformerArchmageBeta'] = 'Prompt Mage · Archmage (Beta)'

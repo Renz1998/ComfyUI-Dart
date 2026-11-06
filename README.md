@@ -49,16 +49,17 @@ Restart ComfyUI, refresh the browser, then search **Prompt Mage** or **Archmage*
 
 **Deprecated:** Scene Composer, Text Assistant and Image to Text remain executable for older workflows. Use Archmage for new scene/prose/MOSS workflows. External chat servers, DART/Anima formatting and general Structured JSON captions remain documented in [legacy controls](docs/LEGACY_ASSISTANTS.md). Deprecated does not mean removed, and there is no automatic graph conversion.
 
-## Try a workflow
+## Start with one workflow
 
-| Start here | Example |
+| Goal | Open |
 | --- | --- |
-| Invent a character scene | [Appearance Overrides → Archmage](workflows/next/archmage_character_scene.json) |
-| Compose a landscape layout | [Text → MOSS JSON](workflows/next/archmage_beta_text_moss.json) |
-| Describe uploaded images | [Upload Images → Archmage MOSS](workflows/next/archmage_beta_reference_moss.json) |
-| Try native thinking | [Thinking-enabled MOSS example](workflows/next/archmage_beta_thinking_moss.json) |
+| Write a character scene | [01 · Write a scene](workflows/start-here/01-write-a-scene.json) |
+| Describe uploaded photos | [02 · Describe uploaded images](workflows/start-here/02-describe-uploaded-images.json) |
+| Generate images with MOSS | [03 · Full MOSS workflow](workflows/start-here/03-moss-full-workflow.json) |
 
-[Browse the full gallery →](workflows/next/README.md)
+[Simple setup and prose/JSON comparison →](workflows/start-here/README.md) · [Older / specialized workflows](workflows/next/README.md)
+
+**New in 1.9:** Bright lifestyle photo default, style-first grouped Archmage controls, a standalone Resolution selector, gender overrides, shared Automatic encoders and cancellation cleanup. [Control and memory guide →](docs/ARCHMAGE_USABILITY.md)
 
 ## Upload from your computer, even on RunPod
 
@@ -72,7 +73,7 @@ Workflow files store server-relative image paths. Upload again when moving to an
 
 ## Models and practical limits
 
-- Install a **full generation-capable Qwen encoder** in `models/text_encoders`, or connect a compatible CLIP loader. Image inputs require vision weights. No weights are downloaded automatically.
+- Install a **full generation-capable Qwen encoder** in `models/text_encoders`, or connect a compatible CLIP loader. Image inputs require vision weights. Archmage Automatic reuses a compatible downstream encoder when unambiguous, otherwise chooses a small installed Qwen. With none installed, it downloads a pinned official Qwen3.5 2B fallback once; other nodes do not auto-download.
 - Local checks used Qwen3-VL 4B and Qwen3.5 9B. Native thinking was detected with Qwen3.5 9B; the tested Qwen3-VL 4B did not return a separate thinking segment. Try 8192 tokens for thinking, up to 16384 for complex requests.
 - Templates are text instructions, not LoRAs. Use **Reference style → Apply selected style** to restyle a reference caption; the default preserves its style.
 - MOSS JSON is validated and converted to native centered-pixel coordinates. Connect width/height to your latent to match the actual image size. Valid boxes do not guarantee precise diffusion placement.
