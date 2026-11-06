@@ -1,6 +1,17 @@
 # Publishing Prompt Mage
 
-## Verified release: 1.7.0
+## Verified release: 1.8.0
+
+**Prompt Mage 1.8.0 was published on November 7, 2026**, from runtime commit `59eab927414d261eabaaa4510d562709b58fc448`.
+
+- [Publishing workflow](https://github.com/Renz1998/ComfyUI-Prompt-Mage/actions/runs/42276932190): validation and upload succeeded, with **103 Python tests** and **five JavaScript suites**.
+- [CDN archive](https://cdn.comfy.org/renz1998/prompt-atelier/1.8.0/node.zip): downloaded and checked for 1.8.0 metadata, the list runner, frontend wiring and partial-validation error handling.
+- Native checks used five synthetic images: five sequential complete workflows saved one output each; repeating the run saved five fresh outputs; list mode saved five outputs in one workflow. The actual UI button also passed both modes. Planning checks cover 20, 100 and 512 entries: five is an example, not a batch limit.
+- See the [batch runner guide](docs/BATCH_RUNNER.md). All uploaded images are included when using the node's Run all button. The global Run button retains its manual behavior.
+
+The display name remains Prompt Mage and the permanent Registry ID remains `prompt-atelier`. Manager indexing/default-version selection may be separate from a verified upload.
+
+## Prior release: 1.7.0
 
 **Prompt Mage 1.7.0 was published on November 6, 2026**, under [@renz1998](https://registry.comfy.org/publishers/renz1998), from runtime commit `de78851ba9d01ea493b31e727c81b54124280d70`.
 
