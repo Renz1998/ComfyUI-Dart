@@ -1,7 +1,7 @@
 {
   "id": "b01508cd-3140-407a-aa34-4574d8c0d7c1",
   "revision": 0,
-  "last_node_id": 146,
+  "last_node_id": 148,
   "last_link_id": 239,
   "nodes": [
     {
@@ -362,7 +362,7 @@
         "",
         "Preserve reference style",
         "Automatic",
-        "OpenAI API",
+        "Local Qwen",
         "GPT-6.1 Terra · Recommended · $1 input / $5 output",
         "OPENAI_API_KEY",
         180,
@@ -422,7 +422,7 @@
         "image_megapixels": 3.7,
         "resize_mode": "Downscale only",
         "resize_method": "lanczos",
-        "assistant_backend": "OpenAI API",
+        "assistant_backend": "Local Qwen",
         "openai_model": "GPT-6.1 Terra · Recommended · $1 input / $5 output",
         "openai_key_env": "OPENAI_API_KEY",
         "openai_timeout": 180,
@@ -1240,7 +1240,7 @@
         ]
       },
       "widgets_values": [
-        "qwen35ForMossImage_v10_int8.safetensors",
+        "qwen3.5_9b_int8_convrot.safetensors",
         "moss_image",
         "default"
       ],
@@ -1500,6 +1500,72 @@
       "widgets_values_named": {},
       "color": "#332922",
       "bgcolor": "#593930"
+    },
+    {
+      "id": 146,
+      "type": "MarkdownNote",
+      "pos": [
+        -3240,
+        -1500
+      ],
+      "size": [
+        1080,
+        560
+      ],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "START HERE · Local Archmage",
+      "properties": {},
+      "widgets_values": [
+        "# START HERE · Prompt Mage / Archmage\nThe supplied Zine DART Ideas workflow, with the character LoRA removed. Accelerator, manual sigmas, SLG, resolution and appearance settings are retained.\n\n**Local Qwen is selected. No OpenAI account or API key is needed.** Load CLIP is shared by Archmage and MOSS.\n\n1. Install Prompt Mage once and update ComfyUI for native MOSS/text generation support.\n2. Download the four files in MODEL DOWNLOADS into the listed folders. Refresh model lists and select their filenames.\n3. Accept [DART v3 access terms](https://huggingface.co/p1atdev/dart-v3-sft-preview-E) and authenticate on the ComfyUI server if required. DART downloads to the Hugging Face cache; CPU leaves VRAM for images.\n4. Run. First-use model loading/downloads can take longer. Models are not bundled.\n\n[Full setup guide](https://github.com/Renz1998/ComfyUI-Prompt-Mage/blob/main/docs/MODEL_DOWNLOADS.md)"
+      ]
+    },
+    {
+      "id": 147,
+      "type": "MarkdownNote",
+      "pos": [
+        -2090,
+        -1500
+      ],
+      "size": [
+        1080,
+        560
+      ],
+      "flags": {},
+      "order": 26,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "MODEL DOWNLOADS",
+      "properties": {},
+      "widgets_values": [
+        "# MODEL DOWNLOADS · Required files\n- [MOSS Base BF16](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/diffusion_models/moss_image_base_bf16.safetensors?download=true) → `models/diffusion_models/moss_image_base_bf16.safetensors` — image generator.\n- [Qwen3.5 9B INT8](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/text_encoders/qwen3.5_9b_int8_convrot.safetensors?download=true) → `models/text_encoders/qwen3.5_9b_int8_convrot.safetensors` — shared local assistant and MOSS encoder.\n- [FLUX.2 small VAE](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/vae/flux2-vae_small.safetensors?download=true) → `models/vae/flux2-vae_small.safetensors` — decodes the image.\n- [Lodestones DMD2 accelerator](https://huggingface.co/lodestones/MOSS-Image-Base-8-steps-dmd/resolve/main/lora_dmd2.safetensors?download=true) → `models/loras/`; **rename to `lodestones-8-steps-dmd2-lora-moss.safetensors`**. Author's file verified identical to the supplied setup's local file by SHA-256.\n- [DART v3 model / access terms](https://huggingface.co/p1atdev/dart-v3-sft-preview-E) — random tags; downloaded through DART Load after access approval.\n\nNo character LoRA is required. ManualSigmas and SkipLayerGuidanceDiTSimple are native ComfyUI nodes; update ComfyUI if missing."
+      ]
+    },
+    {
+      "id": 148,
+      "type": "MarkdownNote",
+      "pos": [
+        -940,
+        -1630
+      ],
+      "size": [
+        1080,
+        690
+      ],
+      "flags": {},
+      "order": 27,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "HOW TO USE",
+      "properties": {},
+      "widgets_values": [
+        "# HOW TO USE · Ideas, character and canvas\n**DART Compose V3:** starting tags, rating and approximate tag length. Generate adds random ideas; its seed controls variety.\n\n**Appearance Overrides:** character trigger and selected traits take priority over conflicting source tags. The trigger is text, not a loaded character LoRA. Change the example traits or choose Keep unchanged.\n\n**Archmage Scene idea / WHAT:** your scene concept; leave empty to use DART candidates. **Writing rules / HOW:** constraints on the result. DART has its own source_tags input. Character/style conflicts are screened; broader relevance remains model-guided.\n\n**Style / theme:** visual treatment; the saved preset is Bright lifestyle. **Output format:** MOSS JSON supplies layout boxes; choose Prose to compare. prompt already feeds the positive encoder.\n\n**Resolution:** shared width/height feed Archmage and the latent. The supplied 3.7 MP setting is retained; reduce megapixels if memory is tight.\n\nThinking is enabled with a 4096-token limit. If the status reports a token limit, increase it or disable Thinking. Check Archmage's status/report when output is blocked.\n\nThe accelerator's manual sigma schedule and SLG are retained. Do not replace these with unrelated 50-step base starter settings."
+      ]
     }
   ],
   "links": [

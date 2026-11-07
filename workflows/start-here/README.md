@@ -13,7 +13,7 @@ In Archmage, **Scene idea = WHAT** (a mage in a red cloak taking a hotel mirror 
 
 **Resolution** sends the same width/height to Archmage and the empty latent. Change its megapixels or aspect ratio once. It creates no latent itself, so you can use it with other generation models.
 
-The main workflow retains the supplied Zine settings, including its accelerator LoRA, manual sigma schedule, SLG, 3.7 MP resolution and OpenAI assistant selection. Only the character LoRA is removed. Add your own API key or switch to Local Qwen; install missing custom nodes and select the model files you have. It is not the 50-step base-model starter. [Requirements](../../docs/MODEL_DOWNLOADS.md).
+The main workflow retains the supplied Zine settings, including its accelerator LoRA, manual sigma schedule, SLG, 3.7 MP resolution. Archmage defaults to Local Qwen with the shared MOSS encoder; on-canvas notes include setup, downloads and controls. Only the character LoRA is removed. No API key is required. Download the linked models and select their filenames; update ComfyUI if native sampling/SLG nodes are missing. It is not the 50-step base-model starter. [Requirements](../../docs/MODEL_DOWNLOADS.md).
 
 ## Compare prose and JSON fairly
 

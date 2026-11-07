@@ -55,7 +55,7 @@ Restart ComfyUI, refresh the browser, then search **Prompt Mage** or **Archmage*
 
 **[Download the main workflow JSON](https://raw.githubusercontent.com/Renz1998/ComfyUI-Prompt-Mage/main/workflows/start-here/03-moss-full-workflow.json)** · [Model downloads and folders](docs/MODEL_DOWNLOADS.md)
 
-The supplied **Moss_Image_Zine_2 - DART Ideas** workflow, with **only the Zine character LoRA removed**. Its accelerator LoRA, custom sampling, SLG, 3.7 MP resolution, appearance recipe and Archmage settings are retained. The saved assistant uses OpenAI API: add your own key in the masked panel, or select Local Qwen. Install the required nodes/models and select your installed filenames. [Workflow requirements](docs/MODEL_DOWNLOADS.md).
+The supplied **Moss_Image_Zine_2 - DART Ideas** workflow, with **only the Zine character LoRA removed**. Its accelerator LoRA, custom sampling, SLG, 3.7 MP resolution, appearance recipe and Archmage settings are retained. The saved assistant uses **Local Qwen**, sharing MOSS's encoder. No API key is needed. On-canvas notes explain setup, models and controls. Install the required nodes/models and select your installed filenames. [Workflow requirements](docs/MODEL_DOWNLOADS.md).
 
 | Goal | Open |
 | --- | --- |

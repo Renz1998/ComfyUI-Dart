@@ -2,20 +2,20 @@
 
 ## Main Archmage → MOSS workflow
 
-The [main workflow](../workflows/start-here/03-moss-full-workflow.json) is the supplied **Moss_Image_Zine_2 - DART Ideas**, with only its character LoRA removed. All other settings and connections are retained, including the accelerator LoRA, custom sampling/SLG, 3.7 MP portrait resolution and OpenAI assistant selection.
+The [main workflow](../workflows/start-here/03-moss-full-workflow.json) is the supplied **Moss_Image_Zine_2 - DART Ideas**, with only its character LoRA removed. All other settings and connections are retained, including the accelerator LoRA, custom sampling/SLG, 3.7 MP portrait resolution. Archmage defaults to Local Qwen, sharing the connected encoder with MOSS. No API key is required. The workflow includes setup, download and control-description notes.
 
 Required saved filenames and roles:
 
 | File / link | Role / folder |
 | --- | --- |
 | [moss_image_base_bf16.safetensors](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/diffusion_models/moss_image_base_bf16.safetensors?download=true) | Image generator; `models/diffusion_models/` |
-| `qwen35ForMossImage_v10_int8.safetensors` | The supplied workflow's MOSS encoder; `models/text_encoders/`. Select your installed compatible encoder. The official [Qwen3.5 9B INT8](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/text_encoders/qwen3.5_9b_int8_convrot.safetensors?download=true) is an alternative filename to select explicitly. |
+| [Qwen3.5 9B INT8](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/text_encoders/qwen3.5_9b_int8_convrot.safetensors?download=true) | Shared local assistant and MOSS encoder; save as `models/text_encoders/qwen3.5_9b_int8_convrot.safetensors`. |
 | [flux2-vae_small.safetensors](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/vae/flux2-vae_small.safetensors?download=true) | Latent-to-image decoder; `models/vae/` |
-| `lodestones-8-steps-dmd2-lora-moss.safetensors` | Accelerator LoRA retained from the supplied graph; `models/loras/`. Use the exact checkpoint you already have; the character LoRA is the only LoRA removed. |
+| [Lodestones DMD2 accelerator](https://huggingface.co/lodestones/MOSS-Image-Base-8-steps-dmd/resolve/main/lora_dmd2.safetensors?download=true) | Save in `models/loras/` and **rename to `lodestones-8-steps-dmd2-lora-moss.safetensors`**. SHA-256 verified identical to the supplied setup's local LoRA. The character LoRA remains removed. |
 
-The graph retains `ManualSigmas` and `SkipLayerGuidanceDiTSimple`; install their providing node packs through Manager if missing. Do not replace the accelerator's manual schedule with the base-model settings accidentally. Model filename changes may require corresponding compatible settings.
+The graph retains `ManualSigmas` and `SkipLayerGuidanceDiTSimple`, both native ComfyUI nodes; update ComfyUI if missing. Do not replace the accelerator's manual schedule with the base-model settings accidentally. Model filename changes may require corresponding compatible settings.
 
-The saved Archmage uses **OpenAI API**. Add your own session key in its masked panel, or switch Assistant to **Local Qwen**. No API secret is included. DART v3 access requirements are below. These links identify models; they do not install them automatically.
+The saved Archmage uses **Local Qwen** with the connected full encoder. OpenAI is optional; switch Assistant and add a key only if you want it. DART v3 access requirements are below. These links identify models; they do not install them automatically.
 
 ### Optional alternatives
 
