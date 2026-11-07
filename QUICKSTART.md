@@ -6,7 +6,7 @@ Follow [README installation](README.md#install), restart ComfyUI and refresh you
 
 ## 2. Pick a model
 
-**Full image workflow:** [download the main Archmage workflow](workflows/start-here/03-moss-full-workflow.json) and follow the [model downloads guide](docs/MODEL_DOWNLOADS.md). This is the public Zine setup with DART v3, default models and no LoRAs.
+**Full image workflow:** [download the main Archmage workflow](workflows/start-here/03-moss-full-workflow.json) and follow the [model downloads guide](docs/MODEL_DOWNLOADS.md). This is the supplied Zine DART Ideas graph with only its character LoRA removed; accelerator/custom sampling settings remain.
 
 **Prefer the OpenAI API?** Select Assistant → OpenAI API in Archmage, paste a key into its masked panel and click Add key. It clears/collapses after adding and stays in server memory until restart. Terra and Sol are recommended; the model dropdown shows cost labels. [API guide](docs/OPENAI_API.md).
 

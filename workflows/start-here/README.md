@@ -6,14 +6,14 @@ Drag one JSON file into ComfyUI. **Start with 03 for the full DART v3 → Archma
 | --- | --- | --- |
 | Write a scene for a character | [01 · Write a scene](01-write-a-scene.json) | Optional appearance settings → Archmage. Send **prompt** to your positive text encoder. |
 | Describe my photos | [02 · Describe uploaded images](02-describe-uploaded-images.json) | Drop photos on Upload Images. Use **Run all images from first**; batch off runs the whole connected workflow per image. |
-| **Main Archmage workflow** | [03 · DART v3 → Archmage → MOSS](03-moss-full-workflow.json) | Default public Zine setup, no LoRAs. Download MOSS Base, Qwen 9B INT8 and Flux.2 VAE; accept DART v3 access terms. Select model filenames, set your appearance recipe and run. |
+| **Main Archmage workflow** | [03 · DART v3 → Archmage → MOSS](03-moss-full-workflow.json) | Exact supplied Zine DART Ideas graph, minus the character LoRA. Accelerator LoRA and custom sampling/SLG remain. See the model guide for requirements. |
 | Use random DART ideas with my character | [06 · DART ideas → Archmage](06-dart-ideas-to-archmage.json) | DART tags feed source_tags; Appearance Overrides and the selected style define the character/treatment. This example makes prompts, not images. |
 
 In Archmage, **Scene idea = WHAT** (a mage in a red cloak taking a hotel mirror selfie). **Writing rules = HOW** (fully clothed, sharp focus throughout, no extra people). Either field can be empty. Style supplies the visual treatment; Bright lifestyle is the new default.
 
 **Resolution** sends the same width/height to Archmage and the empty latent. Change its megapixels or aspect ratio once. It creates no latent itself, so you can use it with other generation models.
 
-The full MOSS example uses base-model settings: 1 MP, 50 steps, Euler, shift 5, CFG 3. No private character LoRA or accelerator is included. Select your actual filenames; examples cannot install model weights for you. Archmage shares the loaded Qwen encoder. Thinking is off in this example to keep the first run shorter; new standalone Archmage nodes keep your requested thinking-on default. This graph is a starting point, not an exact copy of a distilled/LoRA workflow. [Official MOSS guide](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md).
+The main workflow retains the supplied Zine settings, including its accelerator LoRA, manual sigma schedule, SLG, 3.7 MP resolution and OpenAI assistant selection. Only the character LoRA is removed. Add your own API key or switch to Local Qwen; install missing custom nodes and select the model files you have. It is not the 50-step base-model starter. [Requirements](../../docs/MODEL_DOWNLOADS.md).
 
 ## Compare prose and JSON fairly
 

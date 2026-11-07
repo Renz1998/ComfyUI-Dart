@@ -2,19 +2,20 @@
 
 ## Main Archmage → MOSS workflow
 
-Start with [03 · Main Archmage workflow](../workflows/start-here/03-moss-full-workflow.json), the public default version of the Zine setup. No character LoRA, accelerator LoRA, private checkpoint or extra node pack is required. Use a recent ComfyUI with native MOSS and text-generation support.
+The [main workflow](../workflows/start-here/03-moss-full-workflow.json) is the supplied **Moss_Image_Zine_2 - DART Ideas**, with only its character LoRA removed. All other settings and connections are retained, including the accelerator LoRA, custom sampling/SLG, 3.7 MP portrait resolution and OpenAI assistant selection.
 
-Download these **three files**, keeping the filenames. Folder paths are relative to your **ComfyUI** directory. Refresh model lists after adding them, then select each filename in its loader.
+Required saved filenames and roles:
 
-| Model / download | What it does | Save in |
-| --- | --- | --- |
-| [MOSS-Image Base BF16](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/diffusion_models/moss_image_base_bf16.safetensors?download=true) | The image generator: interprets the prompt and creates the image latent. | `models/diffusion_models/` |
-| [Qwen3.5 9B INT8](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/text_encoders/qwen3.5_9b_int8_convrot.safetensors?download=true) | MOSS's text encoder and the shared local Archmage assistant. Its CLIP output feeds both. INT8 reduces weight memory compared with BF16. | `models/text_encoders/` |
-| [FLUX.2 VAE](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/vae/flux2-vae.safetensors?download=true) | Decodes the generated latent into an image. | `models/vae/` |
+| File / link | Role / folder |
+| --- | --- |
+| [moss_image_base_bf16.safetensors](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/diffusion_models/moss_image_base_bf16.safetensors?download=true) | Image generator; `models/diffusion_models/` |
+| `qwen35ForMossImage_v10_int8.safetensors` | The supplied workflow's MOSS encoder; `models/text_encoders/`. Select your installed compatible encoder. The official [Qwen3.5 9B INT8](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/text_encoders/qwen3.5_9b_int8_convrot.safetensors?download=true) is an alternative filename to select explicitly. |
+| [flux2-vae_small.safetensors](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/vae/flux2-vae_small.safetensors?download=true) | Latent-to-image decoder; `models/vae/` |
+| `lodestones-8-steps-dmd2-lora-moss.safetensors` | Accelerator LoRA retained from the supplied graph; `models/loras/`. Use the exact checkpoint you already have; the character LoRA is the only LoRA removed. |
 
-These are the [Comfy-Org MOSS repackaged files](https://huggingface.co/Comfy-Org/MOSS-Image), derived from the [OpenMOSS models](https://huggingface.co/OpenMOSS-Team/MOSS-Image-Base). Review the source cards and licenses. File size does not establish peak VRAM usage; resolution, runtime and offloading also matter.
+The graph retains `ManualSigmas` and `SkipLayerGuidanceDiTSimple`; install their providing node packs through Manager if missing. Do not replace the accelerator's manual schedule with the base-model settings accidentally. Model filename changes may require corresponding compatible settings.
 
-**Base settings:** 1 MP portrait, 50 steps, Euler, CFG 3, shift 5, full denoise. Thinking is off for the first run. The [OpenMOSS base guide](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md#inference-parameters) explains sampling choices. Layout JSON is experimental; switch to Prose to compare without changing models or sampling. This starter uses zeroed negative conditioning and no SLG: a simple baseline, rather than every upstream pipeline feature.
+The saved Archmage uses **OpenAI API**. Add your own session key in its masked panel, or switch Assistant to **Local Qwen**. No API secret is included. DART v3 access requirements are below. These links identify models; they do not install them automatically.
 
 ### Optional alternatives
 

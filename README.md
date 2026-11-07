@@ -55,7 +55,7 @@ Restart ComfyUI, refresh the browser, then search **Prompt Mage** or **Archmage*
 
 **[Download the main workflow JSON](https://raw.githubusercontent.com/Renz1998/ComfyUI-Prompt-Mage/main/workflows/start-here/03-moss-full-workflow.json)** · [Model downloads and folders](docs/MODEL_DOWNLOADS.md)
 
-The public default version of the Zine setup: **DART v3 → Appearance Overrides + Archmage → MOSS image generation**. No character/accelerator LoRAs, private model names or extra node packs. Local Qwen is shared by Archmage and MOSS; no API key is needed. Download the model files, drag the JSON into ComfyUI, select their filenames and run. Set the appearance recipe or leave its default fields; DART's scene tags stay separate from your own scene idea. [Setup and settings](workflows/start-here/README.md).
+The supplied **Moss_Image_Zine_2 - DART Ideas** workflow, with **only the Zine character LoRA removed**. Its accelerator LoRA, custom sampling, SLG, 3.7 MP resolution, appearance recipe and Archmage settings are retained. The saved assistant uses OpenAI API: add your own key in the masked panel, or select Local Qwen. Install the required nodes/models and select your installed filenames. [Workflow requirements](docs/MODEL_DOWNLOADS.md).
 
 | Goal | Open |
 | --- | --- |
