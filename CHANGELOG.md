@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.10.0 — OpenAI assistant and masked session-key panel
+
+- Archmage adds OpenAI Responses API support for text scenes, reference-image captions and MOSS layouts. Local Qwen remains the default.
+- Adds Terra/Sol recommendations, budget Luna and a high-cost Astra warning with dated per-million-token price labels.
+- A masked, non-serialized key panel clears and collapses after saving. Credentials stay in server memory for the current process and can be replaced/removed without opening files; environment keys remain supported.
+- Keeps local CLIP/model-management behavior separate from cloud requests. Reports include API token usage and actual reasoning-token counts. Network errors, incomplete responses and refusals are actionable and never silently retried.
+- Limits mirror-selfie geometry guidance to explicitly requested mirror scenes, avoiding unrequested content in reference captions.
+
 ## 1.9.1 — Section overlap hotfix
 
 - Replaces floating section-header DOM overlays with fixed-height native canvas widgets so headings and controls occupy separate rows at every zoom.

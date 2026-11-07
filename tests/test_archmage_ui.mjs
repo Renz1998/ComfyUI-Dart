@@ -13,6 +13,8 @@ for (const settings of [{local_model:'chosen.safetensors'}, {local_model:'Automa
 }
 snapshot={output:{1:mage(),2:loader,3:encode,4:loader,5:{...encode,inputs:{clip:['4',0],text:['1',0]}}}};
 bindWorkflowEncoders(snapshot);assert.equal(snapshot.output[1].inputs.clip,undefined);
+snapshot={output:{1:{class_type:'DanbooruTagsTransformerArchmageBeta',inputs:{assistant_backend:'OpenAI API',clip:['2',0]}},2:loader,3:encode}};
+bindWorkflowEncoders(snapshot);assert.equal(snapshot.output[1].inputs.clip,undefined);
 snapshot={output:{1:mage(),2:{class_type:'LoraLoader',inputs:{clip:['4',0],model:['1',0]}},3:encode,4:loader}};
 bindWorkflowEncoders(snapshot);assert.equal(snapshot.output[1].inputs.clip,undefined); // no dependency cycle
 snapshot={output:{1:mage(),2:{...loader,inputs:{clip_name:'clip_l.safetensors'}},3:encode}};

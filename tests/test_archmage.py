@@ -72,6 +72,13 @@ class ArchmageTests(unittest.TestCase):
         self.assertEqual(result['result'][3:5], (64, 96))
         self.assertEqual(json.loads(result['result'][-1])['source'], 'image')
 
+    def test_reference_does_not_inject_unrequested_mirror_geometry(self):
+        image = torch.zeros((1, 96, 64, 3))
+        self.run_node(vision='A red circle.', image=image)
+        self.assertNotIn('rear cameras', self.vision.call_args.args[1])
+        self.run_node(vision='A mirror selfie.', image=image, concepts='Make it a mirror selfie')
+        self.assertIn('rear cameras', self.vision.call_args.args[1])
+
     def test_rectangular_moss_compiles_pixel_boxes_and_offloads_once(self):
         draft = {'summary': {'meta': [], 'canvas': 'single', 'caption': 'A woman on a bridge.'},
                  'items': [{'label': 'object', 'caption': 'A woman.', 'bbox': [0, 0, 768, 1024]}]}

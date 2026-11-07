@@ -1,3 +1,4 @@
+from .openai_assistant import execute_generation
 """Local, instruction-driven image captioning through ComfyUI's vision LLM path."""
 
 import json
@@ -153,7 +154,6 @@ def caption_image(image, instructions="", character_trigger="", detail="Detailed
                    f"native x coordinates within {-canvas_width / 2} to {canvas_width / 2}. Do not mix the two formats.\n")
     else:
         system += "Return only the finished caption, without a heading, explanation, JSON or quotation marks.\n"
-    from comfy_extras.nodes_textgen import TextGenerate
     model = load_local_clip(model_name, clip)
     with offload_after(model, unload_after_generation):
         prompt = json.dumps({
@@ -166,7 +166,7 @@ def caption_image(image, instructions="", character_trigger="", detail="Detailed
         attempts = 2 if output_format != "Plain text" or (appearance and appearance.get("enabled")) else 1
         for attempt in range(attempts):
             if diagnostics is not None: diagnostics["attempts"] = attempt + 1
-            output = TextGenerate.execute(
+            output = execute_generation(
                 clip=model, prompt=prompt, image=image[image_index:image_index + 1, :, :, :3],
                 max_length=max_tokens, sampling_mode={"sampling_mode": "off"},
                 thinking=thinking, system_prompt=system, mtp="off",

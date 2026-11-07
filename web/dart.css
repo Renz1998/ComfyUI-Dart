@@ -120,3 +120,10 @@
     font: 700 10px/14px system-ui, sans-serif;
     letter-spacing: 1.4px;
 }
+.mage-api-key {box-sizing:border-box;height:100%;padding:10px;border:1px solid #ffb56b55;border-radius:9px;background:#201e25;color:#eee;font:12px/1.4 system-ui;overflow:hidden;}
+.mage-api-key-bar,.mage-api-key-form {display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.mage-api-key-form {margin-top:8px;}
+.mage-api-key-form[hidden] {display:none;}
+.mage-api-key input {box-sizing:border-box;min-width:160px;flex:1;background:#111820;color:#eee;border:1px solid #777;border-radius:5px;padding:7px;}
+.mage-api-key button {background:#49332a;color:#ffe2bc;border:1px solid #b78554;border-radius:5px;padding:5px 8px;cursor:pointer;}
+.mage-api-key small {display:block;margin-top:8px;color:#bdc4cb;font-size:10px;}

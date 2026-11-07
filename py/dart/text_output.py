@@ -11,6 +11,8 @@ def final_text(output, thinking=False, diagnostics=None):
     if diagnostics is not None:
         diagnostics.update(thinking_requested=bool(thinking), thinking_output_detected=reasoning_present,
                            final_output_present=bool(text))
+        if hasattr(output, 'api_usage'):
+            diagnostics['api_usage'] = output.api_usage
     if thinking and not text:
         raise ThinkingBudgetError('Thinking mode returned no final answer. The token budget may have been exhausted before the answer. '
                                   'Increase Generation token limit (try 8192–16384), shorten the request, or turn Thinking mode off.')

@@ -1,3 +1,4 @@
+from ..dart.openai_assistant import execute_generation, OpenAIEncoder, MODELS, DEFAULT_MODEL
 """Isolated beta composer; existing Scene Composer behavior stays unchanged."""
 import json
 import re
@@ -32,7 +33,6 @@ def resolve_canvas(width, height, aspect_ratio='Custom'):
 
 def text_layout(encoder, description, width, height, max_tokens, seed, appearance, report, thinking=False, style_guidance='', constraints=''):
     """Convert a finished scene, with one bounded schema correction attempt."""
-    from comfy_extras.nodes_textgen import TextGenerate
     replacements, trigger = override_instructions(appearance)
     system = ('Convert the supplied scene into spatial MOSS JSON. Preserve its concrete details and subject associations. '
               'Return only a JSON object containing layout_draft. No prose outside JSON. ' +
@@ -44,7 +44,7 @@ def text_layout(encoder, description, width, height, max_tokens, seed, appearanc
               + replacements + '\n' + style_guidance + '\nUser constraints to preserve: ' + constraints)
     prompt = description
     for attempt in range(2):
-        output = TextGenerate.execute(clip=encoder, prompt=prompt, system_prompt=system,
+        output = execute_generation(clip=encoder, prompt=prompt, system_prompt=system,
             max_length=max_tokens, sampling_mode={'sampling_mode': 'on', 'temperature': 0.4,
             'top_k': 40, 'top_p': 0.9, 'min_p': 0.05, 'repetition_penalty': 1.08, 'seed': seed},
             thinking=thinking, mtp='off')
@@ -113,6 +113,10 @@ class PromptMageArchmageBeta(BaseNode):
             'style_notes': ('STRING', {'default': '', 'multiline': True, 'tooltip': 'Refine any preset or write your own style. Required for Custom. Examples: cheap phone camera, flat afternoon light, no color grading. These guide generated text, not model weights or image pixels.'}),
             'reference_style': (['Preserve reference style', 'Apply selected style'], {'default': 'Preserve reference style', 'tooltip': 'With an image, preserve its visible medium and camera treatment by default. Apply selected style explicitly restyles the caption while retaining subjects and spatial details unless your instructions change them.'}),
             'memory_mode': (['Automatic', 'Native ComfyUI'], {'default': 'Automatic', 'tooltip': 'Automatic asks ComfyUI to offload competing models and reserve 2 GB for generation before each run. Interrupted runs release this assistant. Does not clear all models. Native leaves preparation to ComfyUI.'}),
+            'assistant_backend': (['Local Qwen', 'OpenAI API'], {'default': 'Local Qwen', 'tooltip': 'Local keeps inference on this machine. OpenAI sends scene text, appearance instructions and any connected reference image to OpenAI and incurs API charges. It does not use the local CLIP.'}),
+            'openai_model': (list(MODELS), {'default': DEFAULT_MODEL, 'tooltip': 'Terra: recommended lower-cost visual/writing model. Sol: recommended for harder composition. Astra: expensive. Labels show standard USD per 1M input/output tokens, checked 2026-11-07; pricing/access can change. Reasoning counts toward billed output.'}),
+            'openai_key_env': ('STRING', {'default': 'OPENAI_API_KEY', 'tooltip': 'Environment variable NAME on the ComfyUI server, not the API key. Restart the server after setting it. Keys are never saved in workflows by this node.'}),
+            'openai_timeout': ('INT', {'default': 180, 'min': 10, 'max': 600, 'tooltip': 'Seconds per API request. A timeout/cancel may still incur charges. No automatic network retries. Text → MOSS normally uses two requests; a schema correction may add one.'}),
         })
         optional['local_model'][1]['tooltip'] = 'A connected CLIP wins. Automatic in the browser reuses a compatible downstream text encoder when unambiguous; otherwise uses a small installed Qwen. If none exists, downloads the official Qwen3.5 2B fallback once.'
         return {'required': required, 'optional': optional, 'hidden': {'prompt': 'PROMPT', 'unique_id': 'UNIQUE_ID'}}
@@ -131,7 +135,8 @@ class PromptMageArchmageBeta(BaseNode):
                  image=None, image_index=0, image_megapixels=1.0, resize_mode='Downscale only',
                  resize_method='lanczos', language_style='Default', source_name='', thinking=False,
                  style_preset='None (model choice)', style_notes='', reference_style='Preserve reference style',
-                 memory_mode='Automatic', prompt=None, unique_id=None):
+                 memory_mode='Automatic', prompt=None, unique_id=None, assistant_backend='Local Qwen',
+                 openai_model=DEFAULT_MODEL, openai_key_env='OPENAI_API_KEY', openai_timeout=180):
         from comfy_execution.graph import ExecutionBlocker
         if output_format not in ('Prose', 'MOSS JSON layout') or length not in ('Short', 'Balanced', 'Detailed'):
             raise ValueError('Choose a supported output format and length.')
@@ -139,6 +144,8 @@ class PromptMageArchmageBeta(BaseNode):
             raise ValueError('Choose a supported canvas source.')
         if memory_mode not in ('Automatic', 'Native ComfyUI'):
             raise ValueError('Choose a supported memory mode.')
+        if assistant_backend not in ('Local Qwen', 'OpenAI API'):
+            raise ValueError('Choose Local Qwen or OpenAI API.')
         inputs = (prompt or {}).get(str(unique_id), {}).get('inputs', {})
         wired_size = any(isinstance(inputs.get(key), list) for key in ('width', 'height'))
         width, height = resolve_canvas(width, height, 'Custom' if wired_size else aspect_ratio)
@@ -162,14 +169,14 @@ class PromptMageArchmageBeta(BaseNode):
         context = (f'Compose for a {width}x{height} {shape} canvas (aspect ratio {width / height:.3f}). '
                    'Use this framing context even for prose; do not render resolution numbers as visible writing. '
                    'Describe concrete visible details, not feelings, metaphors or narrative. ')
-        context += ('Preserve all explicit scene constraints, including sharp focus and no blur. For a mirror selfie, '
-                    'describe one reflected person holding one visible phone toward the mirror, with plausible hand grip, '
-                    'reflected gaze toward the phone screen and coherent mirror/environment geometry. The camera view is '
-                    'the mirror reflection: hold the phone between person and mirror at normal arm distance, rear cameras '
-                    'facing the mirror, never pressed against the mirror glass. Do not add a second real person or extra phone. '
+        context += ('Preserve explicit scene constraints, including sharp focus and no blur. '
                     'Do not change clothing into nudity simply because a body-size trait was selected. '
-                    'Spend detail on fabric construction, accessories, pose, camera distance, directional lighting, '
-                    'surface texture and readable setting, rather than generic quality slogans. ')
+                    'Spend detail on materials, pose, camera distance, light and readable surroundings, not quality slogans. ')
+        mirror_requested = 'mirror selfie' in (concepts + ' ' + instructions + ' ' + resolved_style).casefold()
+        if mirror_requested:
+            context += ('For the requested mirror selfie, describe one reflected person and one visible phone. '
+                        'Hold the phone between person and mirror at normal arm distance, rear cameras facing the mirror, '
+                        'never against the glass. Use plausible grip and gaze toward the screen; no second person or extra phone. ')
         if thinking:
             context += ('Plan a readable focal hierarchy, balanced visual weight, useful negative space, consistent perspective, '
                         'subject scale, lighting and spatial relationships before answering. Check left/right, overlaps and occlusion. '
@@ -184,7 +191,11 @@ class PromptMageArchmageBeta(BaseNode):
                       style=dict(selected=style_preset, resolved=resolved_style, notes=style_notes,
                                  applied=style_applied, reference_mode=reference_style),
                       note='Beta: compare with Scene Composer. Canvas outputs set generation size only when connected to your latent node. Appearance semantics remain model-guided.')
-        encoder = load_local_clip(local_model, clip, auto_download=True)
+        encoder = (OpenAIEncoder(openai_model, openai_key_env, openai_timeout) if assistant_backend == 'OpenAI API'
+                   else load_local_clip(local_model, clip, auto_download=True))
+        report['assistant_backend'] = assistant_backend
+        if assistant_backend == 'OpenAI API':
+            report['encoder_source'] = 'OpenAI Responses API'
         description = ''
         moss = None
         with offload_after(encoder, unload_after_generation, release_on_error=True):
@@ -242,7 +253,11 @@ class PromptMageArchmageBeta(BaseNode):
                     except ValueError as error:
                         report['status'] = 'blocked'
                         report['issues'].append('MOSS conversion failed after two attempts: ' + str(error))
-        if thinking and report['status'] != 'blocked':
+        if isinstance(encoder, OpenAIEncoder):
+            report['api'] = dict(model=encoder.model, calls=encoder.calls,
+                reasoning_tokens=sum(call['reasoning_tokens'] for call in encoder.calls),
+                note='Standard API charges apply, including reasoning. Seed varies scene suggestions, not deterministic API sampling. Cancellation cannot undo a billed request. Provider content policies apply.')
+        elif thinking and report['status'] != 'blocked':
             stages = [report['vision']] if 'vision' in report else [report.get('scene', {}).get('generation', {})]
             if 'layout_generation' in report:
                 stages.append(report['layout_generation'])

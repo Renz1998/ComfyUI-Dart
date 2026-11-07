@@ -3,10 +3,11 @@ import { api } from "../../scripts/api.js";
 import { convertToInput } from "../../extensions/core/widgetInputs.js";
 import { addTextPreviewWidgets, updateTextPreviewWidgets } from "../../extensions/core/textPreviewWidgets.js";
 import { connectionsFor, resolveSlot } from "./connections.mjs";
-import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.9.0";
+import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.10.0";
 import { installStatusWidget, updateStatusWidget, finishedState, combineReports } from "./status.mjs";
-import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.9.0";
-import { arrangeArchmage, updateArchmageControls, bindWorkflowEncoders } from "./archmage_ui.mjs?v=1.9.1";
+import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.10.0";
+import { arrangeArchmage, updateArchmageControls, bindWorkflowEncoders } from "./archmage_ui.mjs?v=1.10.0";
+import { installOpenAIKeyWidget, refreshOpenAIKeyWidget } from "./openai_key.mjs?v=1.10.0";
 
 const labels = new Map();
 const layoutFields = ["canvas_width", "canvas_height", "layout_json"];
@@ -79,6 +80,7 @@ function updateDescribeControls(node) {
     }
     updateLayoutSockets(node, canvas);
     updateArchmageControls(node);
+    refreshOpenAIKeyWidget(node);
     updateDesignBackend(node, server);
     const size = node.computeSize();
     node.setSize([Math.max(420, node.size[0], size[0]), size[1]]);
@@ -133,6 +135,7 @@ app.registerExtension({
         nodeType.prototype.onNodeCreated = function () {
             created?.apply(this, arguments);
             if (nodeData.name.endsWith("ImageBatchUpload")) installUploadWidget(this, api, app);
+            if (nodeData.name.endsWith('ArchmageBeta')) installOpenAIKeyWidget(this, api);
             if (["DanbooruTagsTransformerDescribeImage", "DanbooruTagsTransformerImageToText", "DanbooruTagsTransformerTagComposer", "DanbooruTagsTransformerSceneComposer", "DanbooruTagsTransformerArchmageBeta"].includes(nodeData.name)) installStatusWidget(this);
             addTextPreviewWidgets(this);
             const preview = this.widgets?.find((widget) => widget.name === "preview_text");
@@ -155,7 +158,7 @@ app.registerExtension({
                 else if (nodeData.name.endsWith("AppearanceOverrides")) widget.label = widget.name.replaceAll("_", " ");
             }
             const appearanceSelectors = nodeData.name.endsWith("AppearanceOverrides") ? (this.widgets || []).filter((widget) => widget.type === "combo").map((widget) => widget.name) : [];
-            for (const name of ["backend", "target", "output_format", "dimension_source", "image_megapixels", "folder", "batch_mode", "canvas_source", "aspect_ratio", ...appearanceSelectors]) {
+            for (const name of ["backend", "target", "output_format", "dimension_source", "image_megapixels", "folder", "batch_mode", "canvas_source", "aspect_ratio", "assistant_backend", ...appearanceSelectors]) {
                 const control = this.widgets?.find((widget) => widget.name === name);
                 if (!control) continue;
                 const callback = control.callback;

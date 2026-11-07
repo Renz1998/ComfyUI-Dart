@@ -2,7 +2,7 @@
 
 # Prompt Mage for ComfyUI
 
-Turn a rough idea or reference image into a usable image prompt. **Archmage** brings scene writing, vision captioning, appearance instructions, style presets and native MOSS JSON layouts into one node.
+Turn a rough idea or reference image into a usable image prompt. **Archmage** combines scene writing, image descriptions, character appearance settings, 31 visual styles and native MOSS JSON layouts. Use local Qwen or the OpenAI API, with one shared canvas size for your prompt and image workflow.
 
 [Quickstart](QUICKSTART.md) · [Workflows](workflows/start-here/README.md) · [Archmage guide](docs/ARCHMAGE_USABILITY.md) · [Registry](https://registry.comfy.org/nodes/prompt-mage) · [Credits](CREDITS.md)
 
@@ -41,8 +41,9 @@ Restart ComfyUI, refresh the browser, then search **Prompt Mage** or **Archmage*
 | Node | Use it for |
 | --- | --- |
 | **Archmage (Beta)** | Text/reference → prose or native MOSS layout JSON; the recommended starting point |
+| **Resolution** | Select aspect ratio and total megapixels once; send matching width/height to Archmage and your latent |
 | **Upload Images** | Local file picker, folder picker and drag-and-drop, including when ComfyUI runs on RunPod |
-| **Appearance Overrides** | Reusable character trigger, appearance dropdowns and custom replacements |
+| **Appearance Overrides** | Reusable gender, character trigger, appearance dropdowns and custom replacements |
 | **Tag Composer (Experimental)** | Separate vocabulary-backed Danbooru conversion; review coverage and semantic warnings |
 | **DART tools** | Tag expansion using matching DART v1/v2/v3 composers and models |
 | **Server Folder (Advanced)** | Read image folders on the computer running ComfyUI |
@@ -72,6 +73,8 @@ Click the drop area, drop files onto the node, or choose a local folder. Files u
 Workflow files store server-relative image paths. Upload again when moving to another server. Removing a file from the list does not delete it from the server.
 
 ## Models and practical limits
+
+**OpenAI API:** switch Archmage's Assistant dropdown, paste a key into the masked panel and click **Add key**. The field clears and hides after adding; the key stays in server memory for this session, outside saved workflows. **GPT-6.1 Terra** and **GPT-6.1 Sol** are recommended options, Luna is the budget choice, and Astra carries a **HIGH COST** label. The dropdown shows per-million-token pricing. [API setup, billing and privacy →](docs/OPENAI_API.md)
 
 - Install a **full generation-capable Qwen encoder** in `models/text_encoders`, or connect a compatible CLIP loader. Image inputs require vision weights. Archmage Automatic reuses a compatible downstream encoder when unambiguous, otherwise chooses a small installed Qwen. With none installed, it downloads a pinned official Qwen3.5 2B fallback once; other nodes do not auto-download.
 - Local checks used Qwen3-VL 4B and Qwen3.5 9B. Native thinking was detected with Qwen3.5 9B; the tested Qwen3-VL 4B did not return a separate thinking segment. Try 8192 tokens for thinking, up to 16384 for complex requests.

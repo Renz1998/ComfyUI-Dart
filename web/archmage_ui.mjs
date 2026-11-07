@@ -23,7 +23,12 @@ function compatibleClip(output, source, seen = new Set()) {
 export function bindWorkflowEncoders(snapshot) {
     const output = snapshot.output || {};
     for (const [id, node] of Object.entries(output)) {
-        if (node.class_type !== ARCHMAGE || node.inputs.clip || node.inputs.local_model !== 'Automatic') continue;
+        if (node.class_type !== ARCHMAGE) continue;
+        if (node.inputs.assistant_backend === 'OpenAI API') {
+            delete node.inputs.clip; // Preserve the visible wire, skip its unused execution dependency.
+            continue;
+        }
+        if (node.inputs.clip || node.inputs.local_model !== 'Automatic') continue;
         const candidates = new Map();
         for (const consumer of Object.values(output)) {
             if (consumer.class_type !== 'CLIPTextEncode' || !link(consumer.inputs?.text) || !link(consumer.inputs?.clip)) continue;
@@ -43,7 +48,7 @@ const GROUPS = [
     ['SCENE', ['concepts', 'instructions', 'length', 'output_format', 'seed', 'control_after_generate']],
     ['CANVAS', ['canvas_source', 'aspect_ratio', 'width', 'height']],
     ['REFERENCE IMAGE · OPTIONAL', ['reference_style', 'image_index', 'image_megapixels', 'resize_mode', 'resize_method']],
-    ['MODEL & PERFORMANCE', ['local_model', 'thinking', 'max_tokens', 'language_style', 'memory_mode', 'unload_after_generation', 'source_name']],
+    ['MODEL & PERFORMANCE', ['assistant_backend', 'mage_openai_key', 'openai_model', 'openai_key_env', 'openai_timeout', 'local_model', 'thinking', 'max_tokens', 'language_style', 'memory_mode', 'unload_after_generation', 'source_name']],
 ];
 
 export function arrangeArchmage(node) {
@@ -88,6 +93,14 @@ export function updateArchmageControls(node) {
         if (get('megapixels')) get('megapixels').hidden = get('aspect_ratio')?.value === 'Custom';
     }
     if (!type.endsWith('ArchmageBeta')) return;
+    const remote = get('assistant_backend')?.value === 'OpenAI API';
+    for (const name of ['openai_model', 'openai_timeout']) if (get(name)) get(name).hidden = !remote;
+    if (get('openai_key_env')) get('openai_key_env').hidden = true; // Advanced env configuration remains API/workflow-compatible.
+    for (const name of ['local_model', 'memory_mode', 'unload_after_generation']) if (get(name)) get(name).hidden = remote;
+    if (get('assistant_backend')) get('assistant_backend').label = 'Assistant (local or paid API)';
+    if (get('thinking')) get('thinking').tooltip = remote
+        ? 'On: medium API reasoning. Off: no reasoning for Terra/Luna; minimum low for Sol/Astra. Reasoning consumes tokens and costs money. No private reasoning trace is returned.'
+        : 'Ask a compatible local model to plan before answering. Thinking shares the generation token budget.';
     const hasImage = node.inputs?.some(slot => slot.name === 'image' && slot.link != null);
     for (const name of ['reference_style', 'image_index', 'image_megapixels', 'resize_mode', 'resize_method']) {
         if (get(name)) get(name).hidden = !hasImage;

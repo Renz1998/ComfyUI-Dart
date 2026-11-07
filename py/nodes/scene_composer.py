@@ -1,3 +1,4 @@
+from ..dart.openai_assistant import execute_generation
 import json
 import re
 from .base import BaseNode
@@ -66,11 +67,10 @@ class PromptMageSceneComposer(BaseNode):
                 'Do not introduce sexual details absent a request. Do not invent named characters, artists, LoRA directives or ratings. '
                 f'Aim for {target} useful words without padding. '+replacements)
         payload=json.dumps(dict(concepts=concepts or 'Invent a fresh scene for the specified character or one adult woman.',instructions=instructions,creative_directions=directions,seed=seed),ensure_ascii=False)
-        from comfy_extras.nodes_textgen import TextGenerate
         encoder=load_local_clip(local_model,clip)
         generation={}
         with offload_after(encoder,unload_after_generation):
-            output=TextGenerate.execute(clip=encoder,prompt=payload,max_length=max_tokens,sampling_mode={'sampling_mode':'on','temperature':0.95,'top_k':60,'top_p':0.95,'min_p':0.05,'repetition_penalty':1.08,'seed':seed},thinking=thinking,system_prompt=system,mtp='off')
+            output=execute_generation(clip=encoder,prompt=payload,max_length=max_tokens,sampling_mode={'sampling_mode':'on','temperature':0.95,'top_k':60,'top_p':0.95,'min_p':0.05,'repetition_penalty':1.08,'seed':seed},thinking=thinking,system_prompt=system,mtp='off')
             text=final_text(output,thinking,generation)
         text=re.sub(r'<think>.*?</think>','',text,flags=re.S).strip()
         if not text:raise ValueError('Scene Composer returned no text. Check the generation-capable model and token limit.')

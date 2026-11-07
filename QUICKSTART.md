@@ -6,6 +6,8 @@ Follow [README installation](README.md#install), restart ComfyUI and refresh you
 
 ## 2. Pick a model
 
+**Prefer the OpenAI API?** Select Assistant → OpenAI API in Archmage, paste a key into its masked panel and click Add key. It clears/collapses after adding and stays in server memory until restart. Terra and Sol are recommended; the model dropdown shows cost labels. [API guide](docs/OPENAI_API.md).
+
 Connect CLIP from the same compatible Qwen loader used by MOSS, or leave Local model on Automatic. In the browser it reuses an unambiguous compatible downstream encoder; otherwise it chooses the smallest installed Qwen. With none installed, Archmage downloads a pinned official Qwen3.5 2B once. Reference images require vision weights. [Details](docs/ARCHMAGE_USABILITY.md#automatic-encoder-and-memory).
 
 ## 3. Write or connect your idea

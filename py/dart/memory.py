@@ -4,6 +4,8 @@ import logging
 
 
 def release_assistant_model(clip):
+    if getattr(clip, 'is_remote', False) is True:
+        return
     import comfy.model_management as management
     patcher = getattr(clip, "patcher", None)
     if patcher is None:
