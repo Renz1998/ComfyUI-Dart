@@ -7,6 +7,7 @@ Drag one JSON file into ComfyUI. **01 and 02 make prompts; 03 generates images.*
 | Write a scene for a character | [01 · Write a scene](01-write-a-scene.json) | Optional appearance settings → Archmage. Send **prompt** to your positive text encoder. |
 | Describe my photos | [02 · Describe uploaded images](02-describe-uploaded-images.json) | Drop photos on Upload Images. Use **Run all images from first**; batch off runs the whole connected workflow per image. |
 | Generate with MOSS | [03 · Full MOSS workflow](03-moss-full-workflow.json) | Select your installed MOSS diffusion model, compatible full Qwen encoder and Flux.2 VAE. Run. |
+| Use random DART ideas with my character | [06 · DART ideas → Archmage](06-dart-ideas-to-archmage.json) | DART tags feed source_tags; Appearance Overrides and the selected style define the character/treatment. This example makes prompts, not images. |
 
 In Archmage, **Scene idea = WHAT** (a mage in a red cloak taking a hotel mirror selfie). **Writing rules = HOW** (fully clothed, sharp focus throughout, no extra people). Either field can be empty. Style supplies the visual treatment; Bright lifestyle is the new default.
 

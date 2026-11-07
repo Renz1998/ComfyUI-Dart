@@ -1,6 +1,6 @@
 const stylesheet = document.createElement("link");
 stylesheet.rel = "stylesheet";
-stylesheet.href = new URL("./dart.css?v=1.10.0", import.meta.url).href;
+stylesheet.href = new URL("./dart.css?v=1.11.0", import.meta.url).href;
 document.head.append(stylesheet);
 
 const designs = new WeakMap();

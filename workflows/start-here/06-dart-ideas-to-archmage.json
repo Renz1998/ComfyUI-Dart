@@ -1,0 +1,537 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "type": "DanbooruTagsTransformerAppearanceOverrides",
+      "pos": [
+        600,
+        650
+      ],
+      "size": [
+        510,
+        500
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "appearance",
+          "type": "ATELIER_APPEARANCE",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "instructions",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerAppearanceOverrides"
+      },
+      "widgets_values": [
+        true,
+        "Main subject",
+        "",
+        "mage_character",
+        "Keep other appearance details",
+        "Black",
+        "",
+        "Keep unchanged",
+        "",
+        "Blue",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "",
+        true,
+        true,
+        "Female",
+        ""
+      ],
+      "dart_widget_values": {
+        "enabled": true,
+        "subject": "Main subject",
+        "subject_custom": "",
+        "trigger": "mage_character",
+        "identity_mode": "Keep other appearance details",
+        "hair_color": "Black",
+        "hair_color_custom": "",
+        "hair_style": "Keep unchanged",
+        "hair_style_custom": "",
+        "eye_color": "Blue",
+        "eye_color_custom": "",
+        "breast_size": "Keep unchanged",
+        "breast_size_custom": "",
+        "hair_length": "Keep unchanged",
+        "hair_length_custom": "",
+        "body_type": "Keep unchanged",
+        "body_type_custom": "",
+        "skin_tone": "Keep unchanged",
+        "skin_tone_custom": "",
+        "clothing": "Keep unchanged",
+        "clothing_custom": "",
+        "expression": "Keep unchanged",
+        "expression_custom": "",
+        "custom_overrides": "",
+        "strict_wording": true,
+        "apply_size_wording": true,
+        "gender": "Female",
+        "gender_custom": ""
+      }
+    },
+    {
+      "id": 2,
+      "type": "DanbooruTagsTransformerArchmageBeta",
+      "pos": [
+        1180,
+        20
+      ],
+      "size": [
+        510,
+        880
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "appearance",
+          "type": "ATELIER_APPEARANCE",
+          "link": 1,
+          "shape": 7
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 2
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 3
+        },
+        {
+          "name": "source_tags",
+          "type": "STRING",
+          "shape": 7,
+          "link": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "description",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "moss_json",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "report",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerArchmageBeta"
+      },
+      "widgets_values": [
+        "An adult mage wearing a red cloak takes a mirror selfie in a hotel. Sharp focus, no blur.",
+        "Detailed",
+        0,
+        "randomize",
+        "Prose",
+        "Custom",
+        1024,
+        1024,
+        "From image when connected",
+        "",
+        "Automatic",
+        4096,
+        false,
+        0,
+        3.7,
+        "Downscale only",
+        "lanczos",
+        "Default",
+        "",
+        true,
+        "Photo · Bright lifestyle",
+        "",
+        "Preserve reference style",
+        "Automatic"
+      ],
+      "dart_widget_values": {
+        "concepts": "",
+        "length": "Detailed",
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "output_format": "MOSS JSON layout",
+        "aspect_ratio": "Custom",
+        "width": 1024,
+        "height": 1024,
+        "canvas_source": "From image when connected",
+        "instructions": "",
+        "local_model": "Automatic",
+        "max_tokens": 4096,
+        "unload_after_generation": false,
+        "image_index": 0,
+        "image_megapixels": 3.7,
+        "resize_mode": "Downscale only",
+        "resize_method": "lanczos",
+        "language_style": "Default",
+        "source_name": "",
+        "thinking": true,
+        "style_preset": "Photo · Bright lifestyle",
+        "style_notes": "",
+        "reference_style": "Preserve reference style",
+        "memory_mode": "Automatic",
+        "source_tag_mode": "Scene ideas (protect character)"
+      }
+    },
+    {
+      "id": 3,
+      "type": "DanbooruTagsTransformerResolution",
+      "pos": [
+        20,
+        1050
+      ],
+      "size": [
+        510,
+        500
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "links": [
+            2
+          ]
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": [
+            3
+          ]
+        },
+        {
+          "name": "size",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerResolution"
+      },
+      "widgets_values": [
+        "2:3",
+        1.0,
+        32,
+        1024,
+        1024
+      ],
+      "dart_widget_values": {
+        "aspect_ratio": "2:3",
+        "megapixels": 1.0,
+        "multiple": 32,
+        "custom_width": 1024,
+        "custom_height": 1024
+      }
+    },
+    {
+      "id": 4,
+      "type": "DanbooruTagsTransformerLoader",
+      "pos": [
+        20,
+        20
+      ],
+      "size": [
+        510,
+        500
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "DART_MODEL",
+          "type": "DART_MODEL",
+          "links": [
+            4
+          ]
+        },
+        {
+          "name": "DART_TOKENIZER",
+          "type": "DART_TOKENIZER",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerLoader"
+      },
+      "widgets_values": [
+        "dart-v3-sft-preview-E (experimental)",
+        "cpu",
+        "auto",
+        "",
+        "main",
+        false
+      ],
+      "dart_widget_values": {
+        "model": "dart-v3-sft-preview-E (experimental)",
+        "device": "cpu",
+        "dtype": "auto",
+        "local_model_path": "",
+        "revision": "main",
+        "local_files_only": false
+      }
+    },
+    {
+      "id": 5,
+      "type": "DanbooruTagsTransformerComposePromptV3",
+      "pos": [
+        20,
+        450
+      ],
+      "size": [
+        510,
+        500
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            6
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerComposePromptV3"
+      },
+      "widgets_values": [
+        "general",
+        "tall",
+        "medium",
+        "original",
+        "",
+        "1girl, solo"
+      ],
+      "dart_widget_values": {
+        "rating": "general",
+        "aspect_ratio": "tall",
+        "length": "medium",
+        "copyright": "original",
+        "character": "",
+        "general": "1girl, solo"
+      }
+    },
+    {
+      "id": 7,
+      "type": "DanbooruTagsTransformerGenerate",
+      "pos": [
+        600,
+        20
+      ],
+      "size": [
+        510,
+        500
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "DART_MODEL",
+          "link": 4,
+          "shape": 7
+        },
+        {
+          "name": "tokenizer",
+          "type": "DART_TOKENIZER",
+          "link": 5,
+          "shape": 7
+        },
+        {
+          "name": "setting",
+          "type": "DART SETTING",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            7
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerGenerate"
+      },
+      "widgets_values": [
+        "",
+        42,
+        "randomize",
+        true,
+        "",
+        "",
+        ""
+      ],
+      "dart_widget_values": {
+        "prompt": "<|bos|><rating>rating:sfw, rating:general</rating><copyright>original</copyright><character></character><general><|long|>1girl<|input_end|>",
+        "seed": 0,
+        "animagine_order": true,
+        "ban_tags": "",
+        "remove_tags": "",
+        "keep_tags": ""
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "ATELIER_APPEARANCE"
+    ],
+    [
+      2,
+      3,
+      0,
+      2,
+      3,
+      "INT"
+    ],
+    [
+      3,
+      3,
+      1,
+      2,
+      4,
+      "INT"
+    ],
+    [
+      4,
+      4,
+      0,
+      7,
+      0,
+      "DART_MODEL"
+    ],
+    [
+      5,
+      4,
+      1,
+      7,
+      1,
+      "DART_TOKENIZER"
+    ],
+    [
+      6,
+      5,
+      0,
+      7,
+      3,
+      "STRING"
+    ],
+    [
+      7,
+      7,
+      0,
+      2,
+      5,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4,
+  "last_node_id": 7,
+  "last_link_id": 7
+}

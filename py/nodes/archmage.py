@@ -15,6 +15,7 @@ from ..dart.vision import prepare_caption_image, caption_image, parse_caption_js
 from ..dart.moss import canvas_size, compile_layout, layout_instruction
 from ..dart.text_output import final_text, ThinkingBudgetError
 from ..dart.style_presets import STYLE_OPTIONS, resolve_style, style_directions
+from ..dart.source_tags import TAG_MODES, screen_source_tags
 
 PRESETS = {'1:1': (1024, 1024), '3:4': (768, 1024), '4:3': (1024, 768),
            '2:3': (768, 1152), '3:2': (1152, 768), '9:16': (576, 1024), '16:9': (1024, 576)}
@@ -117,6 +118,8 @@ class PromptMageArchmageBeta(BaseNode):
             'openai_model': (list(MODELS), {'default': DEFAULT_MODEL, 'tooltip': 'Terra: recommended lower-cost visual/writing model. Sol: recommended for harder composition. Astra: expensive. Labels show standard USD per 1M input/output tokens, checked 2026-11-07; pricing/access can change. Reasoning counts toward billed output.'}),
             'openai_key_env': ('STRING', {'default': 'OPENAI_API_KEY', 'tooltip': 'Environment variable NAME on the ComfyUI server, not the API key. Restart the server after setting it. Keys are never saved in workflows by this node.'}),
             'openai_timeout': ('INT', {'default': 180, 'min': 10, 'max': 600, 'tooltip': 'Seconds per API request. A timeout/cancel may still incur charges. No automatic network retries. Text → MOSS normally uses two requests; a schema correction may add one.'}),
+            'source_tags': ('STRING', {'forceInput': True, 'tooltip': 'Optional DART Generate / Decode tags. Treated as candidate scene ideas, not character identity or mandatory instructions. Appearance settings, explicit scene ideas, style and reference images take priority.'}),
+            'source_tag_mode': (TAG_MODES, {'default': TAG_MODES[0], 'tooltip': 'Scene ideas removes known random hair, eye, body and named-character traits. Keep unselected appearance allows unselected traits but still removes known conflicts with chosen replacements. Both discard metadata and defer to the chosen style. See report.source_tags for candidates and removal reasons.'}),
         })
         optional['local_model'][1]['tooltip'] = 'A connected CLIP wins. Automatic in the browser reuses a compatible downstream text encoder when unambiguous; otherwise uses a small installed Qwen. If none exists, downloads the official Qwen3.5 2B fallback once.'
         return {'required': required, 'optional': optional, 'hidden': {'prompt': 'PROMPT', 'unique_id': 'UNIQUE_ID'}}
@@ -136,7 +139,8 @@ class PromptMageArchmageBeta(BaseNode):
                  resize_method='lanczos', language_style='Default', source_name='', thinking=False,
                  style_preset='None (model choice)', style_notes='', reference_style='Preserve reference style',
                  memory_mode='Automatic', prompt=None, unique_id=None, assistant_backend='Local Qwen',
-                 openai_model=DEFAULT_MODEL, openai_key_env='OPENAI_API_KEY', openai_timeout=180):
+                 openai_model=DEFAULT_MODEL, openai_key_env='OPENAI_API_KEY', openai_timeout=180,
+                 source_tags='', source_tag_mode=TAG_MODES[0]):
         from comfy_execution.graph import ExecutionBlocker
         if output_format not in ('Prose', 'MOSS JSON layout') or length not in ('Short', 'Balanced', 'Detailed'):
             raise ValueError('Choose a supported output format and length.')
@@ -157,6 +161,11 @@ class PromptMageArchmageBeta(BaseNode):
         style_applied = bool(style_guidance) and (image is None or reference_style == 'Apply selected style')
         if not style_applied:
             style_guidance = ''
+        tag_guidance, tag_report = screen_source_tags(source_tags, appearance, source_tag_mode,
+                                                     style_active=style_applied, reference=image is not None)
+        tag_ideas = bool(tag_report['candidates'])
+        guided = bool(concepts.strip() or instructions.strip() or tag_ideas)
+        scene_concepts = concepts or ('Compose a coherent scene using the optional DART candidate concepts supplied in the instructions.' if tag_ideas else '')
         prepared = None
         processed_size = None
         if image is not None:
@@ -172,7 +181,8 @@ class PromptMageArchmageBeta(BaseNode):
         context += ('Preserve explicit scene constraints, including sharp focus and no blur. '
                     'Do not change clothing into nudity simply because a body-size trait was selected. '
                     'Spend detail on materials, pose, camera distance, light and readable surroundings, not quality slogans. ')
-        mirror_requested = 'mirror selfie' in (concepts + ' ' + instructions + ' ' + resolved_style).casefold()
+        mirror_requested = ('mirror selfie' in (concepts + ' ' + instructions + ' ' + resolved_style).casefold() or
+                            (image is None and 'mirror selfie' in tag_report['candidates']))
         if mirror_requested:
             context += ('For the requested mirror selfie, describe one reflected person and one visible phone. '
                         'Hold the phone between person and mirror at normal arm distance, rear cameras facing the mirror, '
@@ -183,14 +193,19 @@ class PromptMageArchmageBeta(BaseNode):
                         'Respect the reference image and explicit user choices; do not redesign preserved details. '
                         'Keep the final answer in the requested format. ')
         context += '\n' + style_guidance
+        if source_tags.strip():
+            context += tag_guidance
         report = dict(status='ok', issues=[], seed=seed, source='image' if prepared is not None else 'text',
                       source_name=source_name, canvas=[width, height], processed_image=processed_size,
                       output_format=output_format, thinking_requested=thinking, max_tokens_per_stage=max_tokens, post_edits=[],
                       canvas_resolved_from='processed image' if prepared is not None and canvas_source == 'From image when connected' else 'connected dimensions' if wired_size else 'manual / preset',
                       memory_mode=memory_mode, encoder_source='connected / workflow encoder' if clip is not None else local_model,
+                      source_tags=tag_report,
                       style=dict(selected=style_preset, resolved=resolved_style, notes=style_notes,
                                  applied=style_applied, reference_mode=reference_style),
                       note='Beta: compare with Scene Composer. Canvas outputs set generation size only when connected to your latent node. Appearance semantics remain model-guided.')
+        if source_tags.strip():
+            report['note'] += f" DART: {len(tag_report['candidates'])} candidate ideas; {len(tag_report['removed'])} filtered. See report.source_tags for reasons; relevance is model-guided."
         encoder = (OpenAIEncoder(openai_model, openai_key_env, openai_timeout) if assistant_backend == 'OpenAI API'
                    else load_local_clip(local_model, clip, auto_download=True))
         report['assistant_backend'] = assistant_backend
@@ -224,15 +239,15 @@ class PromptMageArchmageBeta(BaseNode):
                 report['issues'].extend(item['message'] for item in diagnostics.get('issues', []))
                 report['post_edits'].extend(diagnostics.get('edits', []))
             else:
-                directions = variation(seed, guided=bool(concepts.strip() or instructions.strip()))
+                directions = variation(seed, guided=guided)
                 mood = directions.pop('mood')
                 if not (appearance and appearance.get('enabled') and appearance.get('traits', {}).get('expression')):
                     directions['visible_expression'] = VISIBLE_EXPRESSIONS[mood]
                 directions = style_directions(directions, resolved_style, seed,
-                    bool(concepts.strip() or instructions.strip()), style_applied)
+                    guided, style_applied)
                 guidance = context + wording + '\nSeeded suggestions (explicit user instructions take priority): ' + json.dumps(directions) + '\n' + instructions
                 try:
-                    generated = PromptMageSceneComposer().generate(concepts, length, seed, appearance, guidance,
+                    generated = PromptMageSceneComposer().generate(scene_concepts, length, seed, appearance, guidance,
                         local_model, encoder, max_tokens, False, thinking=thinking,
                         creative_directions=directions if style_applied else None)
                     description = generated['result'][0]

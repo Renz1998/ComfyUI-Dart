@@ -45,7 +45,7 @@ export function bindWorkflowEncoders(snapshot) {
 
 const GROUPS = [
     ['STYLE', ['style_preset', 'style_notes']],
-    ['SCENE', ['concepts', 'instructions', 'length', 'output_format', 'seed', 'control_after_generate']],
+    ['SCENE', ['concepts', 'instructions', 'source_tag_mode', 'length', 'output_format', 'seed', 'control_after_generate']],
     ['CANVAS', ['canvas_source', 'aspect_ratio', 'width', 'height']],
     ['REFERENCE IMAGE · OPTIONAL', ['reference_style', 'image_index', 'image_megapixels', 'resize_mode', 'resize_method']],
     ['MODEL & PERFORMANCE', ['assistant_backend', 'mage_openai_key', 'openai_model', 'openai_key_env', 'openai_timeout', 'local_model', 'thinking', 'max_tokens', 'language_style', 'memory_mode', 'unload_after_generation', 'source_name']],
@@ -93,6 +93,12 @@ export function updateArchmageControls(node) {
         if (get('megapixels')) get('megapixels').hidden = get('aspect_ratio')?.value === 'Custom';
     }
     if (!type.endsWith('ArchmageBeta')) return;
+    if (get('source_tag_mode')) {
+        get('source_tag_mode').label = 'DART tags policy';
+        get('source_tag_mode').hidden = !node.inputs?.some(slot=>slot.name==='source_tags' && slot.link!=null);
+    }
+    const tagsSlot = node.inputs?.find(slot=>slot.name==='source_tags');
+    if (tagsSlot) tagsSlot.label = 'DART tags (scene ideas)';
     const remote = get('assistant_backend')?.value === 'OpenAI API';
     for (const name of ['openai_model', 'openai_timeout']) if (get(name)) get(name).hidden = !remote;
     if (get('openai_key_env')) get('openai_key_env').hidden = true; // Advanced env configuration remains API/workflow-compatible.

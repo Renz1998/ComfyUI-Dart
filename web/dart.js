@@ -3,11 +3,11 @@ import { api } from "../../scripts/api.js";
 import { convertToInput } from "../../extensions/core/widgetInputs.js";
 import { addTextPreviewWidgets, updateTextPreviewWidgets } from "../../extensions/core/textPreviewWidgets.js";
 import { connectionsFor, resolveSlot } from "./connections.mjs";
-import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.10.0";
+import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.11.0";
 import { installStatusWidget, updateStatusWidget, finishedState, combineReports } from "./status.mjs";
-import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.10.0";
-import { arrangeArchmage, updateArchmageControls, bindWorkflowEncoders } from "./archmage_ui.mjs?v=1.10.0";
-import { installOpenAIKeyWidget, refreshOpenAIKeyWidget } from "./openai_key.mjs?v=1.10.0";
+import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.11.0";
+import { arrangeArchmage, updateArchmageControls, bindWorkflowEncoders } from "./archmage_ui.mjs?v=1.11.0";
+import { installOpenAIKeyWidget, refreshOpenAIKeyWidget } from "./openai_key.mjs?v=1.11.0";
 
 const labels = new Map();
 const layoutFields = ["canvas_width", "canvas_height", "layout_json"];
@@ -187,6 +187,9 @@ app.registerExtension({
         const configured = nodeType.prototype.onConfigure;
         nodeType.prototype.onConfigure = function (data) {
             configured?.apply(this, arguments);
+            if (nodeData.name.endsWith('ArchmageBeta') && this.addInput && !this.inputs?.some(slot=>slot.name==='source_tags')) {
+                this.addInput('source_tags','STRING',{shape:7,tooltip:'Optional DART scene ideas. Character, style and explicit instructions take priority.'});
+            }
             if (nodeData.name === "DanbooruTagsTransformerImageToText" && this.addOutput) {
                 for (const [name, type] of [["width", "INT"], ["height", "INT"], ["image", "IMAGE"], ["status", "STRING"], ["report", "STRING"]]) {
                     if (!this.outputs?.some((slot) => slot.name === name)) this.addOutput(name, type);

@@ -79,6 +79,22 @@ class ArchmageTests(unittest.TestCase):
         self.run_node(vision='A mirror selfie.', image=image, concepts='Make it a mirror selfie')
         self.assertIn('rear cameras', self.vision.call_args.args[1])
 
+    def test_dart_tags_are_optional_ideas_separate_from_explicit_concepts(self):
+        result=self.run_node(['A brown-haired character sits in a cafe.'],source_tags='blue_hair, sitting, cafe, anime',
+            concepts='A rainy afternoon',style_preset='Photo · Bright lifestyle')
+        payload=json.loads(self.execute.call_args.kwargs['prompt'])
+        self.assertEqual(payload['concepts'],'A rainy afternoon')
+        self.assertIn('DART candidate concepts',payload['instructions'])
+        report=json.loads(result['result'][-1])
+        self.assertEqual(report['source_tags']['candidates'],['sitting','cafe'])
+        self.assertEqual(self.execute.call_count,1)  # No extra LLM filtering call.
+
+    def test_dart_ideas_reach_vision_as_suggestions_not_reference_replacements(self):
+        self.run_node(vision='A red cube.',image=torch.zeros((1,96,64,3)),source_tags='blue_hair, beach, anime')
+        directions=self.vision.call_args.args[1]
+        self.assertIn('tags alone do not authorize changing',directions)
+        self.assertNotIn('Apply these requested concepts/changes',directions)
+
     def test_rectangular_moss_compiles_pixel_boxes_and_offloads_once(self):
         draft = {'summary': {'meta': [], 'canvas': 'single', 'caption': 'A woman on a bridge.'},
                  'items': [{'label': 'object', 'caption': 'A woman.', 'bbox': [0, 0, 768, 1024]}]}

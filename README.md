@@ -10,6 +10,7 @@ Turn a rough idea or reference image into a usable image prompt. **Archmage** co
 
 - **Write an idea**, or leave Concepts blank for a seeded scene.
 - **Connect an image** to make it the primary reference. Add instructions for requested changes.
+- **Connect DART tags** to `source_tags` for random scene inspiration. Character replacements and the selected style take priority; known conflicting traits are filtered before composition. [DART scene ideas →](docs/DART_SCENE_IDEAS.md)
 - Choose **Prose** or **MOSS JSON layout**, with canvas/aspect-ratio context in either mode.
 - Pick from **31 style templates**: amateur Instagram, phone snapshots, studio photography, sci-fi anime, manga, watercolor and more. Random and Custom are available too.
 - Connect **Appearance Overrides** for a character trigger and selected traits. This edits the description, not the source image.
@@ -59,6 +60,8 @@ Restart ComfyUI, refresh the browser, then search **Prompt Mage** or **Archmage*
 | Generate images with MOSS | [03 · Full MOSS workflow](workflows/start-here/03-moss-full-workflow.json) |
 
 [Simple setup and prose/JSON comparison →](workflows/start-here/README.md) · [Older / specialized workflows](workflows/next/README.md)
+
+Already using DART? Try [DART Generate → Appearance Overrides → Archmage](workflows/start-here/06-dart-ideas-to-archmage.json) to turn random tags into a coherent scene for your character.
 
 **New in 1.9:** Bright lifestyle photo default, style-first grouped Archmage controls, a standalone Resolution selector, gender overrides, shared Automatic encoders and cancellation cleanup. [Control and memory guide →](docs/ARCHMAGE_USABILITY.md)
 

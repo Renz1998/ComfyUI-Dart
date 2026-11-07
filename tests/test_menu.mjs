@@ -39,7 +39,7 @@ const context = {
         },
         ContextMenu: class { constructor(entries) { menu = entries; } },
         createNode(type) {
-            return { type, inputs: ['DanbooruTagsTransformerImageToText','DanbooruTagsTransformerArchmageBeta'].includes(type) ? [{name:'image'},{name:'source_name'}] : [{ name: "text" }, { name: "general" }, { name: "source_tags" }],
+            return { type, inputs: ['DanbooruTagsTransformerImageToText','DanbooruTagsTransformerArchmageBeta'].includes(type) ? [{name:'image'},{name:'source_name'},{name:'source_tags'}] : [{ name: "text" }, { name: "general" }, { name: "source_tags" }],
                 findInputSlot(name) { return this.inputs.findIndex((slot) => slot.name === name); },
                 connect(...args) { connections.push({ from: type, args }); } };
         },
@@ -69,9 +69,9 @@ assert.equal(connections[2].args[0], 1); // Loader's tokenizer output, not its m
 assert.equal(connections[2].args[2], 0);
 assert.equal(canvas.showConnectionMenu({ nodeFrom: { ...source, type: "OtherPlugin" }, slotFrom: 0, e: {} }), "original");
 canvas.showConnectionMenu({ nodeFrom: { ...source, type: "DanbooruTagsTransformerGenerate" }, slotFrom: 0, e: {} });
-assert.equal(menu[0].content, "Dart Describe Image");
+assert.equal(menu[0].content, "Prompt Mage · Archmage (Beta)");
 menu[0].callback();
-assert.equal(connections[3].args[1].type, "DanbooruTagsTransformerDescribeImage");
+assert.equal(connections[3].args[1].type, "DanbooruTagsTransformerArchmageBeta");
 assert.equal(connections[3].args[2], 2); // source_tags, not description or another STRING.
 class Describe {
     constructor() {
@@ -205,6 +205,7 @@ class Beta {
     }
     setSize(size){this.size=size;} computeSize(){return [420,600];} setDirtyCanvas(){}
     addCustomWidget(widget){this.widgets.push(widget);return widget;}
+    addInput(name,type,options){const slot={name,type,...options};this.inputs.push(slot);return slot;}
 }
 globalThis.document = {createElement(){return {};}};
 extension.beforeRegisterNodeDef(Beta,{name:'DanbooruTagsTransformerArchmageBeta'});
@@ -218,6 +219,8 @@ const savedBeta={};betaNode.onSerialize(savedBeta);
 assert.deepEqual(Array.from(savedBeta.widgets_values),['Prose',768,1024,'Manual']);
 betaNode.onConfigure({widgets_values:['MOSS JSON layout',1568,2368,'Manual']});
 assert.equal(betaNode.widgets.find(w=>w.name==='width').value,1568);
+assert.equal(betaNode.inputs.at(-1).name,'source_tags');
+assert.equal(betaNode.inputs[0].link,123);
 betaNode.onConfigure({dart_widget_values:savedBeta.dart_widget_values});
 assert.equal(betaNode.widgets.find(w=>w.name==='width').value,768);
 // A newly introduced control must not inherit a positional preview value from an old graph.

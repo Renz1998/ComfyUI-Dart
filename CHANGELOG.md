@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.0 — DART tags as character-safe scene ideas
+
+- Adds Archmage's optional source_tags input, separate from explicit Scene idea and Writing rules. Default filtering protects character identity and selected visual style while retaining candidate scene/action/prop/composition tags.
+- Reuses the bundled vocabulary and lexical rules for known conflicts, with removed-tag reasons and character replacements in report.source_tags. Contextual relevance and unknown tags remain model-guided; no extra LLM filtering call is added.
+- Adds a Keep unselected appearance policy and reference-first guidance. Existing appearance wording checks and MOSS validation remain active with local Qwen or OpenAI.
+- DART drag suggestions prioritize Archmage.source_tags; old Archmage nodes gain the new socket without moving existing input indices.
+- Adds a generic DART-to-Archmage example. The supplied local MOSS Zine workflow is retained, with a separate copy moving its DART link from Concepts to source_tags.
+
 ## 1.10.0 — OpenAI assistant and masked session-key panel
 
 - Archmage adds OpenAI Responses API support for text scenes, reference-image captions and MOSS layouts. Local Qwen remains the default.
