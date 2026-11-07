@@ -26,6 +26,19 @@ class ArchmageTests(unittest.TestCase):
             self.assertTrue(cls.INPUT_TYPES()['required'])
         self.assertFalse(getattr(plugin.NODE_CLASS_MAPPINGS['DanbooruTagsTransformerArchmageBeta'],'DEPRECATED',False))
 
+    def test_v3_loader_and_legacy_graph_compatibility(self):
+        nodes = plugin.NODE_CLASS_MAPPINGS
+        current = nodes['DanbooruTagsTransformerLoaderV3']
+        self.assertEqual(current.INPUT_TYPES()['required']['model'][0], ['dart-v3-sft-preview-E (experimental)'])
+        self.assertFalse(getattr(current, 'DEPRECATED', False))
+        for suffix in ('Loader', 'ComposePrompt', 'ComposePromptV2', 'GetAspectRatio'):
+            self.assertTrue(nodes['DanbooruTagsTransformer' + suffix].DEPRECATED)
+        self.assertIn('dart-v1-sft', nodes['DanbooruTagsTransformerLoader'].MODEL_NAMES)
+        self.assertIn('dart-v2-sft', nodes['DanbooruTagsTransformerLoader'].MODEL_NAMES)
+        # Shared tools are version-agnostic and still support v3.
+        for suffix in ('Generate', 'GenerationConfig', 'Decode', 'RemoveTagToken'):
+            self.assertFalse(getattr(nodes['DanbooruTagsTransformer' + suffix], 'DEPRECATED', False))
+
     def run_node(self, responses=None, vision=None, **kwargs):
         self.execute = Mock(side_effect=[SimpleNamespace(args=list(text) if isinstance(text, tuple) else [text]) for text in responses or []])
         self.vision = Mock(return_value=vision)

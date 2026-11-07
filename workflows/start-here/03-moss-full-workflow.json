@@ -2,7 +2,7 @@
   "nodes": [
     {
       "id": 1,
-      "type": "DanbooruTagsTransformerResolution",
+      "type": "DanbooruTagsTransformerLoaderV3",
       "pos": [
         20,
         20
@@ -17,19 +17,278 @@
       "inputs": [],
       "outputs": [
         {
+          "name": "DART_MODEL",
+          "type": "DART_MODEL",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "DART_TOKENIZER",
+          "type": "DART_TOKENIZER",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerLoaderV3"
+      },
+      "widgets_values": [
+        "dart-v3-sft-preview-E (experimental)",
+        "cpu",
+        "auto",
+        "",
+        "main",
+        false
+      ],
+      "dart_widget_values": {
+        "model": "dart-v3-sft-preview-E (experimental)",
+        "device": "cpu",
+        "dtype": "auto",
+        "local_model_path": "",
+        "revision": "main",
+        "local_files_only": false
+      }
+    },
+    {
+      "id": 2,
+      "type": "DanbooruTagsTransformerComposePromptV3",
+      "pos": [
+        20,
+        590
+      ],
+      "size": [
+        510,
+        500
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerComposePromptV3"
+      },
+      "widgets_values": [
+        "general",
+        "tall",
+        "medium",
+        "original",
+        "",
+        "1girl, solo"
+      ],
+      "dart_widget_values": {
+        "rating": "general",
+        "aspect_ratio": "tall",
+        "length": "medium",
+        "copyright": "original",
+        "character": "",
+        "general": "1girl, solo"
+      }
+    },
+    {
+      "id": 3,
+      "type": "DanbooruTagsTransformerGenerate",
+      "pos": [
+        600,
+        20
+      ],
+      "size": [
+        510,
+        500
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "DART_MODEL",
+          "link": 1,
+          "shape": 7
+        },
+        {
+          "name": "tokenizer",
+          "type": "DART_TOKENIZER",
+          "link": 2,
+          "shape": 7
+        },
+        {
+          "name": "setting",
+          "type": "DART SETTING",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            4
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerGenerate"
+      },
+      "widgets_values": [
+        "<|bos|><rating>rating:sfw, rating:general</rating><copyright>original</copyright><character></character><general><|long|>1girl<|input_end|>",
+        42,
+        true,
+        "",
+        "",
+        ""
+      ],
+      "dart_widget_values": {
+        "prompt": "<|bos|><rating>rating:sfw, rating:general</rating><copyright>original</copyright><character></character><general><|long|>1girl<|input_end|>",
+        "seed": 42,
+        "animagine_order": true,
+        "ban_tags": "",
+        "remove_tags": "",
+        "keep_tags": ""
+      }
+    },
+    {
+      "id": 4,
+      "type": "DanbooruTagsTransformerAppearanceOverrides",
+      "pos": [
+        600,
+        620
+      ],
+      "size": [
+        510,
+        500
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "appearance",
+          "type": "ATELIER_APPEARANCE",
+          "links": [
+            5
+          ]
+        },
+        {
+          "name": "instructions",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DanbooruTagsTransformerAppearanceOverrides"
+      },
+      "widgets_values": [
+        true,
+        "Main subject",
+        "",
+        "",
+        "Keep other appearance details",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "Keep unchanged",
+        "",
+        "",
+        true,
+        true,
+        "Female",
+        ""
+      ],
+      "dart_widget_values": {
+        "enabled": true,
+        "subject": "Main subject",
+        "subject_custom": "",
+        "trigger": "",
+        "identity_mode": "Keep other appearance details",
+        "hair_color": "Keep unchanged",
+        "hair_color_custom": "",
+        "hair_style": "Keep unchanged",
+        "hair_style_custom": "",
+        "eye_color": "Keep unchanged",
+        "eye_color_custom": "",
+        "breast_size": "Keep unchanged",
+        "breast_size_custom": "",
+        "hair_length": "Keep unchanged",
+        "hair_length_custom": "",
+        "body_type": "Keep unchanged",
+        "body_type_custom": "",
+        "skin_tone": "Keep unchanged",
+        "skin_tone_custom": "",
+        "clothing": "Keep unchanged",
+        "clothing_custom": "",
+        "expression": "Keep unchanged",
+        "expression_custom": "",
+        "custom_overrides": "",
+        "strict_wording": true,
+        "apply_size_wording": true,
+        "gender": "Female",
+        "gender_custom": ""
+      }
+    },
+    {
+      "id": 5,
+      "type": "DanbooruTagsTransformerResolution",
+      "pos": [
+        20,
+        1160
+      ],
+      "size": [
+        510,
+        500
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
           "name": "width",
           "type": "INT",
           "links": [
-            1,
-            3
+            6,
+            8
           ]
         },
         {
           "name": "height",
           "type": "INT",
           "links": [
-            2,
-            4
+            7,
+            9
           ]
         },
         {
@@ -57,10 +316,10 @@
       }
     },
     {
-      "id": 2,
+      "id": 6,
       "type": "DanbooruTagsTransformerArchmageBeta",
       "pos": [
-        570,
+        1180,
         20
       ],
       "size": [
@@ -68,19 +327,19 @@
         880
       ],
       "flags": {},
-      "order": 1,
+      "order": 5,
       "mode": 0,
       "inputs": [
         {
           "name": "appearance",
           "type": "ATELIER_APPEARANCE",
-          "link": null,
+          "link": 5,
           "shape": 7
         },
         {
           "name": "clip",
           "type": "CLIP",
-          "link": 5,
+          "link": 10,
           "shape": 7
         },
         {
@@ -90,12 +349,18 @@
           "shape": 7
         },
         {
+          "name": "source_tags",
+          "type": "STRING",
+          "link": 4,
+          "shape": 7
+        },
+        {
           "name": "width",
           "type": "INT",
           "widget": {
             "name": "width"
           },
-          "link": 1
+          "link": 6
         },
         {
           "name": "height",
@@ -103,7 +368,7 @@
           "widget": {
             "name": "height"
           },
-          "link": 2
+          "link": 7
         }
       ],
       "outputs": [
@@ -111,7 +376,7 @@
           "name": "prompt",
           "type": "STRING",
           "links": [
-            7
+            12
           ]
         },
         {
@@ -154,7 +419,7 @@
         "Node name for S&R": "DanbooruTagsTransformerArchmageBeta"
       },
       "widgets_values": [
-        "An adult mage in a red cloak taking a mirror selfie in a hotel. Sharp focus throughout, no blur.",
+        "",
         "Detailed",
         0,
         "randomize",
@@ -177,10 +442,15 @@
         "Photo · Bright lifestyle",
         "",
         "Preserve reference style",
-        "Automatic"
+        "Automatic",
+        "Local Qwen",
+        "GPT-6.1 Terra · Recommended · $1 input / $5 output",
+        "OPENAI_API_KEY",
+        180,
+        "Scene ideas (protect character)"
       ],
       "dart_widget_values": {
-        "concepts": "An adult mage in a red cloak taking a mirror selfie in a hotel. Sharp focus throughout, no blur.",
+        "concepts": "",
         "length": "Detailed",
         "seed": 0,
         "control_after_generate": "randomize",
@@ -203,22 +473,27 @@
         "style_preset": "Photo · Bright lifestyle",
         "style_notes": "",
         "reference_style": "Preserve reference style",
-        "memory_mode": "Automatic"
+        "memory_mode": "Automatic",
+        "assistant_backend": "Local Qwen",
+        "openai_model": "GPT-6.1 Terra · Recommended · $1 input / $5 output",
+        "openai_key_env": "OPENAI_API_KEY",
+        "openai_timeout": 180,
+        "source_tag_mode": "Scene ideas (protect character)"
       }
     },
     {
-      "id": 3,
+      "id": 7,
       "type": "CLIPLoader",
       "pos": [
-        20,
-        430
+        1180,
+        1420
       ],
       "size": [
         510,
         500
       ],
       "flags": {},
-      "order": 2,
+      "order": 6,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -226,8 +501,8 @@
           "name": "CLIP",
           "type": "CLIP",
           "links": [
-            5,
-            6
+            10,
+            11
           ]
         }
       ],
@@ -235,29 +510,29 @@
         "Node name for S&R": "CLIPLoader"
       },
       "widgets_values": [
-        "qwen3.5_9b_bf16.safetensors",
+        "qwen3.5_9b_int8_convrot.safetensors",
         "moss_image",
         "default"
       ],
       "dart_widget_values": {
-        "clip_name": "qwen3.5_9b_bf16.safetensors",
+        "clip_name": "qwen3.5_9b_int8_convrot.safetensors",
         "type": "moss_image",
         "device": "default"
       }
     },
     {
-      "id": 4,
+      "id": 8,
       "type": "UNETLoader",
       "pos": [
-        20,
-        660
+        1760,
+        800
       ],
       "size": [
         510,
         500
       ],
       "flags": {},
-      "order": 3,
+      "order": 7,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -265,7 +540,7 @@
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            9
+            14
           ]
         }
       ],
@@ -282,18 +557,18 @@
       }
     },
     {
-      "id": 5,
+      "id": 9,
       "type": "VAELoader",
       "pos": [
-        20,
-        870
+        2920,
+        650
       ],
       "size": [
         510,
         500
       ],
       "flags": {},
-      "order": 4,
+      "order": 8,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -301,7 +576,7 @@
           "name": "VAE",
           "type": "VAE",
           "links": [
-            15
+            20
           ]
         }
       ],
@@ -316,10 +591,10 @@
       }
     },
     {
-      "id": 6,
+      "id": 10,
       "type": "CLIPTextEncode",
       "pos": [
-        1130,
+        1760,
         20
       ],
       "size": [
@@ -327,13 +602,13 @@
         500
       ],
       "flags": {},
-      "order": 5,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
           "name": "clip",
           "type": "CLIP",
-          "link": 6,
+          "link": 11,
           "shape": 7
         },
         {
@@ -342,7 +617,7 @@
           "widget": {
             "name": "text"
           },
-          "link": 7
+          "link": 12
         }
       ],
       "outputs": [
@@ -350,8 +625,8 @@
           "name": "CONDITIONING",
           "type": "CONDITIONING",
           "links": [
-            8,
-            11
+            13,
+            16
           ]
         }
       ],
@@ -366,24 +641,24 @@
       }
     },
     {
-      "id": 7,
+      "id": 11,
       "type": "ConditioningZeroOut",
       "pos": [
-        1130,
-        330
+        1760,
+        390
       ],
       "size": [
         510,
         500
       ],
       "flags": {},
-      "order": 6,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
           "name": "conditioning",
           "type": "CONDITIONING",
-          "link": 8,
+          "link": 13,
           "shape": 7
         }
       ],
@@ -392,7 +667,7 @@
           "name": "CONDITIONING",
           "type": "CONDITIONING",
           "links": [
-            12
+            17
           ]
         }
       ],
@@ -403,18 +678,18 @@
       "dart_widget_values": {}
     },
     {
-      "id": 8,
+      "id": 12,
       "type": "EmptyFlux2LatentImage",
       "pos": [
-        1130,
-        510
+        1760,
+        1120
       ],
       "size": [
         510,
         500
       ],
       "flags": {},
-      "order": 7,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -423,7 +698,7 @@
           "widget": {
             "name": "width"
           },
-          "link": 3
+          "link": 8
         },
         {
           "name": "height",
@@ -431,7 +706,7 @@
           "widget": {
             "name": "height"
           },
-          "link": 4
+          "link": 9
         }
       ],
       "outputs": [
@@ -439,7 +714,7 @@
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            13
+            18
           ]
         }
       ],
@@ -458,24 +733,24 @@
       }
     },
     {
-      "id": 9,
+      "id": 13,
       "type": "ModelSamplingAuraFlow",
       "pos": [
-        570,
-        1180
+        2340,
+        800
       ],
       "size": [
         510,
         500
       ],
       "flags": {},
-      "order": 8,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 9,
+          "link": 14,
           "shape": 7
         }
       ],
@@ -484,7 +759,7 @@
           "name": "MODEL",
           "type": "MODEL",
           "links": [
-            10
+            15
           ]
         }
       ],
@@ -501,10 +776,10 @@
       }
     },
     {
-      "id": 10,
+      "id": 14,
       "type": "KSampler",
       "pos": [
-        1700,
+        2340,
         20
       ],
       "size": [
@@ -512,31 +787,31 @@
         500
       ],
       "flags": {},
-      "order": 9,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 10,
+          "link": 15,
           "shape": 7
         },
         {
           "name": "positive",
           "type": "CONDITIONING",
-          "link": 11,
+          "link": 16,
           "shape": 7
         },
         {
           "name": "negative",
           "type": "CONDITIONING",
-          "link": 12,
+          "link": 17,
           "shape": 7
         },
         {
           "name": "latent_image",
           "type": "LATENT",
-          "link": 13,
+          "link": 18,
           "shape": 7
         }
       ],
@@ -545,7 +820,7 @@
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            14
+            19
           ]
         }
       ],
@@ -553,7 +828,7 @@
         "Node name for S&R": "KSampler"
       },
       "widgets_values": [
-        0,
+        42,
         "randomize",
         50,
         3.0,
@@ -562,7 +837,7 @@
         1.0
       ],
       "dart_widget_values": {
-        "seed": 0,
+        "seed": 42,
         "control_after_generate": "randomize",
         "steps": 50,
         "cfg": 3.0,
@@ -572,10 +847,10 @@
       }
     },
     {
-      "id": 11,
+      "id": 15,
       "type": "VAEDecode",
       "pos": [
-        2250,
+        2920,
         20
       ],
       "size": [
@@ -583,19 +858,19 @@
         500
       ],
       "flags": {},
-      "order": 10,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
           "name": "samples",
           "type": "LATENT",
-          "link": 14,
+          "link": 19,
           "shape": 7
         },
         {
           "name": "vae",
           "type": "VAE",
-          "link": 15,
+          "link": 20,
           "shape": 7
         }
       ],
@@ -604,7 +879,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            16
+            21
           ]
         }
       ],
@@ -615,24 +890,24 @@
       "dart_widget_values": {}
     },
     {
-      "id": 12,
+      "id": 16,
       "type": "SaveImage",
       "pos": [
-        2250,
-        350
+        3500,
+        20
       ],
       "size": [
         510,
         500
       ],
       "flags": {},
-      "order": 11,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 16,
+          "link": 21,
           "shape": 7
         }
       ],
@@ -647,11 +922,32 @@
         "Node name for S&R": "SaveImage"
       },
       "widgets_values": [
-        "Prompt-Mage/MOSS"
+        "Prompt-Mage/Archmage"
       ],
       "dart_widget_values": {
-        "filename_prefix": "Prompt-Mage/MOSS"
+        "filename_prefix": "Prompt-Mage/Archmage"
       }
+    },
+    {
+      "id": 17,
+      "type": "MarkdownNote",
+      "pos": [
+        20,
+        1650
+      ],
+      "size": [
+        1080,
+        600
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "# Prompt Mage · Main Archmage workflow\nPublic default version of the Zine workflow. No LoRAs or extra node packs.\n\n1. Download the three MOSS files below; choose their filenames in the loaders.\n2. DART v3 needs access approval on Hugging Face; accept terms and authenticate on the ComfyUI server if required. It downloads into the Hugging Face cache.\n3. DART supplies scene ideas; Appearance Overrides defines your subject. Add your own idea or writing rules in Archmage.\n4. Resolution drives both Archmage and the latent. Run to generate an image.\n\n- [MOSS base → models/diffusion_models](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/diffusion_models/moss_image_base_bf16.safetensors?download=true)\n- [Qwen 9B INT8 → models/text_encoders](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/text_encoders/qwen3.5_9b_int8_convrot.safetensors?download=true)\n- [Flux.2 VAE → models/vae](https://huggingface.co/Comfy-Org/MOSS-Image/resolve/main/vae/flux2-vae.safetensors?download=true)\n- [DART v3 access/model card](https://huggingface.co/p1atdev/dart-v3-sft-preview-E)\n\nDefaults: local shared Qwen, Bright lifestyle, JSON, 1 MP portrait, 50 steps, Euler, CFG 3, shift 5. Thinking is off for a shorter first run. No character trigger or custom appearance is baked in. Switch Output format to Prose to compare. JSON layout placement is experimental.\n\n[Model guide](https://github.com/Renz1998/ComfyUI-Prompt-Mage/blob/main/docs/MODEL_DOWNLOADS.md) · [Community / help](https://github.com/Renz1998/ComfyUI-Prompt-Mage/issues)"
+      ]
     }
   ],
   "links": [
@@ -659,135 +955,183 @@
       1,
       1,
       0,
-      2,
       3,
-      "INT"
+      0,
+      "DART_MODEL"
     ],
     [
       2,
       1,
       1,
-      2,
-      4,
-      "INT"
-    ],
-    [
       3,
       1,
+      "DART_TOKENIZER"
+    ],
+    [
+      3,
+      2,
       0,
-      8,
-      0,
-      "INT"
+      3,
+      3,
+      "STRING"
     ],
     [
       4,
-      1,
-      1,
-      8,
-      1,
-      "INT"
+      3,
+      0,
+      6,
+      3,
+      "STRING"
     ],
     [
       5,
-      3,
+      4,
       0,
-      2,
+      6,
+      0,
+      "ATELIER_APPEARANCE"
+    ],
+    [
+      6,
+      5,
+      0,
+      6,
+      4,
+      "INT"
+    ],
+    [
+      7,
+      5,
+      1,
+      6,
+      5,
+      "INT"
+    ],
+    [
+      8,
+      5,
+      0,
+      12,
+      0,
+      "INT"
+    ],
+    [
+      9,
+      5,
+      1,
+      12,
+      1,
+      "INT"
+    ],
+    [
+      10,
+      7,
+      0,
+      6,
       1,
       "CLIP"
     ],
     [
-      6,
-      3,
+      11,
+      7,
       0,
-      6,
+      10,
       0,
       "CLIP"
     ],
     [
-      7,
-      2,
-      0,
+      12,
       6,
+      0,
+      10,
       1,
       "STRING"
     ],
     [
-      8,
-      6,
+      13,
+      10,
       0,
-      7,
+      11,
       0,
       "CONDITIONING"
     ],
     [
-      9,
-      4,
+      14,
+      8,
       0,
-      9,
-      0,
-      "MODEL"
-    ],
-    [
-      10,
-      9,
-      0,
-      10,
+      13,
       0,
       "MODEL"
     ],
     [
-      11,
-      6,
+      15,
+      13,
       0,
+      14,
+      0,
+      "MODEL"
+    ],
+    [
+      16,
       10,
+      0,
+      14,
       1,
       "CONDITIONING"
     ],
     [
-      12,
-      7,
+      17,
+      11,
       0,
-      10,
+      14,
       2,
       "CONDITIONING"
     ],
     [
-      13,
-      8,
+      18,
+      12,
       0,
-      10,
+      14,
       3,
       "LATENT"
     ],
     [
+      19,
       14,
-      10,
       0,
-      11,
+      15,
       0,
       "LATENT"
     ],
     [
-      15,
-      5,
+      20,
+      9,
       0,
-      11,
+      15,
       1,
       "VAE"
     ],
     [
-      16,
-      11,
+      21,
+      15,
       0,
-      12,
+      16,
       0,
       "IMAGE"
     ]
   ],
   "groups": [],
   "config": {},
-  "extra": {},
+  "extra": {
+    "ds": {
+      "scale": 0.45,
+      "offset": [
+        60,
+        90
+      ]
+    }
+  },
   "version": 0.4,
-  "last_node_id": 12,
-  "last_link_id": 16
+  "last_node_id": 17,
+  "last_link_id": 21
 }

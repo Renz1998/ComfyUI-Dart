@@ -27,7 +27,7 @@ const context = {
         registered_node_types: {
             CLIPTextEncode: { title: "CLIP Text Encode" }, PreviewAny: { title: "Preview as Text" },
             DanbooruTagsTransformerComposePromptV3: { title: "Dart Compose Prompt V3" },
-            DanbooruTagsTransformerLoader: { title: "Dart Load" },
+            DanbooruTagsTransformerLoaderV3: { title: "Dart v3 Load" },
             DanbooruTagsTransformerDescribeImage: { title: "Dart Describe Image" },
             DanbooruTagsTransformerAppearanceOverrides: { title: "Prompt Mage · Appearance Overrides" },
             DanbooruTagsTransformerImageToText: {title:"Prompt Mage · Image to Text"},
@@ -64,7 +64,7 @@ assert.equal(connections[1].args[2], 1); // The actual general input, not an arb
 const target = { type: "DanbooruTagsTransformerGenerate", graph, inputs: [{ name: "tokenizer", type: "DART_TOKENIZER" }] };
 canvas.showConnectionMenu({ nodeTo: target, slotTo: 0, e: {} });
 menu[0].callback();
-assert.equal(connections[2].from, "DanbooruTagsTransformerLoader");
+assert.equal(connections[2].from, "DanbooruTagsTransformerLoaderV3");
 assert.equal(connections[2].args[0], 1); // Loader's tokenizer output, not its model output.
 assert.equal(connections[2].args[2], 0);
 assert.equal(canvas.showConnectionMenu({ nodeFrom: { ...source, type: "OtherPlugin" }, slotFrom: 0, e: {} }), "original");

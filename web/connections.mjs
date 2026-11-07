@@ -2,7 +2,7 @@ const prefix = "DanbooruTagsTransformer";
 const node = (name, slot) => ({ type: prefix + name, slot });
 const preview = { type: "PreviewAny", slot: "source" };
 const encode = { type: "CLIPTextEncode", slot: "text" };
-const composers = (slot) => [node("ComposePromptV3", slot), node("ComposePromptV2", slot), node("ComposePrompt", slot)];
+const composers = (slot) => [node("ComposePromptV3", slot)];
 const generators = (slot) => [node("Generate", slot), node("GenerateAdvanced", slot)];
 
 export function connectionsFor(type, name, slotType, isOutput) {
@@ -29,8 +29,8 @@ export function connectionsFor(type, name, slotType, isOutput) {
         if (name === "appearance" && [prefix + "ImageToText", prefix + "DescribeImage",prefix+'TagComposer',prefix+'SceneComposer',prefix+'ArchmageBeta'].includes(type)) return [node("AppearanceOverrides", 0)];
         if (name === "image") return [{ type: "LoadImage", slot: 0 }];
         if (type === prefix + "DescribeImage" && name === "description") return [node("ImageToText", 0)];
-        if (name === "model") return [node("Loader", 0)];
-        if (name === "tokenizer") return [node("Loader", 1)];
+        if (name === "model") return [node("LoaderV3", 0)];
+        if (name === "tokenizer") return [node("LoaderV3", 1)];
         if (name === "setting") return [node("GenerationConfig", 0)];
         if (name === "token_ids") return [node("GenerateAdvanced", 0)];
         if (name === "clip") return [{ type: "CLIPLoader", slot: 0 }];

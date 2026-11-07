@@ -1,0 +1,23 @@
+name: Bug report
+description: Something failed or behaved differently from expected.
+title: "[Bug] "
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Include what you expected and how to reproduce it.
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Setup
+      description: Prompt Mage version, ComfyUI/frontend version, local or RunPod, GPU/VRAM, model filenames and local/API assistant.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Error, screenshot or minimal workflow
+      description: Remove keys, personal paths, private images and prompts before uploading. For quality issues include a neutral input and exact settings.

@@ -85,6 +85,14 @@ NODE_HELP = {
 }
 
 
+NODE_HELP['LoaderV3'] = (
+    'Load p1atdev DART v3 Preview E for tag expansion. Pair with Compose Prompt V3. '
+    'Accept its Hugging Face access terms before downloading. CPU leaves GPU memory for images.',
+    NODE_HELP['Loader'][1],
+    {**NODE_HELP['Loader'][2], 'model': 'DART v3 Preview E is the supported entry point for new workflows. Accept its model access terms on Hugging Face; files download into the normal HF cache.'},
+)
+
+
 def attach_help(node_classes):
     for name, node_class in node_classes.items():
         description, outputs, overrides = NODE_HELP[name.removeprefix("DanbooruTagsTransformer")]

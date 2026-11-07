@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Main Archmage workflow and model downloads
+    url: https://github.com/Renz1998/ComfyUI-Prompt-Mage/blob/main/docs/MODEL_DOWNLOADS.md
+    about: Default MOSS workflow, model files and installation folders.
+  - name: Help improve Prompt Mage
+    url: https://github.com/Renz1998/ComfyUI-Prompt-Mage/blob/main/CONTRIBUTING.md
+    about: Testing, workflows, UI improvements and documentation contributions are welcome.

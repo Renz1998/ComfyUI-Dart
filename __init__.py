@@ -1,4 +1,4 @@
-from .py.nodes.loader import DanbooruTagsTransformerLoader
+from .py.nodes.loader import DanbooruTagsTransformerLoader, PromptMageDartV3Loader
 from .py.nodes.generate import DanbooruTagsTransformerGenerate
 from .py.nodes.prompt import DanbooruTagsTransformerComposePrompt
 from .py.nodes.prompt_v2 import (
@@ -24,6 +24,7 @@ from .py.nodes.appearance import DanbooruTagsTransformerAppearanceOverrides
 from .py.nodes.image_batch import DanbooruTagsTransformerImageBatchSelector, DanbooruTagsTransformerImageBatchUpload
 
 NODE_CLASS_MAPPINGS = {
+    "DanbooruTagsTransformerLoaderV3": PromptMageDartV3Loader,
     "DanbooruTagsTransformerImageBatchUpload": DanbooruTagsTransformerImageBatchUpload,
     "DanbooruTagsTransformerImageBatchSelector": DanbooruTagsTransformerImageBatchSelector,
     "DanbooruTagsTransformerAppearanceOverrides": DanbooruTagsTransformerAppearanceOverrides,
@@ -46,6 +47,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "DanbooruTagsTransformerLoaderV3": "Prompt Mage · DART v3 Load",
     "DanbooruTagsTransformerImageBatchUpload": "Prompt Mage · Upload Images",
     "DanbooruTagsTransformerImageBatchSelector": "Prompt Mage · Server Folder (Advanced)",
     "DanbooruTagsTransformerAppearanceOverrides": "Prompt Mage · Appearance Overrides",
@@ -94,6 +96,17 @@ for legacy_id in ('DanbooruTagsTransformerDescribeImage', 'DanbooruTagsTransform
     legacy.DESCRIPTION = ('Deprecated: use Prompt Mage · Archmage (Beta) for new scene, prose and MOSS workflows. '
                           'Kept for existing workflows and specialized legacy features. ' + getattr(legacy, 'DESCRIPTION', ''))
     legacy.DEPRECATED = True
+    NODE_DISPLAY_NAME_MAPPINGS[legacy_id] += ' (Deprecated)'
+
+# Retire version-specific v1/v2 entry points without invalidating saved workflows.
+for suffix in ('Loader', 'ComposePrompt', 'ComposePromptV2', 'GetAspectRatio'):
+    legacy_id = 'DanbooruTagsTransformer' + suffix
+    legacy = NODE_CLASS_MAPPINGS[legacy_id]
+    legacy.CATEGORY = 'Prompt Mage/Deprecated'
+    legacy.DEPRECATED = True
+    legacy.DESCRIPTION = ('Deprecated: start new DART workflows with DART v3 Load and Compose Prompt V3. '
+                          'Original v1/v2 model choices and behavior remain available for saved workflows. '
+                          + getattr(legacy, 'DESCRIPTION', ''))
     NODE_DISPLAY_NAME_MAPPINGS[legacy_id] += ' (Deprecated)'
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]

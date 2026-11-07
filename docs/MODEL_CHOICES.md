@@ -1,5 +1,7 @@
 # Caption models and exact wording
 
+For the default Archmage/MOSS setup, use the [model downloads and folder guide](MODEL_DOWNLOADS.md). The checkpoints below are optional model-behavior notes, not requirements for the main workflow.
+
 Prompt Mage does not filter the phrase `gigantic breasts`. A model can still omit or paraphrase requested attributes. A low refusal rate does not establish exact wording, caption accuracy, schema compliance, or good image conditioning.
 
 ## Requested local checkpoint

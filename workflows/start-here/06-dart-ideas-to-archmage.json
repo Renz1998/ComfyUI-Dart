@@ -304,7 +304,7 @@
     },
     {
       "id": 4,
-      "type": "DanbooruTagsTransformerLoader",
+      "type": "DanbooruTagsTransformerLoaderV3",
       "pos": [
         20,
         20
@@ -334,7 +334,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "DanbooruTagsTransformerLoader"
+        "Node name for S&R": "DanbooruTagsTransformerLoaderV3"
       },
       "widgets_values": [
         "dart-v3-sft-preview-E (experimental)",

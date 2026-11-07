@@ -1,6 +1,6 @@
 const stylesheet = document.createElement("link");
 stylesheet.rel = "stylesheet";
-stylesheet.href = new URL("./dart.css?v=1.11.0", import.meta.url).href;
+stylesheet.href = new URL("./dart.css?v=1.12.0", import.meta.url).href;
 document.head.append(stylesheet);
 
 const designs = new WeakMap();
@@ -26,7 +26,7 @@ function profileFor(name) {
     if (name.endsWith("AppearanceOverrides")) return profiles.appearance;
     if (name.endsWith("ImageToText")) return profiles.vision;
     if (name.endsWith("DescribeImage")) return profiles.assistant;
-    if (name.endsWith("Loader")) return profiles.loader;
+    if (name.endsWith("Loader") || name.endsWith("LoaderV3")) return profiles.loader;
     if (name.includes("ComposePrompt")) return profiles.composer;
     if (name.endsWith("Generate") || name.endsWith("GenerateAdvanced")) return profiles.generate;
     return profiles.utility;

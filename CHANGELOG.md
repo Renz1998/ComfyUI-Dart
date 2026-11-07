@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.0 — Main workflow and DART v3 selection
+
+- Main Archmage workflow: public default Zine circuit with DART v3 ideas, Appearance Overrides, shared Qwen and MOSS base generation. No LoRAs or extra node packs.
+- V3-only loader for new graphs. Deprecates the legacy multi-version loader, v1/v2 composers and v2 aspect helper while retaining saved graph execution. Drag suggestions offer v3.
+- Model downloads/folders guide, community issue forms and contribution invitation, plus optional Ko-fi, PayPal and TRON support links.
+
 ## 1.11.0 — DART tags as character-safe scene ideas
 
 - Adds Archmage's optional source_tags input, separate from explicit Scene idea and Writing rules. Default filtering protects character identity and selected visual style while retaining candidate scene/action/prop/composition tags.

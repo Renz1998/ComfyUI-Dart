@@ -2,12 +2,12 @@ import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 import { convertToInput } from "../../extensions/core/widgetInputs.js";
 import { addTextPreviewWidgets, updateTextPreviewWidgets } from "../../extensions/core/textPreviewWidgets.js";
-import { connectionsFor, resolveSlot } from "./connections.mjs";
-import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.11.0";
+import { connectionsFor, resolveSlot } from "./connections.mjs?v=1.12.0";
+import { installDesign, configureDesign, toggleDesign, toggleTheme, setDesignState, updateDesignBackend } from "./design.mjs?v=1.12.0";
 import { installStatusWidget, updateStatusWidget, finishedState, combineReports } from "./status.mjs";
-import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.11.0";
-import { arrangeArchmage, updateArchmageControls, bindWorkflowEncoders } from "./archmage_ui.mjs?v=1.11.0";
-import { installOpenAIKeyWidget, refreshOpenAIKeyWidget } from "./openai_key.mjs?v=1.11.0";
+import { installUploadWidget, refreshUploadWidget } from "./upload.mjs?v=1.12.0";
+import { arrangeArchmage, updateArchmageControls, bindWorkflowEncoders } from "./archmage_ui.mjs?v=1.12.0";
+import { installOpenAIKeyWidget, refreshOpenAIKeyWidget } from "./openai_key.mjs?v=1.12.0";
 
 const labels = new Map();
 const layoutFields = ["canvas_width", "canvas_height", "layout_json"];

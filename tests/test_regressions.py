@@ -72,7 +72,8 @@ class TagTests(unittest.TestCase):
 
 class GeometryTests(unittest.TestCase):
     def test_gallery_connections_and_cycles(self):
-        for path in (ROOT / 'workflows' / 'next').glob('*.json'):
+        examples = ROOT / 'workflows'
+        for path in sorted((examples / 'next').glob('*.json')) + sorted((examples / 'start-here').glob('*.json')):
             with self.subTest(workflow=path.name):
                 workflow = json.loads(path.read_text(encoding='utf-8'))
                 nodes = {node['id']: node for node in workflow['nodes']}
@@ -112,7 +113,7 @@ class GeometryTests(unittest.TestCase):
         self.assertTrue(prompt.endswith('<general>solo<|input_end|>'))
 
     def test_old_workflow_node_names_and_required_inputs(self):
-        for path in (ROOT / 'workflows').glob('*.json'):
+        for path in (ROOT / 'workflows').rglob('*.json'):
             workflow = json.loads(path.read_text(encoding='utf-8'))
             for node in workflow.get('nodes', []):
                 name = node['type']

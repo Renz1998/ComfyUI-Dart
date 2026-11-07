@@ -4,7 +4,7 @@
 
 Turn a rough idea or reference image into a usable image prompt. **Archmage** combines scene writing, image descriptions, character appearance settings, 31 visual styles and native MOSS JSON layouts. Use local Qwen or the OpenAI API, with one shared canvas size for your prompt and image workflow.
 
-[Quickstart](QUICKSTART.md) · [Workflows](workflows/start-here/README.md) · [Archmage guide](docs/ARCHMAGE_USABILITY.md) · [Registry](https://registry.comfy.org/nodes/prompt-mage) · [Node screenshots](docs/NODE_GALLERY.md) · [Credits](CREDITS.md)
+[Quickstart](QUICKSTART.md) · [Workflows](workflows/start-here/README.md) · [Model downloads](docs/MODEL_DOWNLOADS.md) · [Archmage guide](docs/ARCHMAGE_USABILITY.md) · [Registry](https://registry.comfy.org/nodes/prompt-mage) · [Node screenshots](docs/NODE_GALLERY.md) · [Community](CONTRIBUTING.md) · [Support](SUPPORT.md) · [Credits](CREDITS.md)
 
 ## Start with Archmage
 
@@ -46,24 +46,28 @@ Restart ComfyUI, refresh the browser, then search **Prompt Mage** or **Archmage*
 | **Upload Images** | Local file picker, folder picker and drag-and-drop, including when ComfyUI runs on RunPod |
 | **Appearance Overrides** | Reusable gender, character trigger, appearance dropdowns and custom replacements |
 | **Tag Composer (Experimental)** | Separate vocabulary-backed Danbooru conversion; review coverage and semantic warnings |
-| **DART tools** | Tag expansion using matching DART v1/v2/v3 composers and models |
+| **DART v3 tools** | DART v3 tag expansion, shared generation/config/decode utilities and creative ideas for Archmage |
 | **Server Folder (Advanced)** | Read image folders on the computer running ComfyUI |
 
 **Deprecated:** Scene Composer, Text Assistant and Image to Text remain executable for older workflows. Use Archmage for new scene/prose/MOSS workflows. External chat servers, DART/Anima formatting and general Structured JSON captions remain documented in [legacy controls](docs/LEGACY_ASSISTANTS.md). Deprecated does not mean removed, and there is no automatic graph conversion.
 
-## Start with one workflow
+## Start with the main Archmage workflow
+
+**[Download the main workflow JSON](https://raw.githubusercontent.com/Renz1998/ComfyUI-Prompt-Mage/main/workflows/start-here/03-moss-full-workflow.json)** · [Model downloads and folders](docs/MODEL_DOWNLOADS.md)
+
+The public default version of the Zine setup: **DART v3 → Appearance Overrides + Archmage → MOSS image generation**. No character/accelerator LoRAs, private model names or extra node packs. Local Qwen is shared by Archmage and MOSS; no API key is needed. Download the model files, drag the JSON into ComfyUI, select their filenames and run. Set the appearance recipe or leave its default fields; DART's scene tags stay separate from your own scene idea. [Setup and settings](workflows/start-here/README.md).
 
 | Goal | Open |
 | --- | --- |
 | Write a character scene | [01 · Write a scene](workflows/start-here/01-write-a-scene.json) |
 | Describe uploaded photos | [02 · Describe uploaded images](workflows/start-here/02-describe-uploaded-images.json) |
-| Generate images with MOSS | [03 · Full MOSS workflow](workflows/start-here/03-moss-full-workflow.json) |
+| **Main: DART ideas → Archmage → MOSS** | [03 · Main Archmage workflow](workflows/start-here/03-moss-full-workflow.json) |
 
 [Simple setup and prose/JSON comparison →](workflows/start-here/README.md) · [Older / specialized workflows](workflows/next/README.md)
 
 Already using DART? Try [DART Generate → Appearance Overrides → Archmage](workflows/start-here/06-dart-ideas-to-archmage.json) to turn random tags into a coherent scene for your character.
 
-**New in 1.9:** Bright lifestyle photo default, style-first grouped Archmage controls, a standalone Resolution selector, gender overrides, shared Automatic encoders and cancellation cleanup. [Control and memory guide →](docs/ARCHMAGE_USABILITY.md)
+**DART v3 is the only new-workflow entry point.** The multi-version loader, v1/v2 composers and v2 aspect helper are deprecated; saved workflows retain their original behavior. Shared DART generation and tag tools stay available. [Models and compatibility →](docs/MODEL_DOWNLOADS.md)
 
 ## Upload from your computer, even on RunPod
 
@@ -88,6 +92,22 @@ Workflow files store server-relative image paths. Upload again when moving to an
 [Model choices](docs/MODEL_CHOICES.md) · [Archmage controls](docs/ARCHMAGE_BETA.md) · [DART and legacy setup](docs/DART_AND_LEGACY_SETUP.md)
 
 Hover controls and sockets for help. Ember adds animated flames while running; Studio offers a quieter theme. Both respect reduced-motion settings. Right-click for theme/design options.
+
+## Help build Prompt Mage
+
+Got a workflow that works well? Found a confusing control? **[Share it with the community](https://github.com/Renz1998/ComfyUI-Prompt-Mage/issues/new/choose)**. Testers, workflow creators, developers and documentation improvements are welcome. Include models and settings so others can reproduce your results. [Ways to contribute](CONTRIBUTING.md).
+
+If the pack is useful, consider starring the repo or supporting development:
+
+**[☕ Ko-fi](https://ko-fi.com/renzuwu)** · **[PayPal](https://paypal.me/luckyrenz1998)** · [Support details](SUPPORT.md)
+
+**USDT · TRON / TRC20** — use the code block's copy button:
+
+```text
+TUggk9S4aDDyT7HxrEjqCDxFPXgEr4okW8
+```
+
+Support is optional and goes to the Prompt Mage maintainer. Check the TRON network before sending.
 
 ## Built on the original creators’ work
 

@@ -59,3 +59,15 @@ class DanbooruTagsTransformerLoader(BaseNode):
         tokenizer = self.MODEL_NAMES[model]["tokenizer"](model_name, special_tags, **load_options)
         dart_model = DartModel(model_name, device=device, dtype=dtype, **load_options)
         return (dart_model, tokenizer)
+
+
+class PromptMageDartV3Loader(DanbooruTagsTransformerLoader):
+    """V3-only entry point; the original loader remains executable for saved graphs."""
+    MODEL_NAMES = {
+        key: value for key, value in DanbooruTagsTransformerLoader.MODEL_NAMES.items()
+        if value['tokenizer'] is DartTokenizerV3
+    }
+    DEPRECATED = False
+    CATEGORY = 'Prompt Mage/DART v3'
+    DESCRIPTION = ('Load p1atdev DART v3 Preview E for tag expansion. Pair with DART Compose Prompt V3. '
+                   'Accept the model terms on Hugging Face before downloading. CPU leaves VRAM for image generation.')

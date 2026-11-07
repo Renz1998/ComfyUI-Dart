@@ -1,0 +1,16 @@
+name: Share a workflow or idea
+description: Share an example, model test, usability suggestion or contribution.
+title: "[Community] "
+body:
+  - type: textarea
+    id: contribution
+    attributes:
+      label: What would you like to share or improve?
+      description: Non-coders are welcome. Explain the goal and include screenshots or a clean workflow if useful.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details and test results
+      description: For model tests include the public download link, filename, runtime, GPU/VRAM, settings and what worked or failed. Remove keys, personal files and private character LoRAs.
