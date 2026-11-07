@@ -4,7 +4,7 @@
 
 Turn a rough idea or reference image into a usable image prompt. **Archmage** combines scene writing, image descriptions, character appearance settings, 31 visual styles and native MOSS JSON layouts. Use local Qwen or the OpenAI API, with one shared canvas size for your prompt and image workflow.
 
-[Quickstart](QUICKSTART.md) · [Workflows](workflows/start-here/README.md) · [Archmage guide](docs/ARCHMAGE_USABILITY.md) · [Registry](https://registry.comfy.org/nodes/prompt-mage) · [Credits](CREDITS.md)
+[Quickstart](QUICKSTART.md) · [Workflows](workflows/start-here/README.md) · [Archmage guide](docs/ARCHMAGE_USABILITY.md) · [Registry](https://registry.comfy.org/nodes/prompt-mage) · [Node screenshots](docs/NODE_GALLERY.md) · [Credits](CREDITS.md)
 
 ## Start with Archmage
 
@@ -19,7 +19,7 @@ Turn a rough idea or reference image into a usable image prompt. **Archmage** co
 
 ![Archmage with a shared Appearance Overrides recipe](assets/screenshots/archmage-appearance.jpg)
 
-*Actual ComfyUI node setup with a neutral example. Screenshots show prompt tools, not a generated image or a quality benchmark.*
+*Current Archmage layout with a reusable appearance recipe and the collapsed OpenAI key panel. Neutral demo settings; [see individual node screenshots](docs/NODE_GALLERY.md).*
 
 ## Install
 

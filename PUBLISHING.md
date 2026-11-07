@@ -1,5 +1,10 @@
 # Publishing Prompt Mage
 
+## Current source: 1.10.0
+
+The [OpenAI API update](https://github.com/Renz1998/ComfyUI-Prompt-Mage/commit/90d4e896ee1a2eb853f47d51eb445cdad964fc4f) is available on GitHub and installed locally. [CI](https://github.com/Renz1998/ComfyUI-Prompt-Mage/actions/runs/42326205597) passed on Transformers 4.46.3 and 5.17.0, including 120 Python tests and seven JavaScript suites. Bounded live checks verified Sol/Terra text, Terra MOSS compilation and image encoding/description of a synthetic 512×512 geometric image. The masked key panel was also inspected in the live ComfyUI frontend. Credentials are not included in any artifact. Registry upload/approval remains separate.
+
+
 ## Registry migration and review state — November 7, 2026
 
 The **prompt-mage 1.8.1** distribution was uploaded successfully with the requested matching install command. The 1.9.0 usability update is available on GitHub and installed locally; it has not been uploaded to Registry yet. See the [migration guide](docs/REGISTRY_MIGRATION.md). The old listing will be retained with a notice; existing users must not install both copies.

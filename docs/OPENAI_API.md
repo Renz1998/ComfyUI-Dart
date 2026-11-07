@@ -6,6 +6,10 @@
 
 Local Qwen remains the default. Updating an existing workflow never switches it to a paid backend automatically. The local CLIP and VRAM/unload controls are ignored in API mode; the image-generation workflow can still use its usual local MOSS text encoder downstream.
 
+<img src="../assets/screenshots/openai-key-panel.jpg" alt="Archmage OpenAI controls with an empty masked key field and Add key button" width="500">
+
+The screenshot shows an empty entry field; the configured indicator never reveals the stored key.
+
 ## Models and prices
 
 The dropdown labels show standard USD per **one million input / output tokens**, checked November 7, 2026:
